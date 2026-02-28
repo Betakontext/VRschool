@@ -112,20 +112,20 @@
       /* Ausblenden nach Klick */
       #start-overlay.fade-out { opacity: 0; pointer-events: none; }
     </style>
-
   </head>
   <body>
 
-      <!-- Startmenü-Overlay
-    <div id="start-overlay" aria-hidden="false">
-        <div class="start-content" role="dialog" aria-labelledby="start-title" aria-describedby="start-desc">
-            <h2 id="start-title" class="start-title">Herzlich willkommen zu unserer virtuellen Tour</h2>
-            <p id="start-desc" class="start-text">
-                Entdecke unsere Räume in 360°. Tippe oder klicke auf „Tour starten“, um zu beginnen.
-            </p>
-            <button id="start-btn" class="start-btn" type="button">Tour starten</button>
-        </div>
-    </div> -->
+      <!-- Startmenü-Overlay -->
+      <div id="start-overlay" aria-hidden="false">
+          <div class="start-content" role="dialog" aria-labelledby="start-title" aria-describedby="start-desc">
+              <h2 id="start-title" class="start-title">Herzlich willkommen zu unserer virtuellen Tour</h2>
+              <p id="start-desc" class="start-text">
+                  Entdecke unsere Räume in 360°. Tippe oder klicke auf „Tour starten“, um zu beginnen.
+              </p>
+              <button id="start-btn" class="start-btn" type="button">Tour starten</button>
+          </div>
+      </div>
+
       <!-- Ladebalken -->
       <div class="loading-bar"><div id="progress"></div></div>
 
@@ -133,7 +133,7 @@
           <a-entity light="type: ambient; intensity: 1.0"></a-entity>
 
           <!-- Doppelter Himmel für Crossfade -->
-          <a-sky id="sky-current" src="#Mensa" opacity="1" material="transparent: true"></a-sky>
+          <a-sky id="sky-current" src="#Werkstatt" opacity="1" material="transparent: true"></a-sky>
           <a-sky id="sky-next" src="#placeholder" opacity="0" visible="false" material="transparent: true"></a-sky>
 
           <a-assets timeout="30000">
@@ -216,8 +216,7 @@
               <a-entity template="src: #link" data-id="Infokasten" data-thumb="#Logo-thumb"></a-entity>
           </a-entity>
 
-
-          <!-- Videokachel (VR-fähig) und Infobox – nur in „Mensa“ sichtbar -->
+          <!-- Videokachel (VR-fähig) – nur in „Mensa“ sichtbar -->
           <a-entity id="mensa-video-entity" visible="false" position="4 1.15 -2.0" rotation="0 -45 0">
               <!-- optionaler Rahmen -->
               <a-plane width="1.7" height="0.96" color="#000" position="0 0 -0.002" opacity="0.7"></a-plane>
@@ -240,28 +239,6 @@
                       color="#fff"
                       visible="false">
               </a-text>
-
-              <!-- Vergrößertes Infozeichen -->
-              <a-entity id="info-icon" position="-4.5 -0.2 -1" geometry="primitive: plane; width: 0.5; height: 0.5" material="src: img/Infobutton.png; transparent: true;" class="clickable" info-trigger></a-entity>
-
-              <!-- Informationsbox -->
-              <!-- Informationsbox (fixe Position, unabhängig vom Icon) -->
-              <a-entity id="info-box" visible="false" position="-5.5 0.8 1.5" rotation="0 58 0">
-                  <a-plane width="3.3" height="1.9" color="#fff" opacity="0.9"></a-plane>
-                  <a-text value="Hier ist unsere Küche – mehr als nur ein Ort zum Essenholen.
-Sie ist Treffpunkt, Wohlf&uuml;hlort und manchmal auch kleine Rettungsstation im Alltag.
-
-Tamara und Nikos sind immer für uns da – ob mit leckerem Essen, einem K&uuml;hlpack, einer Tasse Tee oder einfach einem offenen Ohr und einem guten Gespr&auml;ch.
-" color="#000" position="0 0 0.01" width="2.4" align="center"></a-text>
-                  <a-text value="Tippe auf das Objekt, um mehr zu erfahren." color="#000" position="0 -0.5 0.01" width="2.4" align="center"></a-text>
-                  <a-entity geometry="primitive: plane; width: 0.5; height: 0.5"
-                            material="color: #ff0000"
-                            position="1 -0.5 0.01"
-                            class="close-button"
-                            text="value: Schließen; align: center; color: #fff"></a-entity>
-              </a-entity>
-
-
           </a-entity>
 
           <!-- Videokachel (VR-fähig) – nur in „Hof“ sichtbar -->
@@ -291,36 +268,13 @@ Tamara und Nikos sind immer für uns da – ob mit leckerem Essen, einem K&uuml;
 
           <!-- Kamera + Cursor (Gaze-Click funktioniert auf der Videofläche) -->
           <a-entity camera look-controls="magicWindow: true; touchEnabled: true" position="0 1.6 0">
-              <a-cursor raycaster="objects: .link, .clickable; interval: 100; far: 50" fuse="true" fuse-timeout="900"></a-cursor>
+              <a-cursor raycaster="objects: .link; interval: 100; far: 50" fuse="true" fuse-timeout="900"></a-cursor>
           </a-entity>
 
 
       </a-scene>
 
       <script>
-          /* Informationsbox-Komponente */
-          AFRAME.registerComponent('info-trigger', {
-          init: function () {
-            const group = this.el.closest('#mensa-video-entity') || this.el.sceneEl;
-            const infoBox = group.querySelector('#info-box');
-            if (!infoBox) return;
-
-            const closeButton = infoBox.querySelector('.close-button');
-
-            // Beim Klick nur Sichtbarkeit schalten – Position bleibt, wie im Markup gesetzt
-            this.el.addEventListener('click', () => {
-              infoBox.setAttribute('visible', true);
-            });
-
-            if (closeButton) {
-              closeButton.classList.add('clickable');
-              closeButton.addEventListener('click', () => {
-                infoBox.setAttribute('visible', false);
-              });
-            }
-          }
-        });
-
           /* Video-Controls: funktioniert für Mensa und Hof gleich.
           Unmute nur, wenn das eigene Panel sichtbar ist. */
           AFRAME.registerComponent('video-controls', {
@@ -557,7 +511,7 @@ Tamara und Nikos sind immer für uns da – ob mit leckerem Essen, einem K&uuml;
           }
           });
 
-
+          
           document.addEventListener('DOMContentLoaded', () => {
           const overlay = document.getElementById('start-overlay');
           const btn = document.getElementById('start-btn');
@@ -589,69 +543,6 @@ Tamara und Nikos sind immer für uns da – ob mit leckerem Essen, einem K&uuml;
           });
       </script>
 
-
-      <script>
-          // Initiale Sichtbarkeit der Videopanels und Video-Status beim Laden
-
-          document.addEventListener('DOMContentLoaded', () => {
-          const sceneEl     = document.querySelector('a-scene');
-          const skyCurrent  = document.getElementById('sky-current');
-          const mensaEntity = document.getElementById('mensa-video-entity');
-          const mensaVideo  = document.getElementById('MensaVideo');
-          const mensaPlane  = document.getElementById('mensa-video-plane');
-          const hofEntity   = document.getElementById('hof-video-entity');
-          const hofVideo    = document.getElementById('HofVideo');
-          const hofPlane    = document.getElementById('hof-video-plane');
-
-          const setInactive = (videoEl, planeEl) => {
-          if (!videoEl) return;
-          try { if (!videoEl.paused) videoEl.pause(); } catch(e){}
-          videoEl.currentTime = 0;
-          videoEl.muted = true;
-          if (planeEl) {
-          planeEl.classList.add('link');
-          const vc = planeEl.components && planeEl.components['video-controls'];
-          if (vc) { vc.activated = false; vc.updateHint && vc.updateHint(); }
-          }
-          };
-          const setActiveMuted = (videoEl) => {
-          if (!videoEl) return;
-          videoEl.muted = true;
-          videoEl.play().catch(()=>{});
-          };
-
-          // Warten bis die Szene fertig ist
-          sceneEl.addEventListener('loaded', () => {
-          // Prüfen, welche Startszene gesetzt ist
-          const startSrc = (skyCurrent && skyCurrent.getAttribute('src')) || '';
-          // Falls Startszene Mensa ist (#Mensa)
-          if (String(startSrc).includes('#Mensa')) {
-          // Sichtbarkeit wie beim Szenenwechsel setzen
-          if (mensaEntity) mensaEntity.setAttribute('visible', true);
-          if (hofEntity)   hofEntity.setAttribute('visible', false);
-
-          // Video-Status wie im tour-link: nur Zielszene autoplay (muted)
-          setInactive(mensaVideo, mensaPlane);
-          setInactive(hofVideo, hofPlane);
-
-          // Hints aktualisieren (falls Komponenten schon gemountet)
-          if (mensaPlane && mensaPlane.components['video-controls']) {
-          mensaPlane.components['video-controls'].updateHint();
-          }
-
-          // currentId merken, damit der erste spätere Klick korrekt arbeitet
-          sceneEl.dataset.currentId = 'Mensa';
-          } else {
-          // Start ist nicht Mensa → alles wie gewohnt: Panels aus
-          if (mensaEntity) mensaEntity.setAttribute('visible', false);
-          if (hofEntity)   hofEntity.setAttribute('visible', false);
-          setInactive(mensaVideo, mensaPlane);
-          setInactive(hofVideo, hofPlane);
-          sceneEl.dataset.currentId = 'Werkstatt';
-          }
-          });
-          });
       </script>
-
   </body>
 </html>
