@@ -22,391 +22,636 @@
         height: 100%; width: 0%; background: white;
         border-radius: 7px; transition: width 0.2s;
       }
+          /* Vollflächiges Start-Overlay */
+      #start-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483600;         /* über allem (auch Loader) */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #000;            /* Fallback, falls Bild nicht lädt */
+        opacity: 1;
+        transition: opacity 400ms ease;
+      }
+    /* Vollflächiges Start-Overlay */
+    #start-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;  /* Fallback */
+      opacity: 1;
+      transition: opacity 400ms ease;
+    }
+
+    /* Hintergrund: Logo groß, zentriert; optional zusätzlich ein Foto leicht einblenden */
+    #start-overlay::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      /* NUR Logo (zentriert, groß) */
+      background:
+        url("img/Logo_Schule.png") center center / min(80vmin, 800px) no-repeat,
+        radial-gradient(ellipse at center, rgba(0,0,0,0.35), rgba(0,0,0,0.75) 70%);
+      /* Erklärung:
+         - Das Logo skaliert bis max. 80vmin (beschränkt auf 800px).
+         - Darunter liegt ein dunkler radialer Verlauf für Kontrast. */
+      filter: none;
+    }
+
+    /* Inhalt im Overlay */
+    #start-overlay .start-content {
+      position: relative;
+      max-width: 90vw;
+      width: 680px;
+      color: #fff;
+      text-align: center;
+      padding: 24px 20px;
+    }
+
+    /* Optional: leichte Textschatten für bessere Lesbarkeit */
+    #start-overlay .start-title,
+    #start-overlay .start-text {
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+      /* Inhalt im Overlay */
+      #start-overlay .start-content {
+        position: relative;
+        max-width: 90vw;
+        width: 680px;
+        color: #fff;
+        text-align: center;
+        padding: 24px 20px;
+      }
+      #start-overlay .start-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0 0 12px;
+      }
+      #start-overlay .start-text {
+        font-size: 16px;
+        line-height: 1.4;
+        margin: 0 0 20px;
+      }
+      #start-overlay .start-btn {
+        appearance: none;
+        border: 0;
+        border-radius: 6px;
+        padding: 12px 18px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #111;
+        background: #fff;
+        cursor: pointer;
+      }
+      #start-overlay .start-btn:focus { outline: 2px solid #ffcc00; outline-offset: 2px; }
+      /* Ausblenden nach Klick */
+      #start-overlay.fade-out { opacity: 0; pointer-events: none; }
     </style>
+
   </head>
   <body>
-    <!-- Ladebalken -->
-    <div class="loading-bar"><div id="progress"></div></div>
 
-    <a-scene xr-mode-ui="enabled: true" renderer="colorManagement: true">
-      <a-entity light="type: ambient; intensity: 1.0"></a-entity>
+      <!-- Startmenü-Overlay
+    <div id="start-overlay" aria-hidden="false">
+        <div class="start-content" role="dialog" aria-labelledby="start-title" aria-describedby="start-desc">
+            <h2 id="start-title" class="start-title">Herzlich willkommen zu unserer virtuellen Tour</h2>
+            <p id="start-desc" class="start-text">
+                Entdecke unsere Räume in 360°. Tippe oder klicke auf „Tour starten“, um zu beginnen.
+            </p>
+            <button id="start-btn" class="start-btn" type="button">Tour starten</button>
+        </div>
+    </div> -->
+      <!-- Ladebalken -->
+      <div class="loading-bar"><div id="progress"></div></div>
 
-      <!-- Doppelter Himmel für Crossfade -->
-      <a-sky id="sky-current" src="#Werkstatt" opacity="1" material="transparent: true"></a-sky>
-      <a-sky id="sky-next" src="#placeholder" opacity="0" visible="false" material="transparent: true"></a-sky>
+      <a-scene xr-mode-ui="enabled: true" renderer="colorManagement: true">
+          <a-entity light="type: ambient; intensity: 1.0"></a-entity>
 
-      <a-assets timeout="30000">
-        <!-- 360°-Panoramen -->
-        <img id="Werkstatt" src="img/Werkstatt.jpeg">
-        <img id="Mensa" src="img/Mensa.jpeg">
-        <img id="Nawi" src="img/Nawi.jpeg">
-        <img id="Klassenraum" src="img/Klassenraum.jpeg">
-        <img id="Infokasten" src="img/Infokasten.jpeg">
-        <img id="Hof" src="img/Hof.jpeg">
-        <img id="Bibliothek" src="img/Bibliothek.jpeg">
-        <img id="Kueche" src="img/Kueche.jpeg">
-        <img id="Teilungsraum" src="img/Teilungsraum.jpeg">
-        <img id="Kunstraum" src="img/Kunstraum.jpeg">
+          <!-- Doppelter Himmel für Crossfade -->
+          <a-sky id="sky-current" src="#Mensa" opacity="1" material="transparent: true"></a-sky>
+          <a-sky id="sky-next" src="#placeholder" opacity="0" visible="false" material="transparent: true"></a-sky>
 
-        <!-- Thumbnails -->
-        <img id="Werkstatt-thumb" src="img/Werkstatt-thumb.jpg">
-        <img id="Hof-thumb" src="img/Hof-thumb.jpg">
-        <img id="Bibliothek-thumb" src="img/Bibliothek-thumb.jpg">
-        <img id="Kueche-thumb" src="img/Kueche-thumb.jpg">
-        <img id="Teilungsraum-thumb" src="img/Teilungsraum-thumb.jpg">
-        <img id="Kunstraum-thumb" src="img/Kunstraum-thumb.jpg">
-        <img id="Mensa-thumb" src="img/Mensa-thumb.jpg">
-        <img id="Nawi-thumb" src="img/Nawi-thumb.jpg">
-        <img id="Klassenraum-thumb" src="img/Klassenraum-thumb.jpg">
-        <img id="Logo-thumb" src="img/QuinoaBildung-Logo.png">
+          <a-assets timeout="30000">
+              <!-- 360°-Panoramen -->
+              <img id="Werkstatt" src="img/Werkstatt.jpeg">
+              <img id="Mensa" src="img/Mensa.jpeg">
+              <img id="Nawi" src="img/Nawi.jpeg">
+              <img id="Klassenraum" src="img/Klassenraum.jpeg">
+              <img id="Infokasten" src="img/Infokasten.jpeg">
+              <img id="Hof" src="img/Hof.jpeg">
+              <img id="Bibliothek" src="img/Bibliothek.jpeg">
+              <img id="Kueche" src="img/Kueche.jpeg">
+              <img id="Teilungsraum" src="img/Teilungsraum.jpeg">
+              <img id="Kunstraum" src="img/Kunstraum.jpeg">
 
-        <!-- Platzhalter -->
-        <img id="placeholder" src="img/placeholder.jpg">
+              <!-- Thumbnails -->
+              <img id="Werkstatt-thumb" src="img/Werkstatt-thumb.jpg">
+              <img id="Hof-thumb" src="img/Hof-thumb.jpg">
+              <img id="Bibliothek-thumb" src="img/Bibliothek-thumb.jpg">
+              <img id="Kueche-thumb" src="img/Kueche-thumb.jpg">
+              <img id="Teilungsraum-thumb" src="img/Teilungsraum-thumb.jpg">
+              <img id="Kunstraum-thumb" src="img/Kunstraum-thumb.jpg">
+              <img id="Mensa-thumb" src="img/Mensa-thumb.jpg">
+              <img id="Nawi-thumb" src="img/Nawi-thumb.jpg">
+              <img id="Klassenraum-thumb" src="img/Klassenraum-thumb.jpg">
+              <img id="Logo-thumb" src="img/QuinoaBildung-Logo.png">
 
-        <!-- VIDEO: Mensa -->
-        <video id="MensaVideo"
-               src="videos/Quinoa10Jahre_lq.mp4"
-               crossorigin="anonymous"
-               playsinline webkit-playsinline
-               preload="auto"
-               loop
-               muted>
-        </video>
+              <!-- Platzhalter -->
+              <img id="placeholder" src="img/placeholder.jpg">
 
-        <!-- VIDEO: Hof (Pausenhof) -->
-        <video id="HofVideo"
-               src="videos/Bauhuette_lq.mp4"
-               crossorigin="anonymous"
-               playsinline webkit-playsinline
-               preload="auto"
-               loop
-               muted>
-        </video>
-      </a-assets>
+              <!-- VIDEO: Mensa -->
+              <video id="MensaVideo"
+                     src="videos/Quinoa10Jahre_lq.mp4"
+                     crossorigin="anonymous"
+                     playsinline webkit-playsinline
+                     preload="auto"
+                     loop
+                     muted>
+              </video>
 
-      <!-- Template für klickbare Thumbs -->
-      <script id="link" type="text/html">
-        <a-entity class="link"
-                  geometry="primitive: plane; width: 1; height: 0.7"
-                  material="shader: flat; src: ${thumb}; transparent: true"
-                  event-set__enter="_event: mouseenter; scale: 1.1 1.1 1"
-                  event-set__leave="_event: mouseleave; scale: 1 1 1"
-                  tour-link="targetId: ${id}">
-        </a-entity>
-      </script>
+              <!-- VIDEO: Hof (Pausenhof) -->
+              <video id="HofVideo"
+                     src="videos/Bauhuette_lq.mp4"
+                     crossorigin="anonymous"
+                     playsinline webkit-playsinline
+                     preload="auto"
+                     loop
+                     muted>
+              </video>
+          </a-assets>
 
-      <!-- Link-Gruppen -->
-      <a-entity id="links0" layout="type: line; margin: 1.2" position="-5 1.9 -1" rotation="0 90 0">
-        <a-entity template="src: #link" data-id="Werkstatt" data-thumb="#Werkstatt-thumb"></a-entity>
-        <a-entity template="src: #link" data-id="Hof" data-thumb="#Hof-thumb"></a-entity>
-        <a-entity template="src: #link" data-id="Teilungsraum" data-thumb="#Teilungsraum-thumb"></a-entity>
-      </a-entity>
-      <a-entity id="links1" layout="type: line; margin: 1.2" position="-5 1 -1" rotation="0 90 0">
-        <a-entity template="src: #link" data-id="Bibliothek" data-thumb="#Bibliothek-thumb"></a-entity>
-        <a-entity template="src: #link" data-id="Kunstraum" data-thumb="#Kunstraum-thumb"></a-entity>
-        <a-entity template="src: #link" data-id="Kueche" data-thumb="#Kueche-thumb"></a-entity>
-      </a-entity>
-      <a-entity id="links3" layout="type: line; margin: 1.2" position="-5 0.1 -1" rotation="0 90 0">
-        <a-entity template="src: #link" data-id="Mensa" data-thumb="#Mensa-thumb"></a-entity>
-        <a-entity template="src: #link" data-id="Nawi" data-thumb="#Nawi-thumb"></a-entity>
-        <a-entity template="src: #link" data-id="Klassenraum" data-thumb="#Klassenraum-thumb"></a-entity>
-      </a-entity>
-      <a-entity id="links4" layout="type: line; margin: 1.2" position="5 -0.35 0.8" rotation="0 -110 0">
-        <a-entity template="src: #link" data-id="Infokasten" data-thumb="#Logo-thumb"></a-entity>
-      </a-entity>
+          <!-- Template für klickbare Thumbs -->
+          <script id="link" type="text/html">
+              <a-entity class="link"
+                        geometry="primitive: plane; width: 1; height: 0.7"
+                        material="shader: flat; src: ${thumb}; transparent: true"
+                        event-set__enter="_event: mouseenter; scale: 1.1 1.1 1"
+                        event-set__leave="_event: mouseleave; scale: 1 1 1"
+                        tour-link="targetId: ${id}">
+              </a-entity>
+          </script>
 
-      <!-- Videokachel (VR-fähig) – nur in „Mensa“ sichtbar -->
-      <a-entity id="mensa-video-entity" visible="false" position="4 1.15 -2.0" rotation="0 -45 0">
-        <!-- optionaler Rahmen -->
-        <a-plane width="1.7" height="0.96" color="#000" position="0 0 -0.002" opacity="0.7"></a-plane>
+          <!-- Link-Gruppen -->
+          <a-entity id="links0" layout="type: line; margin: 1.2" position="-5 1.9 -1" rotation="0 90 0">
+              <a-entity template="src: #link" data-id="Werkstatt" data-thumb="#Werkstatt-thumb"></a-entity>
+              <a-entity template="src: #link" data-id="Hof" data-thumb="#Hof-thumb"></a-entity>
+              <a-entity template="src: #link" data-id="Teilungsraum" data-thumb="#Teilungsraum-thumb"></a-entity>
+          </a-entity>
+          <a-entity id="links1" layout="type: line; margin: 1.2" position="-5 1 -1" rotation="0 90 0">
+              <a-entity template="src: #link" data-id="Bibliothek" data-thumb="#Bibliothek-thumb"></a-entity>
+              <a-entity template="src: #link" data-id="Kunstraum" data-thumb="#Kunstraum-thumb"></a-entity>
+              <a-entity template="src: #link" data-id="Kueche" data-thumb="#Kueche-thumb"></a-entity>
+          </a-entity>
+          <a-entity id="links3" layout="type: line; margin: 1.2" position="-5 0.1 -1" rotation="0 90 0">
+              <a-entity template="src: #link" data-id="Mensa" data-thumb="#Mensa-thumb"></a-entity>
+              <a-entity template="src: #link" data-id="Nawi" data-thumb="#Nawi-thumb"></a-entity>
+              <a-entity template="src: #link" data-id="Klassenraum" data-thumb="#Klassenraum-thumb"></a-entity>
+          </a-entity>
+          <a-entity id="links4" layout="type: line; margin: 1.2" position="5 -0.35 0.8" rotation="0 -110 0">
+              <a-entity template="src: #link" data-id="Infokasten" data-thumb="#Logo-thumb"></a-entity>
+          </a-entity>
 
-        <!-- Videoplane (16:9) mit Klick-/Gaze-Steuerung -->
-        <a-video id="mensa-video-plane"
-                 class="link"
-                 src="#MensaVideo"
-                 width="3.2" height="1.8"
-                 position="-0.75 0 0"
-                 video-controls="video: #MensaVideo; hint: #unmute-hint">
-        </a-video>
 
-        <!-- Hinweistext, wenn stumm -->
-        <a-text id="unmute-hint"
-                value="Bitte blinzeln um den Ton zu aktivieren."
-                align="center"
-                width="2"
-                position="-0.75 -1 0"
-                color="#fff"
-                visible="false">
-        </a-text>
-      </a-entity>
+          <!-- Videokachel (VR-fähig) und Infobox – nur in „Mensa“ sichtbar -->
+          <a-entity id="mensa-video-entity" visible="false" position="4 1.15 -2.0" rotation="0 -45 0">
+              <!-- optionaler Rahmen -->
+              <a-plane width="1.7" height="0.96" color="#000" position="0 0 -0.002" opacity="0.7"></a-plane>
 
-      <!-- Videokachel (VR-fähig) – nur in „Hof“ sichtbar -->
-      <a-entity id="hof-video-entity" visible="false" position="2.5 1.5 4.0" rotation="0 -155 0">
-        <!-- Rahmen passend zum Hochkantformat -->
-        <a-plane width="0.94" height="1.78" color="#000" position="0 0 -0.002" opacity="0.7"></a-plane>
+              <!-- Videoplane (16:9) mit Klick-/Gaze-Steuerung -->
+              <a-video id="mensa-video-plane"
+                       class="link"
+                       src="#MensaVideo"
+                       width="3.2" height="1.8"
+                       position="-0.75 0 0"
+                       video-controls="video: #MensaVideo; hint: #unmute-hint">
+              </a-video>
 
-        <!-- Hochkant-Video (888 x 1664 → 0.888 x 1.664) -->
-        <a-video id="hof-video-plane"
-                 class="link"
-                 src="#HofVideo"
-                 width="0.888" height="1.664"
-                 position="0 0 0"
-                 video-controls="video: #HofVideo; hint: #hof-unmute-hint">
-        </a-video>
+              <!-- Hinweistext, wenn stumm -->
+              <a-text id="unmute-hint"
+                      value="Bitte blinzeln um den Ton zu aktivieren."
+                      align="center"
+                      width="2"
+                      position="-0.75 -1 0"
+                      color="#fff"
+                      visible="false">
+              </a-text>
 
-        <!-- Hinweistext, wenn stumm -->
-        <a-text id="hof-unmute-hint"
-                value="Bitte blinzeln, um den Ton zu aktivieren."
-                align="center"
-                width="1.6"
-                position="0 -1.05 0"
-                color="#fff"
-                visible="false">
-        </a-text>
-      </a-entity>
+              <!-- Vergrößertes Infozeichen -->
+              <a-entity id="info-icon" position="-4.5 -0.2 -1" geometry="primitive: plane; width: 0.5; height: 0.5" material="src: img/Infobutton.png; transparent: true;" class="clickable" info-trigger></a-entity>
 
-      <!-- Kamera + Cursor (Gaze-Click funktioniert auf der Videofläche) -->
-      <a-entity camera look-controls="magicWindow: true; touchEnabled: true" position="0 1.6 0">
-        <a-cursor raycaster="objects: .link; interval: 100; far: 50" fuse="true" fuse-timeout="900"></a-cursor>
-      </a-entity>
-    </a-scene>
+              <!-- Informationsbox -->
+              <!-- Informationsbox (fixe Position, unabhängig vom Icon) -->
+              <a-entity id="info-box" visible="false" position="-5.5 0.8 1.5" rotation="0 58 0">
+                  <a-plane width="3.3" height="1.9" color="#fff" opacity="0.9"></a-plane>
+                  <a-text value="Hier ist unsere Küche – mehr als nur ein Ort zum Essenholen.
+Sie ist Treffpunkt, Wohlf&uuml;hlort und manchmal auch kleine Rettungsstation im Alltag.
 
-    <script>
-      /* Video-Controls: funktioniert für Mensa und Hof gleich.
-         Unmute nur, wenn das eigene Panel sichtbar ist. */
-     AFRAME.registerComponent('video-controls', {
-      schema: {
-        video: {type: 'selector'},  // HTMLVideoElement (z. B. #HofVideo)
-        hint:  {type: 'selector'}   // a-text Hinweis im selben Panel
-      },
-      init() {
-        this.onActivate = this.onActivate.bind(this);
-        this.activated = false;
+Tamara und Nikos sind immer für uns da – ob mit leckerem Essen, einem K&uuml;hlpack, einer Tasse Tee oder einfach einem offenen Ohr und einem guten Gespr&auml;ch.
+" color="#000" position="0 0 0.01" width="2.4" align="center"></a-text>
+                  <a-text value="Tippe auf das Objekt, um mehr zu erfahren." color="#000" position="0 -0.5 0.01" width="2.4" align="center"></a-text>
+                  <a-entity geometry="primitive: plane; width: 0.5; height: 0.5"
+                            material="color: #ff0000"
+                            position="1 -0.5 0.01"
+                            class="close-button"
+                            text="value: Schließen; align: center; color: #fff"></a-entity>
+              </a-entity>
 
-        // Eingaben: Klick, Trigger (XR), Tastatur
-        this.el.addEventListener('click', this.onActivate);
-        this.el.addEventListener('triggerdown', this.onActivate);
-        this.el.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') this.onActivate();
+
+          </a-entity>
+
+          <!-- Videokachel (VR-fähig) – nur in „Hof“ sichtbar -->
+          <a-entity id="hof-video-entity" visible="false" position="2.5 1.5 4.0" rotation="0 -155 0">
+              <!-- Rahmen passend zum Hochkantformat -->
+              <a-plane width="0.94" height="1.78" color="#000" position="0 0 -0.002" opacity="0.7"></a-plane>
+
+              <!-- Hochkant-Video (888 x 1664 → 0.888 x 1.664) -->
+              <a-video id="hof-video-plane"
+                       class="link"
+                       src="#HofVideo"
+                       width="0.888" height="1.664"
+                       position="0 0 0"
+                       video-controls="video: #HofVideo; hint: #hof-unmute-hint">
+              </a-video>
+
+              <!-- Hinweistext, wenn stumm -->
+              <a-text id="hof-unmute-hint"
+                      value="Bitte blinzeln, um den Ton zu aktivieren."
+                      align="center"
+                      width="1.6"
+                      position="0 -1.05 0"
+                      color="#fff"
+                      visible="false">
+              </a-text>
+          </a-entity>
+
+          <!-- Kamera + Cursor (Gaze-Click funktioniert auf der Videofläche) -->
+          <a-entity camera look-controls="magicWindow: true; touchEnabled: true" position="0 1.6 0">
+              <a-cursor raycaster="objects: .link, .clickable; interval: 100; far: 50" fuse="true" fuse-timeout="900"></a-cursor>
+          </a-entity>
+
+
+      </a-scene>
+
+      <script>
+          /* Informationsbox-Komponente */
+          AFRAME.registerComponent('info-trigger', {
+          init: function () {
+            const group = this.el.closest('#mensa-video-entity') || this.el.sceneEl;
+            const infoBox = group.querySelector('#info-box');
+            if (!infoBox) return;
+
+            const closeButton = infoBox.querySelector('.close-button');
+
+            // Beim Klick nur Sichtbarkeit schalten – Position bleibt, wie im Markup gesetzt
+            this.el.addEventListener('click', () => {
+              infoBox.setAttribute('visible', true);
+            });
+
+            if (closeButton) {
+              closeButton.classList.add('clickable');
+              closeButton.addEventListener('click', () => {
+                infoBox.setAttribute('visible', false);
+              });
+            }
+          }
         });
 
-        // Panel-Entity bestimmen: aufwärts bis a-entity mit id *-video-entity
-        const findPanel = (el) => {
+          /* Video-Controls: funktioniert für Mensa und Hof gleich.
+          Unmute nur, wenn das eigene Panel sichtbar ist. */
+          AFRAME.registerComponent('video-controls', {
+          schema: {
+          video: {type: 'selector'},  // HTMLVideoElement (z. B. #HofVideo)
+          hint:  {type: 'selector'}   // a-text Hinweis im selben Panel
+          },
+          init() {
+          this.onActivate = this.onActivate.bind(this);
+          this.activated = false;
+
+          // Eingaben: Klick, Trigger (XR), Tastatur
+          this.el.addEventListener('click', this.onActivate);
+          this.el.addEventListener('triggerdown', this.onActivate);
+          this.el.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') this.onActivate();
+          });
+
+          // Panel-Entity bestimmen: aufwärts bis a-entity mit id *-video-entity
+          const findPanel = (el) => {
           let node = el;
           while (node && node !== document && node !== this.el.sceneEl) {
-            if (node.tagName && node.tagName.toLowerCase() === 'a-entity') {
-              const id = node.getAttribute && node.getAttribute('id');
-              if (id && typeof id === 'string' && id.endsWith('-video-entity')) return node;
-            }
-            node = node.parentNode || (node.el && node.el.parentNode);
+          if (node.tagName && node.tagName.toLowerCase() === 'a-entity') {
+          const id = node.getAttribute && node.getAttribute('id');
+          if (id && typeof id === 'string' && id.endsWith('-video-entity')) return node;
+          }
+          node = node.parentNode || (node.el && node.el.parentNode);
           }
           return null;
-        };
+          };
 
-        // Falls hint gesetzt ist, nutze es, sonst el (das a-video)
-        this.panelEl = this.data.hint ? findPanel(this.data.hint) : findPanel(this.el);
+          // Falls hint gesetzt ist, nutze es, sonst el (das a-video)
+          this.panelEl = this.data.hint ? findPanel(this.data.hint) : findPanel(this.el);
 
-        // Debug optional: panel prüfen
-        // console.log('[vc:init]', this.el.id, 'panel=', this.panelEl && this.panelEl.id);
+          // Debug optional: panel prüfen
+          // console.log('[vc:init]', this.el.id, 'panel=', this.panelEl && this.panelEl.id);
 
-        this.updateHint();
-      },
-      remove() {
-        this.el.removeEventListener('click', this.onActivate);
-        this.el.removeEventListener('triggerdown', this.onActivate);
-      },
-      isOwnPanelVisible() {
-        const panel = this.panelEl;
-        if (!panel) return false;
-        const attrVisible = panel.getAttribute('visible') === true || panel.getAttribute('visible') === 'true';
-        const objVisible = panel.object3D && panel.object3D.visible === true;
-        return attrVisible && objVisible;
-      },
-      updateHint() {
-        if (!this.data.hint) return;
-        const v = this.data.video;
-        const show = v && v.muted === true && this.activated === false && this.isOwnPanelVisible();
-        this.data.hint.setAttribute('visible', !!show);
-      },
-      async onActivate() {
-        const v = this.data.video;           // HTMLVideoElement, z. B. #HofVideo
-        const aVideoEl = this.el;            // das a-video, an dem die Komponente hängt
+          this.updateHint();
+          },
+          remove() {
+          this.el.removeEventListener('click', this.onActivate);
+          this.el.removeEventListener('triggerdown', this.onActivate);
+          },
+          isOwnPanelVisible() {
+          const panel = this.panelEl;
+          if (!panel) return false;
+          const attrVisible = panel.getAttribute('visible') === true || panel.getAttribute('visible') === 'true';
+          const objVisible = panel.object3D && panel.object3D.visible === true;
+          return attrVisible && objVisible;
+          },
+          updateHint() {
+          if (!this.data.hint) return;
+          const v = this.data.video;
+          const show = v && v.muted === true && this.activated === false && this.isOwnPanelVisible();
+          this.data.hint.setAttribute('visible', !!show);
+          },
+          async onActivate() {
+          const v = this.data.video;           // HTMLVideoElement, z. B. #HofVideo
+          const aVideoEl = this.el;            // das a-video, an dem die Komponente hängt
 
-        if (!v) return;
+          if (!v) return;
 
-        // Nur wenn das EIGENE Panel sichtbar ist (richtige Szene)
-        if (!this.isOwnPanelVisible()) return;
+          // Nur wenn das EIGENE Panel sichtbar ist (richtige Szene)
+          if (!this.isOwnPanelVisible()) return;
 
-        // Bereits aktiviert? Nichts tun
-        if (this.activated) return;
+          // Bereits aktiviert? Nichts tun
+          if (this.activated) return;
 
-        try {
+          try {
           // Schritt 1: sicherstellen, dass das Video läuft (stumm)
           if (v.paused) {
-            v.muted = true;
-            await v.play().catch(() => {});
+          v.muted = true;
+          await v.play().catch(() => {});
           }
           // Schritt 2: Unmute und explizit erneut play() auf dem HTMLVideoElement
           v.muted = false;
           await v.play().catch(() => {});
           // Optional: a-video-Objekt synchronisieren (höchstens kosmetisch)
           // aVideoEl.components.material && aVideoEl.components.material.material && (aVideoEl.components.material.material.needsUpdate = true);
-        } catch (e) {
+          } catch (e) {
           // console.warn('[vc:onActivate] play/unmute failed', e);
-        }
+          }
 
-        // Aktiviert markieren, Hinweis aus
-        this.activated = true;
-        if (this.data.hint) this.data.hint.setAttribute('visible', false);
+          // Aktiviert markieren, Hinweis aus
+          this.activated = true;
+          if (this.data.hint) this.data.hint.setAttribute('visible', false);
 
-        // Optional: weitere Gaze-Klicks vermeiden (class link entfernen)
-        this.el.classList.remove('link');
-      }
-    });
+          // Optional: weitere Gaze-Klicks vermeiden (class link entfernen)
+          this.el.classList.remove('link');
+          }
+          });
 
-      /* Crossfade + Ladebalken + Videosichtbarkeit und Audio pro Szene
-         Mit Debounce-Lock, damit Links zuverlässig arbeiten. */
-      AFRAME.registerComponent('tour-link', {
+          /* Crossfade + Ladebalken + Videosichtbarkeit und Audio pro Szene
+          Mit Debounce-Lock, damit Links zuverlässig arbeiten. */
+          AFRAME.registerComponent('tour-link', {
           schema: { targetId: { type: 'string' } },
           init() {
-            this.onActivate = this.onActivate.bind(this);
-            this.el.addEventListener('click', this.onActivate);
+          this.onActivate = this.onActivate.bind(this);
+          this.el.addEventListener('click', this.onActivate);
           },
           remove() {
-            this.el.removeEventListener('click', this.onActivate);
+          this.el.removeEventListener('click', this.onActivate);
           },
           onActivate() {
-            const sceneEl = this.el.sceneEl;
+          const sceneEl = this.el.sceneEl;
 
-            // Debounce: nur ein Übergang gleichzeitig
-            if (sceneEl.dataset.fading === '1') return;
-            sceneEl.dataset.fading = '1';
+          // Debounce: nur ein Übergang gleichzeitig
+          if (sceneEl.dataset.fading === '1') return;
+          sceneEl.dataset.fading = '1';
 
-            // IDs aus Dataset lesen/setzen
-            const currentId  = sceneEl.dataset.currentId || 'Werkstatt'; // Startszene
-            const previousId = sceneEl.dataset.previousId || '';
+          // IDs aus Dataset lesen/setzen
+          const currentId  = sceneEl.dataset.currentId || 'Werkstatt'; // Startszene
+          const previousId = sceneEl.dataset.previousId || '';
 
-            // Ziel bestimmen (ggf. toggeln)
-            let targetId = this.data.targetId;
+          // Ziel bestimmen (ggf. toggeln)
+          let targetId = this.data.targetId;
 
-            // Toggle-Verhalten für "Infokasten"
-            if (targetId === 'Infokasten') {
-              if (currentId === 'Infokasten' && previousId) {
-                // Wir sind schon in Infokasten -> Zurück zur vorherigen Szene
-                targetId = previousId;
-              } else {
-                // Wir gehen nach Infokasten -> aktuelle Szene als previous merken
-                sceneEl.dataset.previousId = currentId;
-              }
-            } else {
-              // Bei Sprüngen in andere Szenen als Infokasten: previous nicht überschreiben
-              // (Optional: wenn du möchtest, kannst du previousId hier löschen)
-              // delete sceneEl.dataset.previousId;
-            }
-
-            const skyCurrent  = sceneEl.querySelector('#sky-current');
-            const skyNext     = sceneEl.querySelector('#sky-next');
-            const bar         = document.querySelector('.loading-bar');
-            const progress    = document.querySelector('#progress');
-
-            // Video-Referenzen (Mensa, Hof)
-            const mensaEntity = document.getElementById('mensa-video-entity');
-            const mensaVideo  = document.getElementById('MensaVideo');
-            const mensaPlane  = document.getElementById('mensa-video-plane');
-            const hofEntity   = document.getElementById('hof-video-entity');
-            const hofVideo    = document.getElementById('HofVideo');
-            const hofPlane    = document.getElementById('hof-video-plane');
-
-            // Panels zunächst unsichtbar
-            if (mensaEntity) mensaEntity.setAttribute('visible', false);
-            if (hofEntity)   hofEntity.setAttribute('visible', false);
-
-            // Video-Helper
-            const setInactive = (videoEl, planeEl) => {
-              if (!videoEl) return;
-              try { if (!videoEl.paused) videoEl.pause(); } catch(e){}
-              videoEl.currentTime = 0;
-              videoEl.muted = true;
-              if (planeEl) {
-                planeEl.classList.add('link');
-                const vc = planeEl.components['video-controls'];
-                if (vc) { vc.activated = false; vc.updateHint(); }
-              }
-            };
-            const setActiveMuted = (videoEl) => {
-              if (!videoEl) return;
-              videoEl.muted = true;
-              videoEl.play().catch(()=>{});
-            };
-
-            // Nur Zielszene bekommt muted autoplay
-            if (targetId === 'Mensa') setActiveMuted(mensaVideo); else setInactive(mensaVideo, mensaPlane);
-            if (targetId === 'Hof')   setActiveMuted(hofVideo);   else setInactive(hofVideo,   hofPlane);
-
-            // Loader an
-            bar.style.opacity = 1;
-            progress.style.width = '0%';
-
-            // Zielbild/Asset bestimmen
-            const targetAsset = document.getElementById(targetId);
-            const srcToUse = targetAsset ? ('#' + targetId) : '#placeholder';
-
-            // next Sky vorbereiten
-            skyNext.setAttribute('visible', true);
-            skyNext.setAttribute('opacity', 0);
-            skyNext.setAttribute('material', 'src', srcToUse);
-
-            let safetyTimer = setTimeout(() => {
-              skyNext.setAttribute('material', 'src', '#placeholder');
-            }, 4000);
-
-            const onTexLoaded = () => {
-              clearTimeout(safetyTimer);
-              skyNext.removeEventListener('materialtextureloaded', onTexLoaded);
-
-              progress.style.width = '100%';
-
-              skyNext.setAttribute('animation__fadein',  'property: opacity; from: 0; to: 1; dur: 600; easing: easeOutQuad');
-              skyCurrent.setAttribute('animation__fadeout','property: opacity; from: 1; to: 0; dur: 600; easing: easeOutQuad');
-
-              const onFadeDone = () => {
-                skyNext.removeEventListener('animationcomplete__fadein', onFadeDone);
-
-                // Quelle übernehmen
-                const nextSrc = skyNext.getAttribute('material').src;
-                skyCurrent.setAttribute('material', 'src', nextSrc);
-                skyCurrent.setAttribute('opacity', 1);
-                skyCurrent.removeAttribute('animation__fadeout');
-
-                // next zurücksetzen
-                skyNext.setAttribute('visible', false);
-                skyNext.setAttribute('opacity', 0);
-                skyNext.removeAttribute('animation__fadein');
-
-                // Loader aus
-                bar.style.opacity = 0;
-                progress.style.width = '0%';
-
-                // Sichtbarkeit der Videopanels entsprechend Zielszene
-                if (mensaEntity) mensaEntity.setAttribute('visible', targetId === 'Mensa');
-                if (hofEntity)   hofEntity.setAttribute('visible',   targetId === 'Hof');
-
-                // Hinweise aktualisieren
-                if (mensaPlane && mensaPlane.components['video-controls']) mensaPlane.components['video-controls'].updateHint();
-                if (hofPlane && hofPlane.components['video-controls'])     hofPlane.components['video-controls'].updateHint();
-
-                // Szene als current setzen
-                sceneEl.dataset.currentId = targetId;
-
-                // Lock lösen
-                delete sceneEl.dataset.fading;
-              };
-              skyNext.addEventListener('animationcomplete__fadein', onFadeDone);
-            };
-
-            skyNext.addEventListener('materialtextureloaded', onTexLoaded);
+          // Toggle-Verhalten für "Infokasten"
+          if (targetId === 'Infokasten') {
+          if (currentId === 'Infokasten' && previousId) {
+          // Wir sind schon in Infokasten -> Zurück zur vorherigen Szene
+          targetId = previousId;
+          } else {
+          // Wir gehen nach Infokasten -> aktuelle Szene als previous merken
+          sceneEl.dataset.previousId = currentId;
           }
-        });
-    </script>
+          } else {
+          // Bei Sprüngen in andere Szenen als Infokasten: previous nicht überschreiben
+          // (Optional: wenn du möchtest, kannst du previousId hier löschen)
+          // delete sceneEl.dataset.previousId;
+          }
+
+          const skyCurrent  = sceneEl.querySelector('#sky-current');
+          const skyNext     = sceneEl.querySelector('#sky-next');
+          const bar         = document.querySelector('.loading-bar');
+          const progress    = document.querySelector('#progress');
+
+          // Video-Referenzen (Mensa, Hof)
+          const mensaEntity = document.getElementById('mensa-video-entity');
+          const mensaVideo  = document.getElementById('MensaVideo');
+          const mensaPlane  = document.getElementById('mensa-video-plane');
+          const hofEntity   = document.getElementById('hof-video-entity');
+          const hofVideo    = document.getElementById('HofVideo');
+          const hofPlane    = document.getElementById('hof-video-plane');
+
+          // Panels zunächst unsichtbar
+          if (mensaEntity) mensaEntity.setAttribute('visible', false);
+          if (hofEntity)   hofEntity.setAttribute('visible', false);
+
+          // Video-Helper
+          const setInactive = (videoEl, planeEl) => {
+          if (!videoEl) return;
+          try { if (!videoEl.paused) videoEl.pause(); } catch(e){}
+          videoEl.currentTime = 0;
+          videoEl.muted = true;
+          if (planeEl) {
+          planeEl.classList.add('link');
+          const vc = planeEl.components['video-controls'];
+          if (vc) { vc.activated = false; vc.updateHint(); }
+          }
+          };
+          const setActiveMuted = (videoEl) => {
+          if (!videoEl) return;
+          videoEl.muted = true;
+          videoEl.play().catch(()=>{});
+          };
+
+          // Nur Zielszene bekommt muted autoplay
+          if (targetId === 'Mensa') setActiveMuted(mensaVideo); else setInactive(mensaVideo, mensaPlane);
+          if (targetId === 'Hof')   setActiveMuted(hofVideo);   else setInactive(hofVideo,   hofPlane);
+
+          // Loader an
+          bar.style.opacity = 1;
+          progress.style.width = '0%';
+
+          // Zielbild/Asset bestimmen
+          const targetAsset = document.getElementById(targetId);
+          const srcToUse = targetAsset ? ('#' + targetId) : '#placeholder';
+
+          // next Sky vorbereiten
+          skyNext.setAttribute('visible', true);
+          skyNext.setAttribute('opacity', 0);
+          skyNext.setAttribute('material', 'src', srcToUse);
+
+          let safetyTimer = setTimeout(() => {
+          skyNext.setAttribute('material', 'src', '#placeholder');
+          }, 4000);
+
+          const onTexLoaded = () => {
+          clearTimeout(safetyTimer);
+          skyNext.removeEventListener('materialtextureloaded', onTexLoaded);
+
+          progress.style.width = '100%';
+
+          skyNext.setAttribute('animation__fadein',  'property: opacity; from: 0; to: 1; dur: 600; easing: easeOutQuad');
+          skyCurrent.setAttribute('animation__fadeout','property: opacity; from: 1; to: 0; dur: 600; easing: easeOutQuad');
+
+          const onFadeDone = () => {
+          skyNext.removeEventListener('animationcomplete__fadein', onFadeDone);
+
+          // Quelle übernehmen
+          const nextSrc = skyNext.getAttribute('material').src;
+          skyCurrent.setAttribute('material', 'src', nextSrc);
+          skyCurrent.setAttribute('opacity', 1);
+          skyCurrent.removeAttribute('animation__fadeout');
+
+          // next zurücksetzen
+          skyNext.setAttribute('visible', false);
+          skyNext.setAttribute('opacity', 0);
+          skyNext.removeAttribute('animation__fadein');
+
+          // Loader aus
+          bar.style.opacity = 0;
+          progress.style.width = '0%';
+
+          // Sichtbarkeit der Videopanels entsprechend Zielszene
+          if (mensaEntity) mensaEntity.setAttribute('visible', targetId === 'Mensa');
+          if (hofEntity)   hofEntity.setAttribute('visible',   targetId === 'Hof');
+
+          // Hinweise aktualisieren
+          if (mensaPlane && mensaPlane.components['video-controls']) mensaPlane.components['video-controls'].updateHint();
+          if (hofPlane && hofPlane.components['video-controls'])     hofPlane.components['video-controls'].updateHint();
+
+          // Szene als current setzen
+          sceneEl.dataset.currentId = targetId;
+
+          // Lock lösen
+          delete sceneEl.dataset.fading;
+          };
+          skyNext.addEventListener('animationcomplete__fadein', onFadeDone);
+          };
+
+          skyNext.addEventListener('materialtextureloaded', onTexLoaded);
+          }
+          });
+
+
+          document.addEventListener('DOMContentLoaded', () => {
+          const overlay = document.getElementById('start-overlay');
+          const btn = document.getElementById('start-btn');
+
+          if (!overlay || !btn) return;
+
+          const removeOverlay = () => {
+          overlay.classList.add('fade-out');
+          overlay.setAttribute('aria-hidden', 'true');
+          // Nach dem Fade entfernen (aufgeräumt)
+          const onEnd = (e) => {
+          if (e.propertyName === 'opacity') {
+          overlay.removeEventListener('transitionend', onEnd);
+          overlay.remove();
+          }
+          };
+          overlay.addEventListener('transitionend', onEnd);
+          };
+
+          btn.addEventListener('click', removeOverlay);
+
+          // Optional: auch Enter/Space starten lassen, falls Button nicht fokussiert wird
+          overlay.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          removeOverlay();
+          }
+          });
+          });
+      </script>
+
+
+      <script>
+          // Initiale Sichtbarkeit der Videopanels und Video-Status beim Laden
+
+          document.addEventListener('DOMContentLoaded', () => {
+          const sceneEl     = document.querySelector('a-scene');
+          const skyCurrent  = document.getElementById('sky-current');
+          const mensaEntity = document.getElementById('mensa-video-entity');
+          const mensaVideo  = document.getElementById('MensaVideo');
+          const mensaPlane  = document.getElementById('mensa-video-plane');
+          const hofEntity   = document.getElementById('hof-video-entity');
+          const hofVideo    = document.getElementById('HofVideo');
+          const hofPlane    = document.getElementById('hof-video-plane');
+
+          const setInactive = (videoEl, planeEl) => {
+          if (!videoEl) return;
+          try { if (!videoEl.paused) videoEl.pause(); } catch(e){}
+          videoEl.currentTime = 0;
+          videoEl.muted = true;
+          if (planeEl) {
+          planeEl.classList.add('link');
+          const vc = planeEl.components && planeEl.components['video-controls'];
+          if (vc) { vc.activated = false; vc.updateHint && vc.updateHint(); }
+          }
+          };
+          const setActiveMuted = (videoEl) => {
+          if (!videoEl) return;
+          videoEl.muted = true;
+          videoEl.play().catch(()=>{});
+          };
+
+          // Warten bis die Szene fertig ist
+          sceneEl.addEventListener('loaded', () => {
+          // Prüfen, welche Startszene gesetzt ist
+          const startSrc = (skyCurrent && skyCurrent.getAttribute('src')) || '';
+          // Falls Startszene Mensa ist (#Mensa)
+          if (String(startSrc).includes('#Mensa')) {
+          // Sichtbarkeit wie beim Szenenwechsel setzen
+          if (mensaEntity) mensaEntity.setAttribute('visible', true);
+          if (hofEntity)   hofEntity.setAttribute('visible', false);
+
+          // Video-Status wie im tour-link: nur Zielszene autoplay (muted)
+          setInactive(mensaVideo, mensaPlane);
+          setInactive(hofVideo, hofPlane);
+
+          // Hints aktualisieren (falls Komponenten schon gemountet)
+          if (mensaPlane && mensaPlane.components['video-controls']) {
+          mensaPlane.components['video-controls'].updateHint();
+          }
+
+          // currentId merken, damit der erste spätere Klick korrekt arbeitet
+          sceneEl.dataset.currentId = 'Mensa';
+          } else {
+          // Start ist nicht Mensa → alles wie gewohnt: Panels aus
+          if (mensaEntity) mensaEntity.setAttribute('visible', false);
+          if (hofEntity)   hofEntity.setAttribute('visible', false);
+          setInactive(mensaVideo, mensaPlane);
+          setInactive(hofVideo, hofPlane);
+          sceneEl.dataset.currentId = 'Werkstatt';
+          }
+          });
+          });
+      </script>
+
   </body>
 </html>
