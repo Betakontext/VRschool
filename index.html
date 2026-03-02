@@ -249,19 +249,17 @@
               <a-entity id="info-box" visible="false" position="-5.5 0.8 1.5" rotation="0 58 0">
                   <a-plane width="3.3" height="1.9" color="#fff" opacity="0.9"></a-plane>
                   <a-text value="Hier ist unsere Küche – mehr als nur ein Ort zum Essenholen.
-Sie ist Treffpunkt, Wohlf&uuml;hlort und manchmal auch kleine Rettungsstation im Alltag.
-
-Tamara und Nikos sind immer für uns da – ob mit leckerem Essen, einem K&uuml;hlpack, einer Tasse Tee oder einfach einem offenen Ohr und einem guten Gespr&auml;ch.
-" color="#000" position="0 0 0.01" width="2.4" align="center"></a-text>
+                        Sie ist Treffpunkt, Wohlf&uuml;hlort und manchmal auch kleine Rettungsstation im Alltag.
+                        Tamara und Nikos sind immer für uns da – ob mit leckerem Essen, einem K&uuml;hlpack, einer Tasse Tee oder einfach einem offenen Ohr und einem guten Gespr&auml;ch.
+                        " color="#000" position="0 0 0.01" width="2.4" align="center"></a-text>
                   <a-text value="Tippe auf das Objekt, um mehr zu erfahren." color="#000" position="0 -0.5 0.01" width="2.4" align="center"></a-text>
                   <a-entity geometry="primitive: plane; width: 0.5; height: 0.5"
                             material="color: #ff0000"
-                            position="1 -0.5 0.01"
-                            class="close-button"
-                            text="value: Schließen; align: center; color: #fff"></a-entity>
+                            position="1.4 0.7 0.01"
+                            class="close-button">
+                    <a-text value="X" align="center" anchor="center" color="#fff" scale="2 2 2" position="0 0 0.01"></a-text>
+                  </a-entity>
               </a-entity>
-
-
           </a-entity>
 
           <!-- Videokachel (VR-fähig) – nur in „Hof“ sichtbar -->
@@ -288,6 +286,9 @@ Tamara und Nikos sind immer für uns da – ob mit leckerem Essen, einem K&uuml;
                       visible="false">
               </a-text>
           </a-entity>
+
+          <!-- HIER DIE NEUEN INFOBOX HINZUFÜGEN -->
+
 
           <!-- Kamera + Cursor (Gaze-Click funktioniert auf der Videofläche) -->
           <a-entity camera look-controls="magicWindow: true; touchEnabled: true" position="0 1.6 0">
