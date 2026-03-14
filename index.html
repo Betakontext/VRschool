@@ -33,7 +33,7 @@
       <a-entity light="type: ambient; intensity: 1.0"></a-entity>
 
       <!-- Doppelter Himmel für Crossfade -->
-      <a-sky id="sky-current" src="#Mensa" opacity="1" material="transparent: true"></a-sky>
+      <a-sky id="sky-current" src="#Werkstatt" opacity="1" material="transparent: true"></a-sky>
       <a-sky id="sky-next" src="#placeholder" opacity="0" visible="false" material="transparent: true"></a-sky>
 
       <a-assets timeout="30000">
@@ -363,6 +363,7 @@
     </a-scene>
 
     <script>
+
       // Hilfsfunktion: Unsichtbaren, doppelseitigen Collider als Kind des Icons hinzufügen
       function ensureCollider(iconEl, width=0.8, height=0.8, z=0.03) {
         if (!iconEl) return null;
@@ -556,6 +557,24 @@
           else if (targetId === 'Hof') { armMuted(hofVideo); pauseReset(mensaVideo, mensaPlane); }
           else { pauseReset(mensaVideo, mensaPlane); pauseReset(hofVideo, hofPlane); }
 
+          // Video-Interaktivität strikt an Szene koppeln
+          setVideoPlaneInteractive(mensaPlane, targetId === 'Mensa');
+          setVideoPlaneInteractive(hofPlane,   targetId === 'Hof');
+
+
+          // Aktiviert/Deaktiviert die Interaktivität (Klick/Gaze) eines Video-Planes
+          function setVideoPlaneInteractive(planeEl, interactive) {
+            if (!planeEl) return;
+            if (interactive) {
+              planeEl.classList.add('link');    // vom Raycaster erfasst
+              planeEl.classList.add('clickable');
+            } else {
+              planeEl.classList.remove('link'); // NICHT mehr vom Raycaster erfasst
+              planeEl.classList.remove('clickable');
+            }
+          }
+
+
           // Alle Panels unsichtbar und nicht interaktiv
           const allPanels = Array.from(sceneEl.querySelectorAll('[id^="panel-"]'));
           allPanels.forEach(p => { p.setAttribute('visible', false); setPanelInteractive(p, false); });
@@ -652,11 +671,32 @@
           if (mensaHint0) mensaHint0.setAttribute('visible', startId === 'Mensa');  // NEW
           if (hofHint0)   hofHint0.setAttribute('visible',   startId === 'Hof');    // NEW
 
+          // Video-Interaktivität zum Start korrekt setzen
+          const mensaPlane0 = document.getElementById('mensa-video-plane');
+          const hofPlane0   = document.getElementById('hof-video-plane');
+          setVideoPlaneInteractive(mensaPlane0, startId === 'Mensa');
+          setVideoPlaneInteractive(hofPlane0,   startId === 'Hof');
+
+
           const targetPanel = document.getElementById('panel-' + startId);
           if (targetPanel) {
+            // Panel sichtbar machen
             targetPanel.setAttribute('visible', true);
-            setPanelInteractive(targetPanel, true);
+
+            // Icons im Startpanel explizit sichtbar und mit Collider versehen
+            const startIcons = targetPanel.querySelectorAll('[id^="info-icon-"]');
+            startIcons.forEach(icon => {
+              icon.setAttribute('visible', true);      // falls visibility-Chain irgendwo blockiert
+              icon.classList.add('clickable','link');  // sicher vom Raycaster erfasst
+              ensureCollider(icon);                    // Collider sicherstellen
+            });
+
+            // Interaktivität im nächsten Frame erneut aktivieren (damit Scenegraph + Cursor ready sind)
+            requestAnimationFrame(() => {
+              setPanelInteractive(targetPanel, true);
+            }, 0);
           }
+
 
 
           // Cursor recursive sicher aktiv
