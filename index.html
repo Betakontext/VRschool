@@ -346,7 +346,7 @@
                   info-trigger="box: #infobox-Kunstraum"></a-entity>
         <a-entity id="infobox-Kunstraum" visible="false" position="0 0.6 -2" rotation="0 0 0">
           <a-plane width="3.6" height="2.0" color="#fff" opacity="0.95"></a-plane>
-          <a-text value="Kreativität, Farben, Formen." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
+          <a-text value="Kreativitaet, Farben, Formen." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
                   material="depthTest: false; depthWrite: false"></a-text>
           <a-entity geometry="primitive: plane; width: 0.5; height: 0.5" material="color: #ff0000" position="1.50 0.70 0.01" class="close-button">
             <a-text value="X" align="center" color="#fff" width="2.2" scale="2 2 2" position="-0.175 0 0.01"></a-text>
@@ -446,21 +446,80 @@
         }
       });
 
+
+      // Collider für Close-Buttons
+      function ensureCloseCollider(btnEl, size=0.55, z=0.03) {
+        if (!btnEl) return null;
+        let col = btnEl.querySelector('.close-hit-collider');
+        if (col) return col;
+        col = document.createElement('a-entity');
+        col.classList.add('close-hit-collider', 'clickable', 'link');
+        col.setAttribute('geometry', {primitive: 'plane', width: size, height: size});
+        col.setAttribute('material', {opacity: 0, transparent: true, side: 'double', depthTest: false, depthWrite: false});
+        col.setAttribute('position', {x: 0, y: 0, z});
+        btnEl.appendChild(col);
+        return col;
+      }
+
+      function wireCloseButtons(panelEl) {
+        if (!panelEl) return;
+        const boxes = panelEl.querySelectorAll('[id^="infobox-"]');
+        boxes.forEach(box => {
+          const closeBtn = box.querySelector('.close-button');
+          if (!closeBtn) return;
+
+          // Als klickbar markieren
+          closeBtn.classList.add('clickable', 'link');
+
+          // Eigener Close-Handler (zusätzlich zur info-trigger-Logik, falls diese noch nicht aktiv ist)
+          if (!closeBtn._extraCloseWired) {
+            const close = (e) => {
+              e && e.stopPropagation && e.stopPropagation();
+              box.setAttribute('visible', false);
+            };
+            closeBtn.addEventListener('click', close);
+            // Collider davor ergänzen und ebenfalls verkabeln
+            const col = ensureCloseCollider(closeBtn);
+            if (col && !col._extraCloseWired) {
+              col.addEventListener('click', close);
+              col._extraCloseWired = true;
+            }
+            closeBtn._extraCloseWired = true;
+          }
+        });
+      }
+
+
       // Sichtbarkeits-Helfer: Nur sichtbare Panels liefern Klickziele
       function setPanelInteractive(panelEl, interactive) {
         if (!panelEl) return;
+
+        // Info-Icons ein-/ausschalten
         const icons = panelEl.querySelectorAll('[id^="info-icon-"]');
         icons.forEach(icon => {
           if (interactive) {
             icon.classList.add('clickable','link');
-            ensureCollider(icon);
+            ensureCollider(icon); // Icon-Collider sicherstellen
           } else {
             icon.classList.remove('clickable','link');
             const col = icon.querySelector('.hit-collider');
             if (col) col.parentNode && col.parentNode.removeChild(col);
           }
         });
+
+        // Close-Buttons zuverlässig klickbar machen, wenn Panel aktiv ist
+        if (interactive) {
+          wireCloseButtons(panelEl);
+        } else {
+          // Beim Deaktivieren Collider der Close-Buttons entfernen
+          panelEl.querySelectorAll('.close-button').forEach(btn => {
+            btn.classList.remove('clickable','link');
+            const col = btn.querySelector('.close-hit-collider');
+            if (col) col.parentNode && col.parentNode.removeChild(col);
+          });
+        }
       }
+
 
       // tour-link (wie bei dir), plus: Interaktivität nur im Ziel-Panel aktivieren
       AFRAME.registerComponent('tour-link', {
