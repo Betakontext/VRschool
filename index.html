@@ -33,7 +33,8 @@
       <a-entity light="type: ambient; intensity: 1.0"></a-entity>
 
       <!-- Doppelter Himmel für Crossfade -->
-      <a-sky id="sky-current" src="#Kueche" opacity="1" material="transparent: true"></a-sky>
+
+      <a-sky id="sky-current" src="#Werkstatt" opacity="1" material="transparent: true"></a-sky>
       <a-sky id="sky-next" src="#placeholder" opacity="0" visible="false" material="transparent: true"></a-sky>
 
       <a-assets timeout="30000">
@@ -284,16 +285,16 @@
       </a-entity>
 
       <!-- Bibliothek -->
-      <a-entity id="panel-Bibliothek" visible="false" position="0 1.2 -2.0" rotation="0 0 0">
+      <a-entity id="panel-Bibliothek" visible="false" position="1.8 2.5 -3" rotation="0 -20 0">
         <a-entity id="info-icon-Bibliothek"
                   position="-0.0 -0.3 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
                   material="src: img/Infobutton.png; transparent: true"
                   class="clickable"
                   info-trigger="box: #infobox-Bibliothek"></a-entity>
-        <a-entity id="infobox-Bibliothek" visible="false" position="0 0.6 -2" rotation="0 0 0">
+        <a-entity id="infobox-Bibliothek" visible="false" position="3.5 0.6 -1" rotation="0 -30 0">
           <a-plane width="3.6" height="2.0" color="#fff" opacity="0.95"></a-plane>
-          <a-text value="Lesen, Recherchieren, Ruhe." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
+          <a-text value="In der Bibliothek steht das Lesen im Mittelpunkt. Besonders dienstags wird sie aktiv genutzt, um in ruhiger Atmosphaere in Buecher einzutauchen." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
                   material="depthTest: false; depthWrite: false"></a-text>
           <a-entity geometry="primitive: plane; width: 0.5; height: 0.5" material="color: #ff0000" position="1.50 0.70 0.01" class="close-button">
             <a-text value="X" align="center" color="#fff" width="2.2" scale="2 2 2" position="-0.175 0 0.01"></a-text>
@@ -320,16 +321,16 @@
       </a-entity>
 
       <!-- Teilungsraum -->
-      <a-entity id="panel-Teilungsraum" visible="false" position="0 1.2 -2.0" rotation="0 0 0">
+      <a-entity id="panel-Teilungsraum" visible="false" position="3 3 -2" rotation="0 -30 0">
         <a-entity id="info-icon-Teilungsraum"
                   position="-0.0 -0.3 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
                   material="src: img/Infobutton.png; transparent: true"
                   class="clickable"
                   info-trigger="box: #infobox-Teilungsraum"></a-entity>
-        <a-entity id="infobox-Teilungsraum" visible="false" position="0 0.6 -2" rotation="0 0 0">
+        <a-entity id="infobox-Teilungsraum" visible="false" position="2.5 -0.45 2" rotation="0 -47 0">
           <a-plane width="3.6" height="2.0" color="#fff" opacity="0.95"></a-plane>
-          <a-text value="Arbeiten in kleinen Gruppen." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
+          <a-text value="Der Teilungsraum dient als zusaetzlicher Unterrichtsraum. Hier haben Schueler regulaeren Unterricht, zum Beispiel in kleineren Gruppen oder bei besonderem Foerderbedarf." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
                   material="depthTest: false; depthWrite: false"></a-text>
           <a-entity geometry="primitive: plane; width: 0.5; height: 0.5" material="color: #ff0000" position="1.50 0.70 0.01" class="close-button">
             <a-text value="X" align="center" color="#fff" width="2.2" scale="2 2 2" position="-0.175 0 0.01"></a-text>
@@ -338,7 +339,7 @@
       </a-entity>
 
       <!-- Kunstraum -->
-      <a-entity id="panel-Kunstraum" visible="false" position="0 1.2 -2.0" rotation="0 0 0">
+      <a-entity id="panel-Kunstraum" visible="false" position="-3 1.9 2.0" rotation="-5 85 0">
         <a-entity id="info-icon-Kunstraum"
                   position="-0.0 -0.3 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
@@ -347,7 +348,7 @@
                   info-trigger="box: #infobox-Kunstraum"></a-entity>
         <a-entity id="infobox-Kunstraum" visible="false" position="0 0.6 -2" rotation="0 0 0">
           <a-plane width="3.6" height="2.0" color="#fff" opacity="0.95"></a-plane>
-          <a-text value="Kreativitaet, Farben, Formen." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
+          <a-text value="Im Kunstraum wird kreativ gearbeitet, gemalt und gestaltet. Gelegentlich finden hier auch inspirierende Unterrichtseinheiten statt." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
                   material="depthTest: false; depthWrite: false"></a-text>
           <a-entity geometry="primitive: plane; width: 0.5; height: 0.5" material="color: #ff0000" position="1.50 0.70 0.01" class="close-button">
             <a-text value="X" align="center" color="#fff" width="2.2" scale="2 2 2" position="-0.175 0 0.01"></a-text>
