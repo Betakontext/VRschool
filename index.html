@@ -34,7 +34,7 @@
 
       <!-- Doppelter Himmel für Crossfade -->
 
-      <a-sky id="sky-current" src="#Hof" opacity="1" material="transparent: true"></a-sky>
+      <a-sky id="sky-current" src="#Werkstatt" opacity="1" material="transparent: true"></a-sky>
       <a-sky id="sky-next" src="#placeholder" opacity="0" visible="false" material="transparent: true"></a-sky>
 
       <a-assets timeout="30000">
@@ -202,7 +202,7 @@
 
         <a-entity id="infobox-Nawi"
                   visible="false"
-                  position="1 0.9 -2"
+                  position="0.5 0.9 -1"
                   rotation="0 -20 0">
           <a-plane width="3.6" height="2.0" color="#fff" opacity="0.95"></a-plane>
 
@@ -294,7 +294,7 @@
                   info-trigger="box: #infobox-Bibliothek"></a-entity>
         <a-entity id="infobox-Bibliothek" visible="false" position="3.5 0.6 -1" rotation="0 -30 0">
           <a-plane width="3.6" height="2.0" color="#fff" opacity="0.95"></a-plane>
-          <a-text value="In der Bibliothek steht das Lesen im Mittelpunkt. Besonders dienstags wird sie aktiv genutzt, um in ruhiger Atmosphaere in Buecher einzutauchen." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
+          <a-text value="In der Bibliothek steht das Lesen im Mittelpunkt. Besonders Dienstags wird sie aktiv genutzt, um in ruhiger Atmosphaere in Buecher einzutauchen." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
                   material="depthTest: false; depthWrite: false"></a-text>
           <a-entity geometry="primitive: plane; width: 0.5; height: 0.5" material="color: #ff0000" position="1.50 0.70 0.01" class="close-button">
             <a-text value="X" align="center" color="#fff" width="2.2" scale="2 2 2" position="-0.175 0 0.01"></a-text>
@@ -310,9 +310,9 @@
                   material="src: img/Infobutton.png; transparent: true"
                   class="clickable"
                   info-trigger="box: #infobox-Kueche"></a-entity>
-        <a-entity id="infobox-Kueche" visible="false" position="0 0.9 -2" rotation="0 0 0">
+        <a-entity id="infobox-Kueche" visible="false" position="1 1 -2" rotation="0 0 0">
           <a-plane width="3.6" height="2.0" color="#fff" opacity="0.95"></a-plane>
-          <a-text value="Das ist unsere Schulkueche hier kochen wir meistens gemeinsam in einer AG oder im Untericht, z.B. im Fach Zunkunft." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
+          <a-text value="Das ist unsere Schulkueche hier kochen wir meistens gemeinsam in einer AG oder im Unterricht, z.B. im Fach Zukunft." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
                   material="depthTest: false; depthWrite: false"></a-text>
           <a-entity geometry="primitive: plane; width: 0.5; height: 0.5" material="color: #ff0000" position="1.50 0.70 0.01" class="close-button">
             <a-text value="X" align="center" color="#fff" width="2.2" scale="2 2 2" position="-0.175 0 0.01"></a-text>
