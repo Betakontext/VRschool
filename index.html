@@ -51,16 +51,6 @@
         filter: none;
       }
 
-      /* Inhalt im Overlay */
-      #start-overlay .start-content {
-        position: relative;
-        max-width: 90vw;
-        width: 680px;
-        color: #fff;
-        text-align: center;
-        padding: 24px 20px;
-      }
-
       /* Optional: leichte Textschatten für bessere Lesbarkeit */
       #start-overlay .start-title,
       #start-overlay .start-text {
@@ -282,7 +272,7 @@
       </a-entity>
 
       <!-- Nawi (gleiches Muster wie Klassenraum) -->
-      <a-entity id="panel-Nawi" visible="false" position="3 1.2 -1.5.0" rotation="0 -45 0">
+      <a-entity id="panel-Nawi" visible="false" position="3 1.2 -1.5" rotation="0 -45 0">
         <a-entity id="info-icon-Nawi"
                   position="-0.0 -0.3 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
@@ -708,21 +698,35 @@
         const btn     = document.getElementById('start-btn');
         if (overlay && btn) {
           const removeOverlay = () => {
+            if (!overlay) return;
             overlay.classList.add('fade-out');
             overlay.setAttribute('aria-hidden', 'true');
+
+            let done = false;
             const onEnd = (e) => {
               if (e.propertyName === 'opacity') {
+                done = true;
                 overlay.removeEventListener('transitionend', onEnd);
                 overlay.remove();
               }
             };
             overlay.addEventListener('transitionend', onEnd);
+
+            // Fallback: Entferne das Overlay nach 700ms sicherheitshalber
+            setTimeout(() => {
+              if (done) return;
+              overlay.removeEventListener('transitionend', onEnd);
+              overlay.remove();
+            }, 700);
           };
+
+          // FEHLTE: Events tatsächlich verdrahten
           btn.addEventListener('click', removeOverlay);
           overlay.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); removeOverlay(); }
           });
         }
+
 
         const sceneEl    = document.querySelector('a-scene');
         const skyCurrent = document.getElementById('sky-current');
@@ -778,7 +782,5 @@
         });
       });
       </script>
-
-
   </body>
 </html>
