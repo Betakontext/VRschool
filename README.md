@@ -12,7 +12,10 @@ Start the project locally:
 BASH:	
 
 		python -m http.server 8765
-		3. Im Browser öffnen: http://localhost:8765/index.html
+
+Open your browser: 
+
+		http://localhost:8765/index.html
 
 
 The project is build with AI assistance and under the terms of MIT licence.
