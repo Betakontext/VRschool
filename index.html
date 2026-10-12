@@ -187,11 +187,12 @@
         </video>
       </a-assets>
 
-      <!-- Template für klickbare Thumbs -->
+      <!-- Template für abgerundete, klickbare Thumbnails -->
       <script id="link" type="text/html">
         <a-entity class="link"
                   geometry="primitive: plane; width: 1; height: 0.7"
                   material="shader: flat; src: ${thumb}; transparent: true"
+                  rounded-thumbnail="radius: 0.055; shadowOpacity: 0.18"
                   event-set__enter="_event: mouseenter; scale: 1.1 1.1 1"
                   event-set__leave="_event: mouseleave; scale: 1 1 1"
                   tour-link="targetId: ${id}">
