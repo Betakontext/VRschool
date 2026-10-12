@@ -499,7 +499,7 @@
         </a-entity>
       </a-entity>
 
-            <!-- Kamera + Cursor -->
+      <!-- Kamera + Cursor -->
       <a-entity camera look-controls="magicWindow: true; touchEnabled: true" position="0 1.6 0">
         <!-- <a-cursor raycaster="objects: .link, .clickable; interval: 100; far: 50; recursive: true"
                   fuse="true" fuse-timeout="900"></a-cursor>-->
@@ -513,7 +513,7 @@
 
     </a-scene>
 
-    <script>
+   <script>
 
       // Abgerundete Thumbnail-Flächen mit dezentem Schatten
       AFRAME.registerComponent('rounded-thumbnail', {
@@ -611,6 +611,7 @@
           if (this.shadowMaterial) this.shadowMaterial.dispose();
         }
       });
+
 
       // Hilfsfunktion: Unsichtbaren, doppelseitigen Collider als Kind des Icons hinzufügen
       function ensureCollider(iconEl, width=0.8, height=0.8, z=0.03) {
@@ -860,6 +861,21 @@
 
       // Initialisierung: Overlay + Startpanel
       document.addEventListener('DOMContentLoaded', () => {
+        // Infobox-Hintergründe und Schließen-Buttons abrunden
+        document.querySelectorAll('[id^="infobox-"]').forEach(box => {
+          const background = box.querySelector(':scope > a-plane');
+
+          if (background) {
+            background.setAttribute('rounded-thumbnail',
+              'radius: 0.10; shadowOpacity: 0.14');
+          }
+
+          box.querySelectorAll('.close-button').forEach(button => {
+            button.setAttribute('rounded-thumbnail',
+              'radius: 0.06; shadowOpacity: 0.18');
+          });
+        });
+
         // START-OVERLAY direkt hier initialisieren
         const overlay = document.getElementById('start-overlay');
         const btn     = document.getElementById('start-btn');
