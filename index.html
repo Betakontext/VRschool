@@ -11,6 +11,9 @@
     <script src="https://unpkg.com/aframe-layout-component@5.3.0/dist/aframe-layout-component.min.js"></script>
     <script src="https://unpkg.com/aframe-template-component@3.2.2/dist/aframe-template-component.min.js"></script>
 
+    <script src="./interactives/Bibliothek/bibliothek-scene.js"></script>
+    <script src="./interactives/Kueche/kueche-scene.js"></script>
+
     <style>
       a-scene { touch-action: none; }
       .loading-bar {
@@ -385,6 +388,28 @@
 
       <!-- Bibliothek -->
       <a-entity id="panel-Bibliothek" visible="false" position="1.8 2.5 -3" rotation="0 -20 0">
+
+        <!-- Bibliothek Escape-Abenteuer starten -->
+        <a-entity
+          id="bibliothek-start"
+          bibliothek-start
+          geometry="primitive: plane; width: 1.8; height: 0.65"
+          material="shader: flat; color: #795548; side: double"
+          rounded-thumbnail="radius: 0.06; shadowOpacity: 0.18"
+          position="0 -0.9 0.04"
+          event-set__enter="_event: mouseenter; scale: 1.08 1.08 1"
+          event-set__leave="_event: mouseleave; scale: 1 1 1">
+
+          <a-text
+            value="Escape-Abenteuer\nSTARTEN"
+            align="center"
+            anchor="center"
+            color="#ffffff"
+            width="2.7"
+            position="0 0 0.02">
+          </a-text>
+        </a-entity>
+
         <a-entity id="info-icon-Bibliothek"
                   position="-0.0 -0.3 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
@@ -403,6 +428,25 @@
 
       <!-- Küche -->
       <a-entity id="panel-Kueche" visible="false" position="0 1.5 -2.0" rotation="0 0 0">
+
+        <!-- Koch-AG starten -->
+        <a-entity
+          id="kueche-start"
+          kueche-start
+          geometry="primitive: plane; width: 1.8; height: 0.65"
+          material="shader: flat; color: #159ed0; side: double"
+          position="0 -0.9 0.04">
+
+          <a-text
+            value="Koch-AG starten"
+            align="center"
+            anchor="center"
+            color="#ffffff"
+            width="2.7"
+            position="0 0 0.02">
+          </a-text>
+        </a-entity>
+
         <a-entity id="info-icon-Kueche"
                   position="-0.0 -0.3 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
@@ -787,6 +831,10 @@
         });
       });
       </script>
+
+      <script src="./interactives/Kueche/kueche-loader.js" defer></script>
+      <script src="./interactives/Bibliothek/bibliothek-loader.js" defer></script>
+
 
 
   </body>

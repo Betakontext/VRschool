@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quinoa-Küchenabenteuer</title>
+  <link rel="stylesheet" href="kueche.css">
+</head>
+<body>
+<div aria-hidden="true" id="mensaGame">
+<div class="mg-kitchen"><div class="mg-ceiling"></div><div class="mg-light a"></div><div class="mg-light b"></div><div class="mg-hatch"><div class="mg-shutter"></div><div class="mg-counter"></div></div><div class="mg-fridge" id="mgFridge"><div class="mg-cold-shelf" id="mgColdShelf"></div><div class="mg-fridge-hint">KÜHLUNG ÖFFNEN</div></div><div class="sink-zone show kitchen-sink" id="mgSink"><div class="sink-faucet"></div><div class="sink-handle"></div><div class="water-stream"></div><div class="mg-wash-ring" id="mgWashRing"></div><div class="sink-counter"><div class="sink-basin"></div></div></div><div class="mg-lbench"></div></div>
+<div class="mg-header"><strong>QUINOA</strong><span>Auswählen · vorbereiten · wiegen · kochen</span><button onclick="closeMensaGame()">Zurück zur Tour</button></div>
+<aside class="mg-sidebar"><h2>Heutige Gerichte</h2><p>Wähle ein Gericht. Jedes Rezept hat eigene Zutaten und Schritte.</p><div class="mg-meals" id="mgMeals"></div></aside>
+<main class="mg-work"><div class="mg-board" id="mgBoard"><b>1. Gericht auswählen</b><small>Danach erscheinen die passenden Zutaten im Regal.</small></div><div class="mg-shelf" id="mgShelf"></div><div class="mg-scale" id="mgScale"><div class="mg-weigh-bowl" id="mgWeighBowl"><div class="mg-bowl-fill" id="mgBowlFill"></div></div><div class="mg-scale-scoop" id="mgScaleScoop"></div><div class="mg-display" id="mgScaleDisplay">0 g</div></div><div class="mg-stove"><div class="mg-burner" id="mgBurner"></div><div class="mg-stove-label">INDUKTIONSHERD · TOPF HIER AUFSTELLEN</div></div><div class="mg-cookware" id="mgCookware"><div class="mg-pot" id="mgPot"><div class="mg-foodmix" id="mgFoodMix"></div></div><div class="mg-stirrer" id="mgStirrer" title="Zum Rühren ziehen"></div></div><div class="mg-utensil" id="mgUtensil"></div><div class="mg-plate" id="mgPlate"></div><div class="mg-cutlery fork" id="mgEatFork" title="Gabel"></div><div class="mg-cutlery spoon" id="mgEatSpoon" title="Esslöffel"></div><div class="mg-temp-panel"><b>INDUKTION</b><div class="mg-temp-read" id="mgTempRead">0 °C</div><input id="mgTemp" max="220" min="80" step="10" type="range" value="120"/><div class="mg-power"><button class="on" id="mgPowerOn" onclick="setMensaPower(true)">AN</button><button class="off active" id="mgPowerOff" onclick="setMensaPower(false)">AUS</button></div></div><div class="mg-cutboard"></div><div class="mg-knife" title="Messer"></div><div class="mg-actions"><button id="mgMinus" onclick="adjustMensaWeight(-10)">− 10 g</button><button id="mgPlus" onclick="adjustMensaWeight(10)">+ 10 g</button><button id="mgFill" onclick="acceptMensaPortion()">Gewogene Portion verwenden</button><button disabled="" id="mgCook" onclick="cookMensaDish()">Herd einschalten</button><div class="mg-progress" data-progress="0 %" id="mgProgressBox"><i id="mgProgress"></i></div></div></main>
+<div class="mg-pour-stream" id="mgPourStream"></div><div class="mg-transfer-stream" id="mgTransferStream"></div><div class="mg-hand left" id="mgLeftHand"></div><div class="mg-hand right" id="mgRightHand"></div><div class="mg-welcome" id="mgWelcome"><div class="mg-welcome-card"><img alt="Quinoa Kochen Logo" class="mg-cook-logo" id="mgCookLogo" src="assets/mg-cook-logo.jpg"/><h1>Willkommen in der Koch-AG</h1><p>Gericht auswählen, Zutaten selbst ausschütten und abwiegen, vorbereiten und anschließend kochen.</p><button onclick="startMensaGame()">🍽️ KOCHEN STARTEN</button></div></div>
+</div>
+<script src="kueche.js"></script>
+</body>
+</html>
