@@ -7,5 +7,14 @@ Until now tested with Metaquest 3.
 
 Check out our current stable version here https://dev.betakontext.de/virtualtour/AFrame/
 
+To start the project locally open a terminal in the project root:
+
+BASH:	
+
+		python -m http.server 8765
+
+Then open your browser: http://localhost:8765/index.html
+
+
 The project is build with AI assistance and under the terms of MIT licence.
 Contact: Christoph Medicus | dev@betakontext.de
