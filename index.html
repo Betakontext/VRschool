@@ -11,6 +11,10 @@
     <script src="https://unpkg.com/aframe-layout-component@5.3.0/dist/aframe-layout-component.min.js"></script>
     <script src="https://unpkg.com/aframe-template-component@3.2.2/dist/aframe-template-component.min.js"></script>
 
+    <script src="./interactives/Lernwerkstatt/werkstatt-scene.js"></script>
+    <script src="./interactives/NawiLabor/nawi-scene.js"></script>
+
+
     <style>
       a-scene { touch-action: none; }
       .loading-bar {
@@ -160,6 +164,9 @@
         <img id="Klassenraum-thumb" src="img/Klassenraum-thumb.jpg">
         <img id="Logo-thumb" src="img/QuinoaBildung-Logo.png">
 
+        <!-- Interaktives -->
+        <img id="holzbohle-textur" src="interactives/Lernwerkstatt/werkstatt/assets/Holzbohle_Textur.jpg">
+
         <!-- Platzhalter -->
         <img id="placeholder" src="img/placeholder.jpg">
 
@@ -184,16 +191,18 @@
         </video>
       </a-assets>
 
-      <!-- Template für klickbare Thumbs -->
+      <!-- Template für abgerundete, klickbare Thumbnails -->
       <script id="link" type="text/html">
         <a-entity class="link"
                   geometry="primitive: plane; width: 1; height: 0.7"
                   material="shader: flat; src: ${thumb}; transparent: true"
+                  rounded-thumbnail="radius: 0.055; shadowOpacity: 0.18"
                   event-set__enter="_event: mouseenter; scale: 1.1 1.1 1"
                   event-set__leave="_event: mouseleave; scale: 1 1 1"
                   tour-link="targetId: ${id}">
         </a-entity>
       </script>
+
 
       <!-- Link-Gruppen -->
       <a-entity id="links0" layout="type: line; margin: 1.2" position="-5 1.9 -1" rotation="0 90 0">
@@ -211,7 +220,7 @@
         <a-entity template="src: #link" data-id="Nawi" data-thumb="#Nawi-thumb"></a-entity>
         <a-entity template="src: #link" data-id="Klassenraum" data-thumb="#Klassenraum-thumb"></a-entity>
       </a-entity>
-      <a-entity id="links4" layout="type: line; margin: 1.2" position="5 -0.35 0.8" rotation="0 -110 0">
+      <a-entity id="links4" layout="type: line; margin: 1.2" position="3.3 5 -2.1" rotation="0 -60 0">
         <a-entity template="src: #link" data-id="Infokasten" data-thumb="#Logo-thumb"></a-entity>
       </a-entity>
 
@@ -292,6 +301,29 @@
 
       <!-- Nawi (gleiches Muster wie Klassenraum) -->
       <a-entity id="panel-Nawi" visible="false" position="3 1.2 -1.5.0" rotation="0 -45 0">
+
+      <!-- Nawi-Spiel: Die Buttonfläche selbst ist anklickbar -->
+      <a-entity
+        id="nawi-start"
+        nawi-start
+        geometry="primitive: plane; width: 1.8; height: 0.65"
+        material="shader: flat; color: #0ea5e9; side: double"
+        rounded-thumbnail="radius: 0.06; shadowOpacity: 0.18"
+        position="3 -1 0.5"
+        rotation="0 -80 0"
+        event-set__enter="_event: mouseenter; scale: 1.08 1.08 1"
+        event-set__leave="_event: mouseleave; scale: 1 1 1">
+
+        <a-text
+          value="Nawi-Labor\nSTARTEN"
+          align="center"
+          anchor="center"
+          color="#ffffff"
+          width="2.7"
+          position="0 0 0.02">
+        </a-text>
+      </a-entity>
+
         <a-entity id="info-icon-Nawi"
                   position="-0.0 -0.3 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
@@ -319,9 +351,50 @@
       </a-entity>
 
       <!-- Werkstatt -->
-      <a-entity id="panel-Werkstatt" visible="false" position="0 1.2 -2.0" rotation="0 0 0">
+      <a-entity id="panel-Werkstatt"
+                visible="false"
+                position="0 1.2 -2.0"
+                rotation="0 0 0">
+
+        <!-- Werkstattspiel: 3D-Holzbohle gegenüber den Raumwechsel-Links -->
+        <a-entity position="2.4 -0.5 6.5" rotation="0 -105 0">
+
+          <!-- Anklickbare Bohle mit externer Holztextur -->
+          <a-box
+            id="werkstatt-start"
+            werkstatt-start
+            width="2"
+            height="0.65"
+            depth="0.16"
+            material="src: #holzbohle-textur; color: #FFFFFF; roughness: 0.95; metalness: 0"
+            event-set__enter="_event: mouseenter; scale: 1.08 1.08 1.08"
+            event-set__leave="_event: mouseleave; scale: 1 1 1">
+
+            <!-- Dunkles Schild für gute Lesbarkeit -->
+            <a-plane
+              width="1.58"
+              height="0.43"
+              position="0 0 0.085"
+              material="shader: flat; color: #273C32">
+            </a-plane>
+
+            <!-- Beschriftung vor dem Schild -->
+            <a-text
+              value="Werkstattspiel\nSTARTEN"
+              align="center"
+              anchor="center"
+              width="2.4"
+              color="#FFFFFF"
+              position="0 0 0.092">
+            </a-text>
+
+          </a-box>
+        </a-entity>
+
+
+
         <a-entity id="info-icon-Werkstatt"
-                  position="-0.0 -0.3 0.02"
+                  position="-0.4 -0.55 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
                   material="src: img/Infobutton.png; transparent: true"
                   class="clickable"
@@ -345,6 +418,7 @@
           </a-entity>
         </a-entity>
       </a-entity>
+
 
       <!-- Hof -->
       <a-entity id="panel-Hof" visible="false" position="2.5 1.5 4.0" rotation="0 -155 0">
@@ -457,13 +531,118 @@
 
       <!-- Kamera + Cursor -->
       <a-entity camera look-controls="magicWindow: true; touchEnabled: true" position="0 1.6 0">
-        <a-cursor raycaster="objects: .link, .clickable; interval: 100; far: 50; recursive: true"
-                  fuse="true" fuse-timeout="900"></a-cursor>
+        <!-- <a-cursor raycaster="objects: .link, .clickable; interval: 100; far: 50; recursive: true"
+                  fuse="true" fuse-timeout="900"></a-cursor>-->
+        <a-cursor
+          id="tour-cursor"
+          cursor="rayOrigin: mouse; fuse: false"
+          raycaster="objects: .link, .clickable; interval: 100; far: 50; recursive: true"
+          visible="false">
+        </a-cursor>
       </a-entity>
 
     </a-scene>
 
     <script>
+
+      // Abgerundete Thumbnail-Flächen mit dezentem Schatten
+      AFRAME.registerComponent('rounded-thumbnail', {
+        schema: {
+          radius: { default: 0.055 },
+          shadowOpacity: { default: 0.18 }
+        },
+
+        init() {
+          this.applyShape = this.applyShape.bind(this);
+          this.el.addEventListener('object3dset', this.applyShape);
+          this.applyShape();
+        },
+
+        applyShape() {
+          const mesh = this.el.getObject3D('mesh');
+          if (!mesh || this.roundedGeometry) return;
+
+          const THREE = AFRAME.THREE;
+          const geometryData = this.el.getAttribute('geometry');
+          if (!geometryData) return;
+
+          const width = geometryData.width || 1;
+          const height = geometryData.height || 0.7;
+          const radius = Math.max(
+            0,
+            Math.min(this.data.radius, width / 2, height / 2)
+          );
+
+          const left = -width / 2;
+          const right = width / 2;
+          const bottom = -height / 2;
+          const top = height / 2;
+          const r = radius;
+
+          // Rechteck mit abgerundeten Ecken
+          const shape = new THREE.Shape();
+          shape.moveTo(left + r, bottom);
+          shape.lineTo(right - r, bottom);
+          shape.quadraticCurveTo(right, bottom, right, bottom + r);
+          shape.lineTo(right, top - r);
+          shape.quadraticCurveTo(right, top, right - r, top);
+          shape.lineTo(left + r, top);
+          shape.quadraticCurveTo(left, top, left, top - r);
+          shape.lineTo(left, bottom + r);
+          shape.quadraticCurveTo(left, bottom, left + r, bottom);
+
+          const geometry = new THREE.ShapeGeometry(shape, 12);
+
+          // UV-Koordinaten: Das gesamte Thumbnail bleibt sichtbar.
+          const positions = geometry.getAttribute('position');
+          const uv = geometry.getAttribute('uv');
+
+          for (let i = 0; i < positions.count; i++) {
+            uv.setXY(
+              i,
+              (positions.getX(i) + width / 2) / width,
+              (positions.getY(i) + height / 2) / height
+            );
+          }
+          uv.needsUpdate = true;
+
+          // Originalgeometrie aufbewahren, damit sie wiederherstellbar bleibt.
+          this.originalGeometry = mesh.geometry;
+          this.roundedGeometry = geometry;
+          mesh.geometry = geometry;
+
+          // Leichter, stilisierter Schatten ohne aufwendige Shadow-Maps.
+          this.shadowMaterial = new THREE.MeshBasicMaterial({
+            color: '#000000',
+            transparent: true,
+            opacity: this.data.shadowOpacity,
+            depthWrite: false,
+            side: THREE.DoubleSide
+          });
+
+          const shadow = new THREE.Mesh(geometry, this.shadowMaterial);
+          shadow.position.set(0.025, -0.025, -0.012);
+          shadow.scale.set(1.035, 1.045, 1);
+          shadow.raycast = () => {}; // Schatten soll keine Klicks abfangen.
+
+          this.el.setObject3D('thumbnail-shadow', shadow);
+        },
+
+        remove() {
+          this.el.removeEventListener('object3dset', this.applyShape);
+          this.el.removeObject3D('thumbnail-shadow');
+
+          const mesh = this.el.getObject3D('mesh');
+          if (mesh && mesh.geometry === this.roundedGeometry) {
+            mesh.geometry = this.originalGeometry;
+          }
+
+          if (this.roundedGeometry) this.roundedGeometry.dispose();
+          if (this.shadowMaterial) this.shadowMaterial.dispose();
+        }
+      });
+
+
       // Hilfsfunktion: Unsichtbaren, doppelseitigen Collider als Kind des Icons hinzufügen
       function ensureCollider(iconEl, width=0.8, height=0.8, z=0.03) {
         if (!iconEl) return null;
@@ -712,6 +891,21 @@
 
       // Initialisierung: Overlay + Startpanel
       document.addEventListener('DOMContentLoaded', () => {
+        // Infobox-Hintergründe und Schließen-Buttons abrunden
+        document.querySelectorAll('[id^="infobox-"]').forEach(box => {
+          const background = box.querySelector(':scope > a-plane');
+
+          if (background) {
+            background.setAttribute('rounded-thumbnail',
+              'radius: 0.10; shadowOpacity: 0.14');
+          }
+
+          box.querySelectorAll('.close-button').forEach(button => {
+            button.setAttribute('rounded-thumbnail',
+              'radius: 0.06; shadowOpacity: 0.18');
+          });
+        });
+
         // START-OVERLAY direkt hier initialisieren
         const overlay = document.getElementById('start-overlay');
         const btn     = document.getElementById('start-btn');
@@ -788,6 +982,7 @@
       });
       </script>
 
-
+      <script src="./interactives/Lernwerkstatt/werkstatt-loader.js" defer></script>
+      <script src="./interactives/NawiLabor/nawi-loader.js" defer></script>
   </body>
 </html>
