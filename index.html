@@ -119,10 +119,10 @@
             
             </p>
             <p id="start-desc" class="start-text">
-                <b>Desktop</b>: &nbsp;&nbsp;&nbsp;Ziehen sie den schwarzen Kreis zu den Links und klicken sie um den Raum zu wechseln.
+                <b>Desktop</b>: &nbsp;&nbsp;&nbsp;Klicke auf die Links und klicken sie um den Raum zu wechseln.
             </p>
             <p id="start-desc" class="start-text">
-                <b>VR Modus</b>: &nbsp;&nbsp;&nbsp;Schauen sie auf die Links und blinzeln sie um den Raum zu wechseln.
+                <b>VR Modus</b>: &nbsp;&nbsp;&nbsp;Schaue auf die Links und blinzele um den Raum zu wechseln.
             </p>
         </div>
     </div>
@@ -436,7 +436,10 @@
           kueche-start
           geometry="primitive: plane; width: 1.8; height: 0.65"
           material="shader: flat; color: #159ed0; side: double"
-          position="0 -0.9 0.04">
+          rounded-thumbnail="radius: 0.06; shadowOpacity: 0.18"
+          position="0 -0.9 0.04"
+          event-set__enter="_event: mouseenter; scale: 1.08 1.08 1"
+          event-set__leave="_event: mouseleave; scale: 1 1 1">
 
           <a-text
             value="Koch-AG starten"

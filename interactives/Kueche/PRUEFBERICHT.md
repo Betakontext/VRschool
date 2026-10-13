@@ -1,25 +1,18 @@
-# Prüfbericht – Küchen-Spielmodul
+# Reparaturbericht – Quinoa-Küche
 
-## Quellenzugriff und Extraktion
-- Tatsächlicher Zugriff erfolgreich: `input_a3f1f2c3-6a2c-4082-b673-c6d3e459e47a_80b67ae3b5bc_index02.txt` (3461791 Bytes).
-- Extrahiert wurde das originale DOM `#mensaGame` (3488 Zeichen), der zusammenhängende originale MENSA-CSS-Block V117–V133 (45276 Zeichen) und der originale finale MENSA-V133-Spielblock (23560 Zeichen).
-- Lokales Asset: `interactives/Kueche/kueche/assets/mg-cook-logo.jpg` (32262 Bytes, SHA-256 `dff08179020a9068d091818448e0e4e198cf45c9539a8d5fb233fc9964f5a681`). Die originale eingebettete Bilddaten-URI wurde durch diesen lokalen, byte-identischen Bildinhalt ersetzt.
-- Keine Ersatz-Spielmechanik erzeugt. Hinzugefügt wurden nur Loader, A-Frame-Startkomponente und Iframe-Bridge für Start/Schließen.
+## Tatsächliche Ursache
+Die Spielressourcen und der Loader-Pfad waren im gelieferten Archiv bereits konsistent: Der Loader löst `kueche/kueche.html` relativ zu sich auf und alle in der Spielseite referenzierten Dateien existieren.
 
-## Statische Prüfungen
-- Lokale Referenzen aus `interactives/Kueche/kueche/kueche.html`: kueche.css, assets/mg-cook-logo.jpg, kueche.js.
-- Fehlende lokale Referenzen: keine.
-- JavaScript-Syntaxprüfung: siehe Ausführungsprotokoll dieser Lieferung (Node, falls vorhanden).
-- ZIP-Inhaltsprüfung: siehe Ausführungsprotokoll dieser Lieferung.
+Die weiße/leere iframe-Ansicht entstand durch einen Initialisierungsfehler: `#mensaGame` ist absichtlich mit `display:none` initialisiert. Nach dem iframe-Laden sandte der Loader jedoch `kueche-module-start`; dessen Handler rief nur `startMensaGame()` auf. Diese Funktion blendet lediglich die Begrüßung aus und macht den versteckten Spielcontainer **nicht** sichtbar. `openMensaGame()` (welches Display, ARIA-Status, Begrüßung und Rezeptliste initialisiert) wurde nicht aufgerufen.
 
-## Ehrliche Grenzen
-- Kein Browser-, Interaktions-, WebXR- oder Headset-Test wurde durchgeführt.
-- Die Quellseite referenzierte A-Frame extern; dieses Modul enthält A-Frame nicht und erwartet es für `kueche-scene.js` im Host wie in README beschrieben. Das extrahierte 2D-Spiel selbst hat keine externe Laufzeitabhängigkeit.
-- Ein Iframe-`error`-Event deckt Netz-/Ladefehler ab; browserseitige inhaltliche Fehler einer erfolgreich geladenen HTML-Datei können nicht zuverlässig als `error` signalisiert werden.
+## Änderung
+- Loader sendet nach `load` `kueche-module-open`.
+- Der Spiel-Handler führt dafür `openMensaGame()` aus. Der alte `kueche-module-start`-Befehl bleibt kompatibel und ruft erst `openMensaGame()`, dann `startMensaGame()` auf.
+- Der Loader nutzt jetzt die Modal-Gestaltung der Bibliothek: abgedunkelter transparenter Hintergrund, gepolsterte abgerundete iframe-Fläche und runder X-Button. Der relative Pfad und die Szene-Komponente blieben unverändert.
 
+## Prüfungen
+- JavaScript-Syntax (`node --check`) für alle drei JavaScript-Dateien: erfolgreich.
+- Relative Ressourcen geprüft: `kueche.html` → `kueche.css`, `kueche.js`, `assets/mg-cook-logo.jpg`; alle vorhanden.
+- Lokaler Chromium-Smoke-Test: Öffnen zeigt `#mensaGame` (display block, aria-hidden false) plus Begrüßung ohne pageerror/Konsolenfehler; X entfernt das Modal; erneutes Öffnen zeigt den Inhalt erneut.
 
-## Paketlayout und Loader-Prüfung (Korrektur)
-- Alle Spielressourcen wurden nach `interactives/Kueche/kueche/` verschoben: `kueche.html`, `kueche.css`, `kueche.js` und `assets/mg-cook-logo.jpg`.
-- `README.md` und dieser Prüfbericht liegen unter `interactives/Kueche/`. Es verbleiben keine Spielressourcen am ZIP-Root.
-- Die Iframe-URL im Loader wird aus der URL von `kueche-loader.js` mit `new URL('kueche/kueche.html', base)` gebildet. Bei der vorgesehenen Einbindung ist die tatsächliche Ziel-URL daher `interactives/Kueche/kueche/kueche.html` (relativ zum Host-Dokument).
-- In `kueche.html` sind die Referenzen `kueche.css`, `kueche.js` und `assets/mg-cook-logo.jpg` relativ. Sie zeigen nach dem Umzug auf die vorhandenen Dateien im selben Spielordner beziehungsweise dessen `assets/`-Unterordner.
+Kein manueller WebXR-/Headset- oder vollständiger Gameplay-Durchlauf wurde durchgeführt.

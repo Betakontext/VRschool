@@ -47,7 +47,9 @@
     try { window.parent.postMessage({ type: 'kueche-module-close' }, '*'); } catch (_) {}
   };
   window.addEventListener('message', (event) => {
-    if (event.data?.type === 'kueche-module-start') window.startMensaGame?.();
+    // The game root starts display:none. Reveal and initialise it before hiding its welcome card.
+    if (event.data?.type === 'kueche-module-open') window.openMensaGame?.();
+    if (event.data?.type === 'kueche-module-start') { window.openMensaGame?.(); window.startMensaGame?.(); }
     if (event.data?.type === 'kueche-module-close') window.closeMensaGame?.();
   });
 })();

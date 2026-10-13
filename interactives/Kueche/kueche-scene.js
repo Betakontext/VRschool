@@ -1,4 +1,4 @@
-/* Registrierung nach A-Frame: kueche-start ist ausschließlich im sichtbaren Küchenpanel anklickbar. */
+/* Nach A-Frame laden: Klickklassen werden ausschließlich auf #kueche-start gesetzt. */
 (function registerKuecheStart() {
   function install() {
     if (!window.AFRAME || AFRAME.components['kueche-start']) return;
@@ -9,23 +9,27 @@
         const enabled = () => !!panel && panel.offsetParent !== null &&
           panel.getAttribute('visible') !== 'false' && !panel.hidden &&
           getComputedStyle(panel).display !== 'none' && getComputedStyle(panel).visibility !== 'hidden';
-        const sync = () => {
+        this.sync = () => {
           const active = enabled();
           el.classList.toggle('link', active);
           el.classList.toggle('clickable', active);
           el.setAttribute('visible', active);
         };
-        const open = (event) => {
+        this.open = (event) => {
           if (!enabled()) return;
           event?.preventDefault?.();
           window.openKuecheModule?.();
         };
-        el.addEventListener('click', open);
-        el.addEventListener('triggerdown', open);
-        const observer = new MutationObserver(sync);
-        if (panel) observer.observe(panel, {attributes:true, attributeFilter:['visible','style','class','hidden']});
-        sync();
-        this.remove = () => observer.disconnect();
+        el.addEventListener('click', this.open);
+        el.addEventListener('triggerdown', this.open);
+        this.observer = new MutationObserver(this.sync);
+        if (panel) this.observer.observe(panel, {attributes:true, attributeFilter:['visible','style','class','hidden']});
+        this.sync();
+      },
+      remove: function () {
+        this.el.removeEventListener('click', this.open);
+        this.el.removeEventListener('triggerdown', this.open);
+        this.observer?.disconnect();
       }
     });
   }
