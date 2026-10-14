@@ -1,227 +1,2273 @@
-// ===== WERKSTATT MODUL V116 – REALISTISCHER ZEITDRUCK =====
-      (function(){
-        const $=id=>document.getElementById(id);
-        const ws={goggles:false,ears:false,project:null,done:{wood:false,screw:false,print:false,assemble:false},cutLength:0,tapeReady:false,tapeRetracted:false,ruler:false,rulerParked:false,pencilParked:false,markCount:0,sawStopReady:false,stopGuideX:0,stopAside:false,sawOn:false,boardAligned:false,cut:0,wasteStored:false,sandCount:0,bit:null,screws:0,model:null,color:null,material:null,quality:null,printing:false,printReady:false,placed:0,montageStep:0,dowels:0,quiz:0};
-        const quiz=[
-          {q:'Warum muss die Kreissäge fest montiert sein?',a:['Damit das Holz sicher durch die Maschine geführt wird','Damit man sie herumtragen kann','Nur wegen der Farbe'],c:0},
-          {q:'Was muss vor dem Sägen passieren?',a:['Messen, markieren und Werkzeuge sicher ablegen','Direkt sägen','Erst schrauben'],c:0},
-          {q:'Welcher Bit passt zu einer Kreuzschraube?',a:['Schlitz','Kreuz','Inbus'],c:1},
-          {q:'Was zeigt eine glatt geschliffene Kante?',a:['Splitter sind entfernt','Holz ist nass','Schrauben fehlen'],c:0}
-        ];
-        let statusFadeTimer=null;
-        function guideTargetFor(t){const s=t.toLowerCase(),rules=[['schutzbrille anziehen','#wsGoggles'],['gehörschutz anziehen','#wsEars'],['metallhaken des maßbands','#tapeHook'],['maßband selbst','#tapeHook'],['lineal aus dem werkzeugbecher','#wsRuler'],['lineal in die gestrichelte','#wsRuler'],['mit dem beschrifteten bleistift','#wsPencil'],['bleistift sicher ablegen','#wsPencil'],['lineal und bleistift zuerst','.tool-cup'],['längenanschlag zuerst exakt','#sawStopSlider'],['anschlaghaken steht','#wsBoard'],['linke holzkante an den haken','#wsBoard'],['schiebe die linke ecke','#wsBoard'],['säge bleibt aus','#wsBoard'],['jetzt sägekopf','#circularSaw'],['sägekopf gerade','#circularSaw'],['schnitt fertig','#sawSwitch'],['säge jetzt ausschalten','#sawSwitch'],['anschlag mit der hand nach links','#sawStopSystem'],['anschlag zuerst zur seite','#sawStopSystem'],['restholz ins regal','#wastePiece'],['restholz in das regal','#wastePiece'],['raue rechte schnittkante','#sandBlockV32'],['schleifklotz','#sandBlockV32'],['passenden bit','#bitDropZone'],['akkuschrauber ruhig','#wsDriver'],['beide holzdübel','.dowel-hole:not(.filled)'],['holzleim dünn','#toolGlue'],['gummihammer','#toolHammer'],['anschlagwinkel','#toolAngle'],['festgespannt','#toolClamp'],['druck starten','#wsPrintStart'],['bauteil entnehmen','#wsPrintTake']];for(const r of rules)if(s.includes(r[0]))return r[1];return''}
-        function placeActionHint(h,target,text){const low=text.toLowerCase(),short=low.includes('länge auswählen')?'LÄNGE WÄHLEN':low.includes('maßband')?'MAẞBAND ZIEHEN':low.includes('lineal aus')?'LINEAL ANLEGEN':low.includes('bleistift')?'ROT MARKIEREN':low.includes('zurücklegen')?'WERKZEUGE ZURÜCK':low.includes('sägeanschlag')?'ANSCHLAG EINSTELLEN':low.includes('brett bei')?'BRETT ANLEGEN':low.includes('einschalten')?'SÄGE EIN':low.includes('ganz nach unten')?'SÄGE SENKEN':low.includes('ausschalten')?'SÄGE AUS':low.includes('nach links')?'ANSCHLAG WEG':low.includes('restholz')?'RESTHOLZ WEGRÄUMEN':low.includes('fertiges holz')?'HOLZ WEITERGEBEN':text;const r=target.getBoundingClientRect(),o=$('workshopOverlay').getBoundingClientRect(),rightSpace=o.right-r.right,leftSpace=r.left-o.left;h.classList.remove('below','side-right','side-left');if(rightSpace>210){h.style.left=(r.right-o.left)+'px';h.style.top=(r.top-o.top+r.height/2)+'px';h.classList.add('side-right')}else if(leftSpace>210){h.style.left=(r.left-o.left)+'px';h.style.top=(r.top-o.top+r.height/2)+'px';h.classList.add('side-left')}else{const x=Math.max(75,Math.min(o.width-75,r.left-o.left+r.width/2)),above=r.top-o.top;h.style.left=x+'px';h.style.top=Math.max(8,above)+'px';h.classList.toggle('below',above<70)}h.textContent=short;h.classList.add('show')}
-        const placeActionHintV77=placeActionHint;placeActionHint=function(h,target,text){h.classList.remove('tape-high');if(target.id==='tapeHook'){const r=target.getBoundingClientRect(),o=$('workshopOverlay').getBoundingClientRect();h.classList.remove('below','side-right','side-left');h.classList.add('tape-high');h.style.left=Math.max(130,Math.min(o.width-130,r.left-o.left+r.width/2))+'px';h.style.top=Math.max(118,r.top-o.top-42)+'px';h.textContent='MAẞBAND BIS '+(ws.cutLength||'ZIEL')+' CM ZIEHEN';h.classList.add('show');return}placeActionHintV77(h,target,text)};
-        const placeActionHintV78=placeActionHint;placeActionHint=function(h,target,text){placeActionHintV78(h,target,text);if(target.id==='tapeHook'&&h.classList.contains('show')){const r=target.getBoundingClientRect(),o=$('workshopOverlay').getBoundingClientRect();h.style.top=Math.max(108,r.top-o.top-10)+'px'}};
-        const placeActionHintV80=placeActionHint;placeActionHint=function(h,target,text){placeActionHintV80(h,target,text);if(target.id==='tapeHook'&&h.classList.contains('show')){const r=target.getBoundingClientRect(),o=$('workshopOverlay').getBoundingClientRect();h.style.top=Math.max(96,r.top-o.top-70)+'px'}};
-        const placeActionHintV81=placeActionHint;placeActionHint=function(h,target,text){placeActionHintV81(h,target,text);if(text.toLowerCase().includes('zurücklegen')){h.textContent='WERKZEUGE IN BECHER';h.classList.add('show')}};
-        const placeActionHintV82=placeActionHint;placeActionHint=function(h,target,text){placeActionHintV82(h,target,text);const low=text.toLowerCase();if(low.includes('schnitt fertig')||low.includes('anschlag mit der hand nach links')||low.includes('restholz greifen')){h.classList.remove('show');return}const r=target.getBoundingClientRect(),o=$('workshopOverlay').getBoundingClientRect();h.classList.remove('side-right','side-left','below');h.style.left=Math.max(145,Math.min(o.width-145,r.left-o.left+r.width/2))+'px';h.style.top=Math.max(92,r.top-o.top-(target.id==='tapeHook'?48:8))+'px'};
-        const placeActionHintNoDuplicates=placeActionHint;placeActionHint=function(h,target,text){placeActionHintNoDuplicates(h,target,text);if(text.toLowerCase().includes('restholz'))h.classList.remove('show')};
-        const placeActionHintV83=placeActionHint;placeActionHint=function(h,target,text){placeActionHintV83(h,target,text);if(text.toLowerCase().includes('zurücklegen'))h.classList.remove('show')};
-        const placeActionHintV85=placeActionHint;placeActionHint=function(h,target,text){placeActionHintV85(h,target,text);if(target.id==='tapeHook'&&(ws.ruler||ws.markCount>0)){h.classList.remove('show');return}if(target.id==='sawStopSlider'&&h.classList.contains('show')){const r=target.getBoundingClientRect(),o=$('workshopOverlay').getBoundingClientRect();h.style.top=Math.max(88,r.top-o.top-64)+'px'}};
-        let professionalHintText='',professionalHintTimer=null;setInterval(()=>{const h=$('wsActionHint');if(!h||!h.classList.contains('show'))return;if(h.textContent!==professionalHintText){professionalHintText=h.textContent;clearTimeout(professionalHintTimer);professionalHintTimer=setTimeout(()=>h.classList.remove('show'),5000)}},180);
-        function updateEssentialWoodHint(){const h=$('essentialWoodHint'),panel=$('wsWoodPanel');if(!h||!panel||!panel.classList.contains('show')){if(h)h.className='essential-wood-hint';return}if(!ws.cutLength){h.className='essential-wood-hint tape show';h.textContent='ZUERST LÄNGE WÄHLEN – DANN AM MAẞBAND ZIEHEN';return}if(!ws.tapeReady){h.className='essential-wood-hint tape show';h.textContent='AM MAẞBAND ZIEHEN – BIS '+ws.cutLength+' CM';return}if(ws.ruler&&ws.markCount<20){const g=$('markGuide').getBoundingClientRect(),a=$('woodArea').getBoundingClientRect();h.className='essential-wood-hint mark show';h.style.left=Math.max(150,Math.min(a.width-230,g.left-a.left+24))+'px';h.textContent='MIT DEM STIFT ROT MARKIEREN';return}if(ws.markCount>=20&&(!ws.rulerParked||!ws.pencilParked)){h.className='essential-wood-hint cup show';h.textContent='LINEAL UND STIFT ZURÜCK IN DEN BECHER';return}if(ws.rulerParked&&ws.pencilParked&&!ws.sawStopReady){h.className='essential-wood-hint stop show';h.textContent='SÄGE-MESSGERÄT AN LÄNGE ANPASSEN – '+ws.cutLength+' CM';return}if(ws.sawStopReady&&!ws.boardAligned){h.className='essential-wood-hint align show';h.textContent='⚠ SÄGE AUS LASSEN · HOLZ AM ANSCHLAG EINRASTEN';return}if(ws.boardAligned&&!ws.sawOn&&ws.cut<100){h.className='essential-wood-hint power show';h.textContent='✓ HOLZ EINGERASTET · SÄGE EINSCHALTEN';return}if(ws.sawOn&&ws.boardAligned&&ws.cut<100){h.className='essential-wood-hint cut show';h.innerHTML='SÄGE LANGSAM NACH UNTEN DRÜCKEN · <b>'+Math.round(ws.cut)+' %</b>';return}if(ws.sawOn&&ws.cut>=100&&(parseFloat($('circularSaw').style.top)||22)>35){h.className='essential-wood-hint raise show';h.textContent='⚠ SCHNITT FERTIG · SÄGEKOPF NACH OBEN';return}if(ws.sawOn&&ws.cut>=100){h.className='essential-wood-hint poweroff show';h.textContent='✓ SÄGEKOPF OBEN · SÄGE AUSSCHALTEN';return}h.className='essential-wood-hint'}setInterval(updateEssentialWoodHint,120);
-        setInterval(()=>{if(ws.sawOn&&ws.cut>=100)$('sawAfterHint').className='saw-after-hint'},90);
-        setInterval(()=>{const o=$('workshopOverlay'),toolsStillInUse=ws.tapeReady&&(!ws.rulerParked||!ws.pencilParked);if(o)o.classList.toggle('marking-in-progress',toolsStillInUse)},100);
-        function status(t){const e=$('wsStatus');if(!e)return;clearTimeout(statusFadeTimer);document.querySelectorAll('#workshopOverlay .ws-guided').forEach(x=>x.classList.remove('ws-guided'));const h=$('wsActionHint');if(h)h.classList.remove('show','below');const selector=guideTargetFor(t),target=selector?document.querySelector(selector):null;if(target&&target.getClientRects().length&&getComputedStyle(target).visibility!=='hidden'){target.classList.add('ws-guided');if(h)placeActionHint(h,target,t)}e.textContent=t;e.classList.remove('auto-hidden');statusFadeTimer=setTimeout(()=>{e.classList.add('auto-hidden');if(h)h.classList.remove('show','below');document.querySelectorAll('#workshopOverlay .ws-guided').forEach(x=>x.classList.remove('ws-guided'))},4200)}
-        let woodGuideKey='';function updateWoodStationGuide(){const panel=$('wsWoodPanel');if(!panel||!panel.classList.contains('show')){woodGuideKey='';return}let selector='',text='',key='';if(!ws.cutLength){selector='#cutLengthPicker';text='1. Gewünschte Länge auswählen';key='length'}else if(!ws.tapeReady){selector='#tapeHook';text='2. Maßband bis '+ws.cutLength+' cm herausziehen';key='tape'}else if(!ws.ruler){selector='#wsRuler';text='3. Lineal aus dem Becher nehmen und an die blaue Hilfe legen';key='ruler'}else if(ws.markCount<20){selector='#wsPencil';text='4. Bleistift nehmen und entlang des Lineals markieren';key='pencil'}else if(!ws.rulerParked||!ws.pencilParked){selector='.tool-cup';text='5. Lineal und Bleistift hier ordentlich zurücklegen';key='cup'}else if(!ws.sawStopReady){selector='#sawStopSlider';text='6. Sägeanschlag auf genau '+ws.cutLength+' cm einstellen';key='stop'}else if(!ws.boardAligned){selector='#wsBoard';text='7. Brett bei ausgeschalteter Säge an den Haken schieben';key='board'}else if(!ws.sawOn&&ws.cut<100){selector='#sawSwitch';text='8. Brett sitzt richtig – Säge jetzt einschalten';key='on'}else if(ws.sawOn&&ws.cut<100){selector='#circularSaw';text='9. Säge am Griff langsam bis ganz nach unten drücken';key='cut'}else if(ws.sawOn&&ws.cut>=100){selector='#sawSwitch';text='10. Schnitt fertig – Säge jetzt ausschalten';key='off'}else if(!ws.stopAside){selector='#sawStopSystem';text='11. Anschlag mit der Hand nach links wegschieben';key='aside'}else if(!ws.wasteStored){selector='#wastePiece';text='12. Restholz greifen und in das markierte Regal legen';key='waste'}else{selector='#wsBoard';text='13. Fertiges Holz anklicken und zur Schleifstation bringen';key='finished'}if(key===woodGuideKey&&document.querySelector(selector)?.classList.contains('ws-guided'))return;woodGuideKey=key;document.querySelectorAll('#workshopOverlay .ws-guided').forEach(x=>x.classList.remove('ws-guided'));const target=document.querySelector(selector),h=$('wsActionHint');if(h)h.classList.remove('show','below');if(target&&target.getClientRects().length){target.classList.add('ws-guided');if(h)placeActionHint(h,target,text)}}
-        setInterval(updateWoodStationGuide,350);
-        function steps(t){const e=$('wsSteps');if(e)e.textContent=t}
-        function woodStage(n){document.querySelectorAll('#woodStageBar span').forEach(x=>{const v=+x.dataset.stage;x.classList.toggle('active',v===n);x.classList.toggle('done',v<n)})}
-        let activeWorkshopHand=null;
-        function pointWorkshopArm(x,y){const useLeft=activeWorkshopHand?activeWorkshopHand==='left':x<window.innerWidth/2,arm=$(useLeft?'wsArmLeft':'wsArmRight'),other=$(useLeft?'wsArmRight':'wsArmLeft');if(!arm)return;const sx=useLeft?window.innerWidth*.37:window.innerWidth*.63,sy=window.innerHeight*.91,dx=x-sx,dy=y-sy,len=Math.max(150,Math.min(430,Math.hypot(dx,dy))),angle=Math.atan2(dy,dx)*180/Math.PI;arm.classList.add('grabbing');arm.classList.remove('resting');arm.style.width=len+'px';arm.style.top=(sy-26)+'px';if(useLeft){arm.style.left=sx+'px';arm.style.right='auto';arm.style.transform='rotate('+angle+'deg)'}else{arm.style.left=(sx-len)+'px';arm.style.right='auto';arm.style.transform='rotate('+(angle+180)+'deg)'}if(other){other.classList.remove('grabbing');other.classList.add('resting');other.style.cssText=''}}
-        function resetWorkshopArms(){activeWorkshopHand=null;const l=$('wsArmLeft'),r=$('wsArmRight');[l,r].forEach(a=>{if(a){a.classList.remove('grabbing');a.classList.add('resting');a.style.cssText=''}})}
-        function showHand(hand,x,y){if(hand){hand.classList.add('show');hand.style.left=(x-95)+'px';hand.style.top=(y-22)+'px';}pointWorkshopArm(x,y)}
-        function hideHands(){document.querySelectorAll('.ws-hand').forEach(h=>h.classList.remove('show'));resetWorkshopArms()}
-        document.addEventListener('pointerdown',e=>{const overlay=$('workshopOverlay');if(!overlay||overlay.style.display!=='block'||!overlay.contains(e.target))return;activeWorkshopHand=e.clientX<window.innerWidth/2?'left':'right';pointWorkshopArm(e.clientX,e.clientY)},true);
-        document.addEventListener('pointermove',e=>{if(activeWorkshopHand&&$('workshopOverlay')?.style.display==='block')pointWorkshopArm(e.clientX,e.clientY)},true);
-        document.addEventListener('pointerup',()=>{if(activeWorkshopHand)setTimeout(resetWorkshopArms,90)},true);
-        function reset(){
-          Object.assign(ws,{goggles:false,ears:false,project:null,done:{wood:false,screw:false,print:false,assemble:false},cutLength:0,tapeReady:false,tapeRetracted:false,ruler:false,rulerParked:false,pencilParked:false,markCount:0,sawStopReady:false,stopGuideX:0,stopAside:false,sawOn:false,boardAligned:false,cut:0,wasteStored:false,sandCount:0,bit:null,screws:0,model:null,color:null,material:null,quality:null,printing:false,printReady:false,placed:0,montageStep:0,dowels:0,quiz:0});
-          ws.hammerHits=0;
-          document.querySelectorAll('.ws-card').forEach(c=>c.classList.remove('done'));
-          $('wsSafety').classList.remove('goggles-on','ears-on','gear-complete');$('wsGoggles').textContent='Schutzbrille anziehen';$('wsEars').textContent='Gehörschutz anziehen';
-          ['wsCardScrew','wsCardPrint','wsCardAssemble'].forEach(id=>$(id)&&$(id).classList.add('locked'));
-          document.querySelectorAll('.ws-gear button,.bit-piece,.model-card,.color-swatch').forEach(b=>b.classList.remove('active','selected','loaded-bit'));
-          document.querySelectorAll('.screw').forEach(s=>s.classList.remove('done','placed-screw'));document.querySelectorAll('.loose-screw').forEach(s=>s.classList.remove('used'));
-          document.querySelectorAll('.screw-depth span').forEach(s=>s.style.width='0');
-          document.querySelectorAll('.part').forEach(x=>{x.style.left='';x.style.top='';x.classList.remove('placed','wrong-part','snap-fly');x.dataset.placed='0'});
-          document.querySelectorAll('.snap-slot').forEach(x=>x.classList.remove('filled'));
-          document.querySelectorAll('#assemblyLiveBuild i').forEach(x=>x.classList.remove('built'));
-          if($('assemblyProgressBar'))$('assemblyProgressBar').style.width='0%';if($('assemblyProgressText'))$('assemblyProgressText').textContent='BAUFORTSCHRITT 0%';if($('assemblyFx'))$('assemblyFx').innerHTML='';
-          $('assemblyArea').classList.remove('dowel-step');$('assemblyMontage').classList.remove('show');$('assemblyLiveBuild').classList.remove('hammered','clamped');$('assemblyGlue').classList.remove('show');$('angleBadge').classList.remove('show');document.querySelectorAll('.dowel-hole').forEach(x=>x.classList.remove('filled'));document.querySelectorAll('.montage-tool').forEach((x,i)=>{x.classList.remove('done','ready');x.classList.toggle('locked',i>0)});$('toolDowel').classList.add('ready');
-          ws.puzzleFinished=false;$('assemblyLiveBuild').classList.remove('puzzle-complete');if($('puzzleCompleteFx'))$('puzzleCompleteFx').classList.remove('show');
-          if($('montageProgressBar'))$('montageProgressBar').style.width='0';if($('montageProgressText'))$('montageProgressText').textContent='MONTAGE 0%';
-          $('markCanvas').innerHTML='';$('cutProgress').style.height='0';$('circularSaw').classList.remove('running','cut-aligned','dragging-saw','saw-track-lock','saw-finished');$('circularSaw').style.left='';$('circularSaw').style.top='';$('circularSaw').style.setProperty('--saw-angle','-24deg');$('wsBoard').classList.remove('cut-ready','dragging','saw-locked','stop-snapped');
-          $('wastePiece').classList.remove('show','stored','separating','safe-to-move');$('wastePiece').style.left='';$('wastePiece').style.top='';$('wastePiece').style.removeProperty('--separate');$('wasteShelf').classList.remove('ready');
-          $('wsRuler').classList.remove('parked','tool-step-ok');$('wsPencil').classList.remove('parked','tool-step-ok','right-hand-pencil','brief-guide-done');$('toolParking').classList.remove('ready');$('workshopOverlay').classList.remove('adjusting-saw-measure');
-          $('wsRuler').classList.add('in-cup');$('wsPencil').classList.add('in-cup');
-          $('markGuide').classList.remove('ready','ruler-target','mark-finished');$('tapeCase').classList.remove('ready');$('tapeBlade').style.width='0';$('tapeHook').style.left='77px';$('tapeReadout').textContent='0 cm';$('tapeScale').innerHTML='';$('chosenLength').textContent='Noch nicht gewählt';document.querySelectorAll('#cutLengthPicker button').forEach(b=>b.classList.remove('selected'));
-          $('tapeLiveHint').innerHTML='MAẞBAND: <b>0 cm</b> herausgezogen';$('tapeLiveHint').classList.remove('active');$('sawMeasureHint').innerHTML='SÄGEANSCHLAG: <b>IST 20 cm</b> · SOLL –';$('sawMeasureHint').classList.remove('active');
-          ['left','top','transform'].forEach(p=>{$('wsRuler').style.removeProperty(p);$('wsPencil').style.removeProperty(p)});$('wsBoard').style.left='10%';$('wsBoard').style.top='125px';
-          $('sawSwitch').classList.remove('on');$('sawSwitch').disabled=false;
-          $('sawAfterHint').className='saw-after-hint';$('sawAfterHint').textContent='';
-          $('sawStopSlider').value='20';$('sawStopValue').textContent='IST: 20 cm';$('sawTargetValue').textContent='SOLL: –';$('sawStopMarker').style.left='18px';$('sawStopSystem').classList.remove('ready','attached','needs-aside','aside');$('sawStopSystem').style.removeProperty('transform');document.querySelector('.tool-cup').classList.remove('cup-ready');
-          $('printProgress').style.width='0';$('printObject').style.width='0';$('printObject').style.height='0';$('printObject').className='print-object';$('printerHead').classList.remove('printing');$('printerHead').style.left='';$('printerHead').style.top='';$('wsPrintStart').disabled=true;$('wsPrintTake').style.display='none';$('wsMaterial').value='';$('wsQuality').value='';$('printerScreen').parentElement.classList.remove('print-finished','is-printing');if($('layerCounter'))$('layerCounter').textContent='SCHICHT 0';if($('printVictory'))$('printVictory').classList.remove('show');document.querySelectorAll('#wsPrintPanel button,#wsPrintPanel select').forEach(x=>x.disabled=false);$('wsPrintStart').disabled=true;$('printSummary').textContent='Wähle Modell, Material, Farbe und Qualität.';$('printerScreen').innerHTML='MODELL: -<br>MATERIAL: -<br>FORTSCHRITT: 0%';
-          $('wsDriver').classList.remove('bit-loaded');$('assembledProduct').className='assembled-product box';$('attachPrintBtn').style.display='none';$('wsFinalDisplay').classList.remove('show');$('wsQuiz').classList.remove('show');$('wsActionHint').classList.remove('show');document.querySelectorAll('#workshopOverlay .ws-guided').forEach(x=>x.classList.remove('ws-guided'));hideHands()
-          if($('wsWelcome'))$('wsWelcome').classList.remove('show');$('wsDriver').style.removeProperty('--driver-x');$('wsDriver').style.removeProperty('--driver-y');if($('assemblyHammerVisual'))$('assemblyHammerVisual').classList.remove('hit');
-          if($('sandProgressBar'))$('sandProgressBar').style.width='0';if($('sandBlockV32')){const sb=$('sandBlockV32');sb.classList.remove('grit80','grit180');['left','top','bottom','--sand-x','--sand-y'].forEach(p=>sb.style.removeProperty(p))}document.querySelectorAll('.sandpaper-sheet').forEach(x=>x.classList.toggle('active',x.textContent.includes('K120')));
+// ===== WERKSTATT MODUL – KONSOLIDIERTE SPIELLOGIK =====
+(function () {
+  'use strict';
+
+  // Verhindert doppelte Initialisierung bei mehrfacher Einbindung.
+  if (window.__werkstattGameInstalled) return;
+  window.__werkstattGameInstalled = true;
+
+  const $ = id => document.getElementById(id);
+  const root = () => $('workshopOverlay');
+  const all = selector => [...(root()?.querySelectorAll(selector) || [])];
+  const find = selector => root()?.querySelector(selector) || null;
+
+  const timers = new Set();
+  const intervals = new Set();
+  const cancelInteractions = new Set();
+
+  let initialized = false;
+  let activeWorkshopHand = null;
+  let statusTimer = null;
+  let hintTimer = null;
+  let guideKey = '';
+  let quizBusy = false;
+  let priorOverflow = '';
+  let opener = null;
+  let printJob = null;
+  let screwJob = null;
+  let tapeJob = null;
+
+  const bitHomes = new Map();
+
+  const createState = () => ({
+    goggles: false,
+    ears: false,
+    project: null,
+    done: {
+      wood: false,
+      screw: false,
+      print: false,
+      assemble: false
+    },
+    cutLength: 0,
+    tapeReady: false,
+    tapeRetracted: false,
+    ruler: false,
+    rulerParked: false,
+    pencilParked: false,
+    markCount: 0,
+    sawStopReady: false,
+    stopGuideX: 0,
+    stopAside: false,
+    sawOn: false,
+    boardAligned: false,
+    cut: 0,
+    wasteStored: false,
+    sandCount: 0,
+    bit: null,
+    screws: 0,
+    currentScrewAngle: 0,
+    model: null,
+    color: null,
+    material: null,
+    quality: null,
+    printing: false,
+    printReady: false,
+    placed: 0,
+    montageStep: 0,
+    dowels: 0,
+    hammerHits: 0,
+    puzzleFinished: false,
+    quiz: 0
+  });
+
+  const ws = createState();
+
+  const quiz = [
+    {
+      q: 'Warum muss die Säge fest montiert sein?',
+      a: [
+        'Damit die Maschine sicher steht und das Werkstück kontrolliert bearbeitet werden kann',
+        'Damit man sie während des Sägens herumtragen kann',
+        'Nur wegen der Farbe'
+      ],
+      c: 0
+    },
+    {
+      q: 'Was muss vor dem Sägen passieren?',
+      a: [
+        'Messen, markieren und Werkzeuge sicher ablegen',
+        'Direkt sägen',
+        'Erst schrauben'
+      ],
+      c: 0
+    },
+    {
+      q: 'Welcher Bit passt zu einer Kreuzschraube?',
+      a: ['Schlitz', 'Kreuz', 'Inbus'],
+      c: 1
+    },
+    {
+      q: 'Was zeigt eine glatt geschliffene Kante?',
+      a: ['Splitter sind entfernt', 'Holz ist nass', 'Schrauben fehlen'],
+      c: 0
+    }
+  ];
+
+  const models = {
+    tag: ['Namensschild', 'modelTag', 125, 30],
+    logo: ['3D-Logo', 'modelLogo', 78, 72],
+    gear: ['Zahnrad', 'modelGear', 78, 78],
+    hook: ['Werkzeughaken', 'modelHook', 60, 88],
+    star: ['Quinoa-Stern', 'modelStar', 82, 80],
+    keychain: ['Schlüsselanhänger', 'modelKeychain', 108, 40],
+    stand: ['Handyhalter', 'modelStand', 86, 82],
+    cube: ['3D-Würfel', 'modelCube', 78, 78],
+    rocket: ['Mini-Rakete', 'modelRocket', 62, 94],
+    medal: ['Werkstatt-Medaille', 'modelMedal', 78, 78],
+    robot: ['Mini-Roboter', 'modelRobot', 72, 82],
+    molecule: ['Molekül-Modell', 'modelMolecule', 62, 62],
+    trophy: ['Quinoa-Pokal', 'modelTrophy', 70, 86]
+  };
+
+  const colors = {
+    green: '#16a34a',
+    orange: '#f59e0b',
+    red: '#dc2626',
+    purple: '#7c3aed',
+    white: '#f8fafc',
+    black: '#111827',
+    blue: '#2563eb'
+  };
+
+  const qualities = {
+    fine: { label: 'Fein · 0,12 mm', seconds: 55, layers: 320 },
+    normal: { label: 'Standard · 0,20 mm', seconds: 42, layers: 220 },
+    draft: { label: 'Schnell · 0,28 mm', seconds: 30, layers: 140 }
+  };
+
+  function later(fn, ms) {
+    const id = setTimeout(() => {
+      timers.delete(id);
+      fn();
+    }, ms);
+    timers.add(id);
+    return id;
+  }
+
+  function every(fn, ms) {
+    const id = setInterval(fn, ms);
+    intervals.add(id);
+    return id;
+  }
+
+  function stopTimeout(id) {
+    if (id == null) return;
+    clearTimeout(id);
+    timers.delete(id);
+  }
+
+  function stopInterval(id) {
+    if (id == null) return;
+    clearInterval(id);
+    intervals.delete(id);
+  }
+
+  function clearJobs() {
+    timers.forEach(clearTimeout);
+    intervals.forEach(clearInterval);
+    timers.clear();
+    intervals.clear();
+    statusTimer = null;
+    hintTimer = null;
+    printJob = null;
+    screwJob = null;
+    tapeJob = null;
+    quizBusy = false;
+  }
+
+  function visible() {
+    const o = root();
+    return !!o && o.style.display === 'block';
+  }
+
+  function text(id, value) {
+    const e = $(id);
+    if (e) e.textContent = value;
+  }
+
+  function cls(id, names, on) {
+    const e = $(id);
+    if (!e) return;
+    names.split(' ').filter(Boolean).forEach(name => {
+      e.classList.toggle(name, on);
+    });
+  }
+
+  function style(id, property, value, priority = '') {
+    $(id)?.style.setProperty(property, value, priority);
+  }
+
+  function removeStyle(id, properties) {
+    const e = $(id);
+    if (!e) return;
+    properties.forEach(p => e.style.removeProperty(p));
+  }
+
+  function overlap(a, b, margin = 0) {
+    return !(
+      a.right < b.left - margin ||
+      a.left > b.right + margin ||
+      a.bottom < b.top - margin ||
+      a.top > b.bottom + margin
+    );
+  }
+
+  function steps(value) {
+    text('wsSteps', value);
+  }
+
+  function woodStage(n) {
+    all('#woodStageBar span').forEach(e => {
+      const value = Number(e.dataset.stage);
+      e.classList.toggle('active', value === n);
+      e.classList.toggle('done', value < n);
+    });
+  }
+
+  function clearGuides() {
+    all('.ws-guided').forEach(e => e.classList.remove('ws-guided'));
+    $('wsActionHint')?.classList.remove(
+      'show', 'below', 'side-right', 'side-left', 'tape-high'
+    );
+    stopTimeout(hintTimer);
+    hintTimer = null;
+  }
+
+  function guideTargetFor(value) {
+    const s = value.toLowerCase();
+    const rules = [
+      ['schutzbrille anziehen', '#wsGoggles'],
+      ['gehörschutz anziehen', '#wsEars'],
+      ['maßband', '#tapeHook'],
+      ['lineal aus', '#wsRuler'],
+      ['lineal in', '#wsRuler'],
+      ['bleistift', '#wsPencil'],
+      ['werkzeuge ordentlich', '.tool-cup'],
+      ['längenanschlag', '#sawStopSlider'],
+      ['anschlaghaken', '#wsBoard'],
+      ['sägekopf', '#circularSaw'],
+      ['säge ausschalten', '#sawSwitch'],
+      ['anschlag mit der hand', '#sawStopSystem'],
+      ['restholz', '#wastePiece'],
+      ['schleifklotz', '#sandBlockV32'],
+      ['kreuz-bit', '#bitDropZone'],
+      ['akkuschrauber', '#wsDriver'],
+      ['holzdübel', '.dowel-hole:not(.filled)'],
+      ['holzleim', '#toolGlue'],
+      ['gummihammer', '#toolHammer'],
+      ['anschlagwinkel', '#toolAngle'],
+      ['festgespannt', '#toolClamp'],
+      ['druck starten', '#wsPrintStart'],
+      ['entnahme', '#wsPrintTake']
+    ];
+    return rules.find(([needle]) => s.includes(needle))?.[1] || '';
+  }
+
+  function placeActionHint(h, target, value) {
+    if (!h || !target || !root()) return;
+
+    const low = value.toLowerCase();
+    if (
+      low.includes('restholz') ||
+      low.includes('zurücklegen') ||
+      low.includes('schnitt fertig') ||
+      low.includes('anschlag mit der hand')
+    ) {
+      h.classList.remove('show');
+      return;
+    }
+
+    if (target.id === 'tapeHook' && (ws.ruler || ws.markCount > 0)) {
+      h.classList.remove('show');
+      return;
+    }
+
+    const r = target.getBoundingClientRect();
+    const o = root().getBoundingClientRect();
+
+    h.classList.remove('below', 'side-right', 'side-left', 'tape-high');
+
+    const labels = [
+      ['länge auswählen', 'LÄNGE WÄHLEN'],
+      ['lineal', 'LINEAL ANLEGEN'],
+      ['bleistift', 'ROT MARKIEREN'],
+      ['anschlag auf', 'ANSCHLAG EINSTELLEN'],
+      ['brett', 'BRETT ANLEGEN'],
+      ['einschalten', 'SÄGE EIN'],
+      ['ausschalten', 'SÄGE AUS'],
+      ['säge am griff', 'SÄGE LANGSAM SENKEN']
+    ];
+
+    h.textContent = target.id === 'tapeHook'
+      ? `MAẞBAND BIS ${ws.cutLength || 'ZIEL'} CM ZIEHEN`
+      : labels.find(([needle]) => low.includes(needle))?.[1] || value;
+
+    const edge = Math.min(145, o.width / 2);
+    const x = r.left - o.left + r.width / 2;
+    h.style.left = Math.max(edge, Math.min(o.width - edge, x)) + 'px';
+
+    const offset = target.id === 'sawStopSlider'
+      ? 64
+      : target.id === 'tapeHook' ? 48 : 8;
+
+    h.style.top = Math.max(8, r.top - o.top - offset) + 'px';
+    h.classList.add('show');
+
+    stopTimeout(hintTimer);
+    hintTimer = later(() => h.classList.remove('show'), 5000);
+  }
+
+  function status(value) {
+    const e = $('wsStatus');
+    if (!e) return;
+
+    stopTimeout(statusTimer);
+    clearGuides();
+
+    e.textContent = value;
+    e.classList.remove('auto-hidden');
+
+    const selector = guideTargetFor(value);
+    const target = selector ? find(selector) : null;
+
+    if (
+      target?.getClientRects().length &&
+      getComputedStyle(target).visibility !== 'hidden'
+    ) {
+      target.classList.add('ws-guided');
+      placeActionHint($('wsActionHint'), target, value);
+    }
+
+    statusTimer = later(() => {
+      e.classList.add('auto-hidden');
+      clearGuides();
+    }, 4200);
+  }
+
+  function sawIsUp() {
+    return (parseFloat($('circularSaw')?.style.top) || 22) <= 35;
+  }
+
+  function currentWoodStep() {
+    if (!ws.cutLength) return ['length', '#cutLengthPicker', '1. Gewünschte Länge auswählen'];
+    if (!ws.tapeReady) return ['tape', '#tapeHook', `2. Maßband bis ${ws.cutLength} cm herausziehen`];
+    if (!ws.ruler) return ['ruler', '#wsRuler', '3. Lineal aus dem Becher an die blaue Hilfe legen'];
+    if (ws.markCount < 20) return ['pencil', '#wsPencil', '4. Mit dem Bleistift entlang des Lineals markieren'];
+    if (!ws.rulerParked || !ws.pencilParked) return ['cup', '.tool-cup', '5. Lineal und Bleistift zurücklegen'];
+    if (!ws.sawStopReady) return ['stop', '#sawStopSlider', `6. Sägeanschlag auf ${ws.cutLength} cm einstellen`];
+    if (!ws.boardAligned) return ['board', '#wsBoard', '7. Brett bei ausgeschalteter Säge anlegen'];
+    if (ws.cut < 100 && !ws.sawOn) return ['on', '#sawSwitch', '8. Säge einschalten'];
+    if (ws.cut < 100) return ['cut', '#circularSaw', '9. Säge am Griff langsam senken'];
+    if (!sawIsUp()) return ['raise', '#circularSaw', '10. Sägekopf nach oben führen'];
+    if (ws.sawOn) return ['off', '#sawSwitch', '11. Säge ausschalten'];
+    if (!ws.stopAside) return ['aside', '#sawStopSystem', '12. Anschlag mit der Hand nach links schieben'];
+    if (!ws.wasteStored) return ['waste', '#wastePiece', '13. Restholz ins Regal legen'];
+    return ['finished', '#wsBoard', '14. Fertiges Holz zur Schleifstation bringen'];
+  }
+
+  function updateWoodStationGuide(force = false) {
+    if (!$('wsWoodPanel')?.classList.contains('show')) {
+      guideKey = '';
+      return;
+    }
+
+    const [key, selector, value] = currentWoodStep();
+    if (!force && key === guideKey) return;
+
+    guideKey = key;
+    clearGuides();
+
+    const target = find(selector);
+    if (!target?.getClientRects().length) return;
+    target.classList.add('ws-guided');
+    placeActionHint($('wsActionHint'), target, value);
+  }
+
+  function updateEssentialWoodHint() {
+    const h = $('essentialWoodHint');
+    if (!h) return;
+
+    if (!$('wsWoodPanel')?.classList.contains('show')) {
+      h.className = 'essential-wood-hint';
+      return;
+    }
+
+    const [key] = currentWoodStep();
+    const messages = {
+      length: ['tape', 'ZUERST LÄNGE WÄHLEN – DANN AM MAẞBAND ZIEHEN'],
+      tape: ['tape', `AM MAẞBAND ZIEHEN – BIS ${ws.cutLength} CM`],
+      ruler: ['mark', 'LINEAL AN DIE BLAUE HILFE LEGEN'],
+      pencil: ['mark', 'MIT DEM STIFT ROT MARKIEREN'],
+      cup: ['cup', 'LINEAL UND STIFT ZURÜCK IN DEN BECHER'],
+      stop: ['stop', `SÄGEANSCHLAG AUF ${ws.cutLength} CM EINSTELLEN`],
+      board: ['align', 'SÄGE AUS LASSEN · HOLZ AM ANSCHLAG EINRASTEN'],
+      on: ['power', 'HOLZ EINGERASTET · SÄGE EINSCHALTEN'],
+      cut: ['cut', `SÄGE LANGSAM SENKEN · ${Math.round(ws.cut)} %`],
+      raise: ['raise', 'SÄGEKOPF NACH OBEN FÜHREN'],
+      off: ['poweroff', 'SÄGEKOPF OBEN · SÄGE AUSSCHALTEN']
+    };
+
+    const message = messages[key];
+    if (!message) {
+      h.className = 'essential-wood-hint';
+      return;
+    }
+
+    h.className = `essential-wood-hint ${message[0]} show`;
+    h.textContent = message[1];
+
+    if (key === 'pencil') {
+      const g = $('markGuide')?.getBoundingClientRect();
+      const a = $('woodArea')?.getBoundingClientRect();
+      if (g && a) {
+        h.style.left = Math.max(8, Math.min(a.width - 150, g.left - a.left + 24)) + 'px';
+      }
+    }
+  }
+
+  function startUiLoop() {
+    every(() => {
+      if (!visible()) return;
+      updateWoodStationGuide();
+      updateEssentialWoodHint();
+      root()?.classList.toggle(
+        'marking-in-progress',
+        ws.tapeReady && (!ws.rulerParked || !ws.pencilParked)
+      );
+      text('assemblyMissionCount', `${ws.placed} / 4`);
+    }, 150);
+  }
+
+  function pointWorkshopArm(x, y) {
+    const o = root();
+    if (!o) return;
+    const r = o.getBoundingClientRect();
+    const left = activeWorkshopHand
+      ? activeWorkshopHand === 'left'
+      : x < r.left + r.width / 2;
+
+    const arm = $(left ? 'wsArmLeft' : 'wsArmRight');
+    const other = $(left ? 'wsArmRight' : 'wsArmLeft');
+    if (!arm) return;
+
+    const sx = r.width * (left ? 0.37 : 0.63);
+    const sy = r.height * 0.91;
+    const dx = x - r.left - sx;
+    const dy = y - r.top - sy;
+    const length = Math.max(150, Math.min(430, Math.hypot(dx, dy)));
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+    arm.classList.add('grabbing');
+    arm.classList.remove('resting');
+    arm.style.width = length + 'px';
+    arm.style.top = (sy - 26) + 'px';
+    arm.style.left = (left ? sx : sx - length) + 'px';
+    arm.style.right = 'auto';
+    arm.style.transform = `rotate(${left ? angle : angle + 180}deg)`;
+
+    if (other) {
+      other.classList.remove('grabbing');
+      other.classList.add('resting');
+      other.style.cssText = '';
+    }
+  }
+
+  function resetWorkshopArms() {
+    activeWorkshopHand = null;
+    ['wsArmLeft', 'wsArmRight'].forEach(id => {
+      const e = $(id);
+      if (!e) return;
+      e.classList.remove('grabbing');
+      e.classList.add('resting');
+      e.style.cssText = '';
+    });
+  }
+
+  function showHand(hand, x, y) {
+    if (hand) {
+      const p = hand.offsetParent || root();
+      const r = p?.getBoundingClientRect() || { left: 0, top: 0 };
+      hand.classList.add('show');
+      hand.style.left = (x - r.left - 95) + 'px';
+      hand.style.top = (y - r.top - 22) + 'px';
+    }
+    pointWorkshopArm(x, y);
+  }
+
+  function hideHands() {
+    all('.ws-hand').forEach(e => e.classList.remove('show'));
+    resetWorkshopArms();
+  }
+
+  // Eine Drag-Steuerung pro Element, inklusive Abbruchbehandlung.
+  function drag(el, area, move, drop, hand, options = {}) {
+    if (!el || !area || el.dataset.wsDragBound) return;
+    el.dataset.wsDragBound = '1';
+    el.style.touchAction = 'none';
+
+    let pointer = null;
+    let dx = 0;
+    let dy = 0;
+
+    function finish(e, cancelled = false) {
+      if (pointer === null) return;
+      if (e && e.pointerId !== pointer) return;
+
+      const id = pointer;
+      pointer = null;
+
+      try {
+        if (el.hasPointerCapture(id)) el.releasePointerCapture(id);
+      } catch (_) {}
+
+      el.classList.remove(
+        'dragging', 'dragging-bit', 'dragging-saw', 'dragging-driver'
+      );
+      hideHands();
+
+      if (cancelled) options.cancel?.();
+      else drop?.(e, el);
+    }
+
+    cancelInteractions.add(() => finish(null, true));
+
+    el.addEventListener('pointerdown', e => {
+      if (!visible() || pointer !== null || e.button > 0) return;
+      if (options.guard && !options.guard(e, el)) return;
+
+      if (el.classList.contains('part') && el.classList.contains('placed')) return;
+
+      if (el.id === 'wastePiece' && (
+        ws.sawOn || ws.cut < 100 || !ws.stopAside ||
+        !sawIsUp() || ws.wasteStored
+      )) {
+        status('Restholz erst nach vollständigem Schnitt, angehobenem Sägekopf, AUS und weggerücktem Anschlag anfassen.');
+        return;
+      }
+
+      if (el.id === 'wsBoard' && (
+        ws.sawOn || (ws.cut > 0 && ws.cut < 100)
+      )) {
+        status('Das Brett darf während des Sägens nicht bewegt werden.');
+        return;
+      }
+
+      if (el.id === 'wsBoard' && ws.cut >= 100) return;
+
+      if (el.id === 'wsBoard' && (
+        !ws.sawStopReady || ws.markCount < 20 ||
+        !ws.rulerParked || !ws.pencilParked
+      )) {
+        status('Zuerst markieren, Werkzeuge ablegen und Längenanschlag einstellen.');
+        return;
+      }
+
+      if (el.id === 'circularSaw' && (!ws.boardAligned || (
+        !ws.sawOn && ws.cut === 0
+      ))) {
+        status('Brett zuerst bei AUS ausrichten und die Säge einschalten.');
+        return;
+      }
+
+      e.preventDefault();
+      pointer = e.pointerId;
+      activeWorkshopHand = el.id === 'wsPencil'
+        ? 'right'
+        : e.clientX < root().getBoundingClientRect().left +
+          root().getBoundingClientRect().width / 2 ? 'left' : 'right';
+
+      const a = area.getBoundingClientRect();
+      const before = el.getBoundingClientRect();
+
+      if (el.classList.contains('bit-piece')) {
+        area.appendChild(el);
+        el.style.position = 'absolute';
+      }
+
+      if (el.classList.contains('in-cup')) {
+        el.classList.remove('in-cup', 'parked');
+      }
+
+      // Alte parallele CSS-Translations ausschalten.
+      if (el.id === 'sandBlockV32') {
+        el.style.setProperty('--sand-x', '0px');
+        el.style.setProperty('--sand-y', '0px');
+      }
+      if (el.id === 'wsDriver') {
+        el.style.setProperty('--driver-x', '0px');
+        el.style.setProperty('--driver-y', '0px');
+      }
+
+      el.style.setProperty('left', (before.left - a.left) + 'px', 'important');
+      el.style.setProperty('top', (before.top - a.top) + 'px', 'important');
+      el.style.setProperty('right', 'auto', 'important');
+      el.style.setProperty('bottom', 'auto', 'important');
+
+      if (el.id === 'wsPencil') {
+        el.classList.add('right-hand-pencil');
+        el.style.setProperty('transform', 'rotate(8deg)', 'important');
+      }
+
+      if (el.id === 'wsRuler') ws.rulerParked = false;
+      if (el.id === 'wsPencil') ws.pencilParked = false;
+      if (el.id === 'wsBoard') {
+        ws.boardAligned = false;
+        el.classList.remove('stop-snapped');
+      }
+
+      const r = el.getBoundingClientRect();
+      dx = e.clientX - r.left;
+      dy = e.clientY - r.top;
+
+      try {
+        el.setPointerCapture(pointer);
+      } catch (_) {}
+
+      el.classList.add('dragging');
+      if (el.classList.contains('bit-piece')) el.classList.add('dragging-bit');
+      if (el.id === 'circularSaw') el.classList.add('dragging-saw');
+      if (el.id === 'wsDriver') el.classList.add('dragging-driver');
+
+      options.start?.(e, el);
+      showHand(hand, e.clientX, e.clientY);
+    });
+
+    el.addEventListener('pointermove', e => {
+      if (e.pointerId !== pointer) return;
+      e.preventDefault();
+
+      const a = area.getBoundingClientRect();
+      let x = e.clientX - a.left - dx;
+      let y = e.clientY - a.top - dy;
+
+      if (options.constrain) {
+        x = Math.max(0, Math.min(a.width - el.offsetWidth, x));
+        y = Math.max(0, Math.min(a.height - el.offsetHeight, y));
+      }
+
+      if (el.id === 'circularSaw') {
+        y = Math.max(22, Math.min(150, y));
+      } else if (el.id === 'wsBoard') {
+        y = 125;
+      }
+
+      if (el.id !== 'circularSaw') {
+        el.style.setProperty('left', x + 'px', 'important');
+      }
+      el.style.setProperty('top', y + 'px', 'important');
+
+      showHand(hand, e.clientX, e.clientY);
+      move?.(e, el, a);
+    });
+
+    el.addEventListener('pointerup', e => finish(e));
+    el.addEventListener('pointercancel', e => finish(e, true));
+    el.addEventListener('lostpointercapture', e => finish(e, true));
+  }
+
+  function cancelAllInteractions() {
+    cancelInteractions.forEach(fn => fn());
+    hideHands();
+  }
+
+  function setSawPower(on) {
+    ws.sawOn = !!on;
+    cls('sawSwitch', 'on', ws.sawOn);
+    cls('circularSaw', 'running', ws.sawOn);
+  }
+
+  function returnSaw() {
+    const saw = $('circularSaw');
+    if (!saw) return;
+    saw.classList.remove('cut-aligned', 'saw-track-lock', 'dragging-saw');
+    saw.classList.add('saw-returning');
+    saw.style.setProperty('top', '22px', 'important');
+    saw.style.setProperty('--saw-angle', '-24deg');
+    later(() => saw.classList.remove('saw-returning'), 420);
+  }
+
+  function reset() {
+    cancelAllInteractions();
+    clearJobs();
+    Object.assign(ws, createState());
+    guideKey = '';
+    clearGuides();
+
+    all('.ws-panel,.ws-card').forEach(e => e.classList.remove('show', 'done'));
+    all('.ws-guided').forEach(e => e.classList.remove('ws-guided'));
+
+    ['wsCardScrew', 'wsCardPrint', 'wsCardAssemble'].forEach(id => cls(id, 'locked', true));
+    cls('wsCardWood', 'locked', false);
+
+    cls('wsSafety', 'goggles-on ears-on gear-complete', false);
+    text('wsGoggles', 'Schutzbrille anziehen');
+    text('wsEars', 'Gehörschutz anziehen');
+    all('.ws-gear button,.bit-piece,.model-card,.color-swatch').forEach(e => {
+      e.classList.remove('active', 'selected', 'loaded-bit');
+    });
+
+    all('.part').forEach(e => {
+      e.classList.remove('placed', 'wrong-part', 'snap-fly', 'dragging');
+      e.dataset.placed = '0';
+      ['left', 'top', 'right', 'bottom'].forEach(p => e.style.removeProperty(p));
+    });
+    all('.snap-slot').forEach(e => e.classList.remove('filled'));
+    all('#assemblyLiveBuild i').forEach(e => e.classList.remove('built'));
+    all('.dowel-hole').forEach(e => e.classList.remove('filled'));
+    all('.montage-tool').forEach(e => {
+      e.classList.remove('done', 'ready');
+      e.classList.add('locked');
+    });
+    cls('toolDowel', 'locked', false);
+    cls('toolDowel', 'ready', true);
+    cls('assemblyArea', 'dowel-step', false);
+    cls('assemblyMontage', 'show', false);
+    cls('assemblyLiveBuild', 'hammered clamped puzzle-complete', false);
+    cls('assemblyGlue', 'show', false);
+    cls('angleBadge', 'show', false);
+    cls('puzzleCompleteFx', 'show', false);
+    cls('assemblyHammerVisual', 'hit', false);
+    style('assemblyProgressBar', 'width', '0%');
+    text('assemblyProgressText', 'BAUFORTSCHRITT 0%');
+    setMontageProgress(0);
+    $('assemblyFx')?.replaceChildren();
+
+    $('markCanvas')?.replaceChildren();
+    style('cutProgress', 'height', '0');
+    cls('circularSaw', 'running cut-aligned dragging-saw saw-track-lock saw-finished saw-returning', false);
+    removeStyle('circularSaw', ['left', 'top', 'right']);
+    style('circularSaw', '--saw-angle', '-24deg');
+    cls('wsBoard', 'cut-ready dragging saw-locked stop-snapped', false);
+    style('wsBoard', 'left', '10%');
+    style('wsBoard', 'top', '125px');
+
+    cls('wastePiece', 'show stored separating safe-to-move dragging', false);
+    removeStyle('wastePiece', ['left', 'top', 'right', 'bottom', '--separate']);
+    cls('wasteShelf', 'ready', false);
+
+    ['wsRuler', 'wsPencil'].forEach(id => {
+      cls(id, 'parked tool-step-ok right-hand-pencil brief-guide-done marking snapped-pencil', false);
+      cls(id, 'in-cup', true);
+      removeStyle(id, ['left', 'top', 'right', 'bottom', 'transform']);
+    });
+
+    cls('toolParking', 'ready', false);
+    find('.tool-cup')?.classList.remove('cup-ready');
+    root()?.classList.remove('adjusting-saw-measure', 'marking-in-progress');
+
+    cls('markGuide', 'ready ruler-target mark-finished', false);
+    removeStyle('markGuide', ['left']);
+    removeStyle('cutProgress', ['left']);
+    cls('tapeCase', 'ready', false);
+    style('tapeBlade', 'width', '0');
+    style('tapeHook', 'left', '77px');
+    text('tapeReadout', '0 cm');
+    $('tapeScale')?.replaceChildren();
+    text('chosenLength', 'Noch nicht gewählt');
+    all('#cutLengthPicker button').forEach(e => e.classList.remove('selected'));
+    text('tapeLiveHint', 'MAẞBAND: 0 cm herausgezogen');
+    text('sawMeasureHint', 'SÄGEANSCHLAG: IST 20 cm · SOLL –');
+    cls('tapeLiveHint', 'active', false);
+    cls('sawMeasureHint', 'active', false);
+
+    if ($('sawStopSlider')) $('sawStopSlider').value = '20';
+    text('sawStopValue', 'IST: 20 cm');
+    text('sawTargetValue', 'SOLL: –');
+    style('sawStopMarker', 'left', '18px');
+    cls('sawStopSystem', 'ready attached needs-aside aside compact-20', false);
+    removeStyle('sawStopSystem', ['transform']);
+    if ($('sawStopSlider')) $('sawStopSlider').disabled = false;
+
+    setSawPower(false);
+    if ($('sawSwitch')) $('sawSwitch').disabled = false;
+    if ($('sawAfterHint')) {
+      $('sawAfterHint').className = 'saw-after-hint';
+      $('sawAfterHint').textContent = '';
+    }
+
+    cls('smoothShine', 'show', false);
+    $('splinterLayer')?.replaceChildren();
+    style('sandProgressBar', 'width', '0%');
+    cls('sandBlockV32', 'grit80 grit180 dragging', false);
+    removeStyle('sandBlockV32', ['left', 'top', 'right', 'bottom', '--sand-x', '--sand-y']);
+    all('.sandpaper-sheet').forEach(e => e.classList.toggle('active', e.textContent.includes('K120')));
+
+    all('.screw').forEach(e => {
+      e.classList.remove('done', 'placed-screw', 'wrong-angle', 'driving');
+      e.style.removeProperty('--screw-angle');
+      e.dataset.angle = '0';
+    });
+    all('.loose-screw').forEach(e => e.classList.remove('used'));
+    all('.screw-depth span').forEach(e => e.style.width = '0%');
+    find('.screw-board')?.classList.remove('cracked');
+    ['--crack-x', '--crack-y'].forEach(p => find('.screw-board')?.style.removeProperty(p));
+
+    bitHomes.forEach((home, bit) => {
+      if (home.next?.parentNode === home.parent) home.parent.insertBefore(bit, home.next);
+      else home.parent.appendChild(bit);
+      bit.style.cssText = home.style;
+    });
+
+    cls('wsDriver', 'bit-loaded drilling dragging-driver dragging', false);
+    removeStyle('wsDriver', ['left', 'top', 'right', 'bottom', '--driver-x', '--driver-y']);
+    if ($('screwAngleSlider')) $('screwAngleSlider').value = '0';
+    text('screwAngleReadout', '0°');
+    style('screwProgress', 'display', 'none');
+
+    style('printProgress', 'width', '0%');
+    style('printObject', 'width', '0');
+    style('printObject', 'height', '0');
+    removeStyle('printObject', ['--print-color']);
+    if ($('printObject')) $('printObject').className = 'print-object';
+    cls('printerHead', 'printing', false);
+    removeStyle('printerHead', ['left', 'top']);
+    $('printerScreen')?.parentElement.classList.remove('print-finished', 'is-printing');
+    all('#wsPrintPanel button,#wsPrintPanel select').forEach(e => e.disabled = false);
+    if ($('wsPrintStart')) $('wsPrintStart').disabled = true;
+    if ($('wsMaterial')) $('wsMaterial').value = '';
+    if ($('wsQuality')) $('wsQuality').value = '';
+    style('wsPrintTake', 'display', 'none');
+    text('layerCounter', 'SCHICHT 0');
+    text('printTimeBadge', 'DRUCKZEIT --:--');
+    text('printSummary', 'Wähle Modell, Material, Farbe und Qualität.');
+    text('printerScreen', 'MODELL: –\nMATERIAL: –\nFORTSCHRITT: 0%');
+    cls('printVictory', 'show', false);
+
+    if ($('assembledProduct')) $('assembledProduct').className = 'assembled-product box';
+    style('attachPrintBtn', 'display', 'none');
+    cls('wsFinalDisplay', 'show', false);
+    cls('wsQuiz', 'show', false);
+    cls('wsWelcome', 'show', false);
+    if ($('essentialWoodHint')) $('essentialWoodHint').className = 'essential-wood-hint';
+
+    all('.wood-chip,.saw-dust-cloud,.sanding-dust,.sanding-chip').forEach(e => e.remove());
+  }
+
+  window.openWorkshop = function () {
+    if (!initialize()) return;
+    if (!visible()) {
+      opener = document.activeElement;
+      priorOverflow = document.body.style.overflow;
+    }
+    reset();
+
+    const logo = $('wsQuinoaLogo');
+    const source = document.querySelector('.school-logo-top img');
+    if (logo && source && !logo.getAttribute('src')) logo.src = source.src;
+
+    root().style.display = 'block';
+    root().setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    cls('wsWelcome', 'show', true);
+    style('wsSafety', 'display', 'none');
+    cls('wsProjectPicker', 'show', false);
+    style('wsMenu', 'display', 'none');
+
+    startUiLoop();
+    status('Willkommen in der Quinoa-Werkstatt.');
+    steps('Werkstatt-Erlebnis starten');
+  };
+
+  window.startWorkshopExperience = function () {
+    if (!visible()) return;
+    cls('wsWelcome', 'show', false);
+    style('wsSafety', 'display', 'block');
+    status('Zuerst Schutzbrille anziehen und Gehörschutz anziehen.');
+    steps('1. Sicherheitsausrüstung anziehen');
+  };
+
+  window.closeWorkshop = function () {
+    const wasVisible = visible();
+    cancelAllInteractions();
+    clearJobs();
+    setSawPower(false);
+    ws.printing = false;
+
+    cls('printerHead', 'printing', false);
+    cls('wsDriver', 'drilling', false);
+    all('.screw.driving').forEach(e => e.classList.remove('driving'));
+    clearGuides();
+
+    if (root()) {
+      root().style.display = 'none';
+      root().setAttribute('aria-hidden', 'true');
+    }
+
+    if (wasVisible) {
+      document.body.style.overflow = priorOverflow;
+      opener?.focus?.();
+      opener = null;
+    }
+
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'werkstatt-close' }, location.origin);
+    }
+  };
+
+  window.toggleWsGear = function (type) {
+    if (!visible() || !['goggles', 'ears'].includes(type) || ws[type]) return;
+    ws[type] = true;
+    cls(type === 'goggles' ? 'wsGoggles' : 'wsEars', 'active', true);
+    text(
+      type === 'goggles' ? 'wsGoggles' : 'wsEars',
+      type === 'goggles' ? 'Schutzbrille sitzt ✓' : 'Gehörschutz sitzt ✓'
+    );
+    cls('wsSafety', type === 'goggles' ? 'goggles-on' : 'ears-on', true);
+
+    if (ws.goggles && ws.ears) {
+      cls('wsSafety', 'gear-complete', true);
+      status('Sicherheits-Check bestanden.');
+      steps('2. Projekt beginnen');
+      later(() => {
+        style('wsSafety', 'display', 'none');
+        window.chooseWsProject('box');
+      }, 1250);
+    }
+  };
+
+  window.chooseWsProject = function (project) {
+    if (!ws.goggles || !ws.ears) return;
+    if (!['box', 'stool', 'holder'].includes(project)) return;
+    ws.project = project;
+    root().dataset.project = project;
+
+    const names = project === 'stool'
+      ? { base: 'Sitzfläche', side1: 'Bein links', side2: 'Bein rechts', back: 'Querstrebe' }
+      : { base: 'Boden', side1: 'Seite links', side2: 'Seite rechts', back: 'Rückwand' };
+
+    all('.snap-slot').forEach(e => e.textContent = names[e.dataset.slot] || '');
+    cls('wsProjectPicker', 'show', false);
+    style('wsMenu', 'display', 'grid');
+    status('Beginne mit Messen, Markieren und Sägen.');
+    steps('3. Holz messen, markieren und sägen');
+  };
+
+  window.openWsStation = function (name) {
+    const panels = {
+      wood: 'wsWoodPanel',
+      sand: 'wsSandPanel',
+      screw: 'wsScrewPanel',
+      print: 'wsPrintPanel',
+      assemble: 'wsAssemblePanel'
+    };
+
+    if (!panels[name] || !visible()) return;
+
+    const allowed = ws.project && ws.goggles && ws.ears &&
+      (name !== 'sand' || (ws.cut >= 100 && ws.wasteStored && !ws.sawOn)) &&
+      (name !== 'assemble' || ws.done.wood) &&
+      (name !== 'screw' || ws.montageStep === 5) &&
+      (name !== 'print' || ws.done.screw);
+
+    if (!allowed || ws.sawOn) {
+      status('Diese Station ist noch gesperrt oder die Säge läuft. Arbeitsreihenfolge einhalten.');
+      return;
+    }
+
+    cancelAllInteractions();
+    clearGuides();
+    style('wsMenu', 'display', 'none');
+    all('.ws-panel').forEach(e => e.classList.remove('show'));
+    cls(panels[name], 'show', true);
+
+    if (name === 'wood') {
+      woodStage(ws.cutLength ? 2 : 1);
+      updateWoodStationGuide(true);
+    }
+    if (name === 'sand' && !ws.done.wood && !find('.splinter')) buildSplinters();
+  };
+
+  window.backToWsMenu = function () {
+    if (ws.sawOn || ws.printing) {
+      status(ws.sawOn ? 'Säge zuerst ausschalten.' : 'Der Druck läuft noch.');
+      return;
+    }
+    cancelAllInteractions();
+    all('.ws-panel').forEach(e => e.classList.remove('show'));
+    clearGuides();
+    style('wsMenu', 'display', 'grid');
+  };
+
+  function checkParking(el) {
+    const cup = find('.tool-cup');
+    return !!cup && overlap(el.getBoundingClientRect(), cup.getBoundingClientRect(), 55);
+  }
+
+  function snapIntoCup(el) {
+    ['left', 'top', 'right', 'bottom', 'transform'].forEach(p => el.style.removeProperty(p));
+    el.classList.remove('right-hand-pencil', 'marking', 'snapped-pencil');
+    el.classList.add('in-cup', 'parked');
+  }
+
+  function updateParking() {
+    if (!ws.rulerParked || !ws.pencilParked) return;
+    find('.tool-cup')?.classList.add('cup-ready');
+    status(`Werkzeuge ordentlich im Becher. Längenanschlag auf ${ws.cutLength} cm einstellen.`);
+  }
+
+  window.chooseCutLength = function (value) {
+    const cm = Number(value);
+    if (!Number.isFinite(cm) || cm <= 0 || !ws.project) return;
+
+    if (ws.markCount > 0 || ws.cut > 0 || ws.sawOn) {
+      status('Nach Beginn der Markierung bleibt die Länge fest. Für eine andere Länge die Werkstatt neu starten.');
+      return;
+    }
+
+    stopInterval(tapeJob);
+    tapeJob = null;
+
+    Object.assign(ws, {
+      cutLength: cm,
+      tapeReady: false,
+      tapeRetracted: false,
+      ruler: false,
+      rulerParked: false,
+      pencilParked: false,
+      markCount: 0,
+      sawStopReady: false,
+      boardAligned: false
+    });
+
+    ['wsRuler', 'wsPencil'].forEach(id => {
+      cls(id, 'tool-step-ok parked', false);
+      if ($(id)) snapIntoCup($(id));
+      cls(id, 'parked', false);
+    });
+
+    const slider = $('sawStopSlider');
+    if (slider) slider.value = String(cm === 20 ? 21 : 20);
+
+    text('sawTargetValue', `SOLL: ${cm} cm`);
+    text('sawStopValue', `IST: ${slider?.value || 20} cm`);
+    cls('sawStopSystem', 'ready attached', false);
+    cls('wsBoard', 'stop-snapped', false);
+    cls('markGuide', 'ready ruler-target mark-finished', false);
+    cls('tapeCase', 'ready', false);
+    $('markCanvas')?.replaceChildren();
+    style('tapeBlade', 'width', '0');
+    style('tapeHook', 'left', '77px');
+    text('tapeReadout', '0 cm');
+
+    const scale = $('tapeScale');
+    scale?.replaceChildren();
+
+    for (let n = 0; scale && n <= cm; n += 5) {
+      const label = document.createElement('span');
+      label.className = 'tape-number';
+      label.textContent = n;
+      label.style.left = (n * 9) + 'px';
+      scale.appendChild(label);
+    }
+
+    text('chosenLength', `Ziel: ${cm} cm`);
+    all('#cutLengthPicker button').forEach(e => {
+      e.classList.toggle('selected', parseInt(e.textContent, 10) === cm);
+    });
+
+    text('tapeLiveHint', `MAẞBAND: 0 cm / ZIEL ${cm} cm`);
+    text('sawMeasureHint', `SÄGEANSCHLAG: IST ${slider?.value || 20} cm · SOLL ${cm} cm`);
+    woodStage(2);
+    status(`${cm} cm gewählt. Maßband am Metallhaken nach rechts ziehen.`);
+    steps(`3. Maßband bis ${cm} cm herausziehen`);
+  };
+
+  window.updateSawStop = function (value) {
+    const v = Number(value);
+    const sys = $('sawStopSystem');
+    const area = $('woodArea');
+    if (!sys || !area || !Number.isFinite(v)) return;
+
+    if (ws.sawOn || ws.cut > 0 || ws.markCount < 20 ||
+        !ws.rulerParked || !ws.pencilParked) {
+      status('Längenanschlag erst nach Markierung und Werkzeugablage einstellen; nicht während des Schnitts.');
+      return;
+    }
+
+    const a = area.getBoundingClientRect();
+    const s = sys.getBoundingClientRect();
+    const hookX = a.width * 0.56 - v * 9;
+
+    text('sawStopValue', `IST: ${v} cm`);
+    style('sawStopMarker', 'left', (hookX - (s.left - a.left)) + 'px');
+    text('sawMeasureHint', `SÄGEANSCHLAG: IST ${v} cm · SOLL ${ws.cutLength} cm`);
+
+    ws.sawStopReady = !!ws.cutLength && v === ws.cutLength;
+    ws.boardAligned = false;
+    cls('wsBoard', 'stop-snapped', false);
+    cls('sawStopSystem', 'ready attached', ws.sawStopReady);
+    cls('sawStopSystem', 'compact-20', v === 20);
+
+    status(ws.sawStopReady
+      ? `Anschlaghaken steht ${v} cm vom Sägeblatt entfernt. Brett bei AUS anlegen.`
+      : `SOLL ${ws.cutLength || '?'} cm, IST ${v} cm – Säge bleibt gesperrt.`);
+  };
+
+  function retractTape() {
+    if (ws.tapeRetracted) return;
+    ws.tapeRetracted = true;
+    let width = parseFloat($('tapeBlade')?.style.width) || 0;
+
+    tapeJob = every(() => {
+      width = Math.max(0, width - 12);
+      style('tapeBlade', 'width', width + 'px');
+      style('tapeHook', 'left', (77 + width) + 'px');
+      text('tapeReadout', `${Math.round(width / 9)} cm`);
+
+      if (width === 0) {
+        stopInterval(tapeJob);
+        tapeJob = null;
+        cls('tapeCase', 'ready', false);
+        woodStage(5);
+        status('Markierung fertig. Lineal und Bleistift sicher zurücklegen.');
+      }
+    }, 35);
+  }
+
+  function finishMarking() {
+    if (ws.markCount < 20) return;
+    cls('markGuide', 'mark-finished', true);
+    cls('wsPencil', 'brief-guide-done', true);
+
+    const canvas = $('markCanvas');
+    if (canvas && !canvas.querySelector('.final-mark-line')) {
+      const a = $('woodArea').getBoundingClientRect();
+      const g = $('markGuide').getBoundingClientRect();
+      const line = document.createElement('div');
+      line.className = 'mark-segment final-mark-line';
+      line.style.left = (g.left - a.left) + 'px';
+      line.style.top = (g.top - a.top) + 'px';
+      line.style.height = g.height + 'px';
+      canvas.appendChild(line);
+    }
+    retractTape();
+  }
+
+  function wireWood() {
+    const area = $('woodArea');
+    if (!area) return;
+
+    const ruler = $('wsRuler');
+    const pencil = $('wsPencil');
+    const board = $('wsBoard');
+    const saw = $('circularSaw');
+    const hand = $('wsWoodHand');
+    const hook = $('tapeHook');
+    const stop = $('sawStopSystem');
+
+    if (hook) {
+      hook.style.touchAction = 'none';
+      let pointer = null;
+
+      const endTape = e => {
+        if (pointer === null || (e && e.pointerId !== pointer)) return;
+        const id = pointer;
+        pointer = null;
+        try { if (hook.hasPointerCapture(id)) hook.releasePointerCapture(id); } catch (_) {}
+        cls('tapeLiveHint', 'active', false);
+      };
+      cancelInteractions.add(() => endTape());
+
+      hook.addEventListener('pointerdown', e => {
+        if (!visible() || pointer !== null || e.button > 0) return;
+        if (!ws.cutLength || ws.tapeReady) {
+          if (!ws.cutLength) status('Zuerst die gewünschte Länge auswählen.');
+          return;
         }
-        window.openWorkshop=function(){reset();const logo=$('wsQuinoaLogo'),source=document.querySelector('.school-logo-top img');if(logo&&source&&!logo.src)logo.src=source.src;const o=$('workshopOverlay');o.style.display='block';o.setAttribute('aria-hidden','false');$('wsWelcome').classList.add('show');$('wsSafety').style.display='none';$('wsProjectPicker').classList.remove('show');$('wsMenu').style.display='none';status('Willkommen in der Quinoa-Werkstatt.');steps('Werkstatt-Erlebnis starten')};
-        window.startWorkshopExperience=function(){$('wsWelcome').classList.remove('show');$('wsSafety').style.display='block';status('Ziehe zuerst Schutzbrille und Gehörschutz an.');steps('1. Sicherheitsausrüstung anziehen')};
-        window.closeWorkshop=function(){const o=$('workshopOverlay');if(o){o.style.display='none';o.setAttribute('aria-hidden','true')}};
-        window.toggleWsGear=function(type){ws[type]=true;const b=type==='goggles'?$('wsGoggles'):$('wsEars');if(b){b.classList.add('active');b.textContent=type==='goggles'?'Schutzbrille sitzt ✓':'Gehörschutz sitzt ✓'}const safety=$('wsSafety');safety.classList.add(type==='goggles'?'goggles-on':'ears-on');status(type==='goggles'?'Schutzbrille wird mit der Hand sicher aufgesetzt.':'Gehörschutz wird über beide Ohren gesetzt.');if(ws.goggles&&ws.ears){safety.classList.add('gear-complete');status('Sicherheits-Check bestanden. Schutzbrille und Gehörschutz sitzen.');steps('2. Station auswählen');setTimeout(()=>{safety.style.display='none';window.chooseWsProject('box')},1250)}};
-        window.chooseWsProject=function(project){ws.project=project;$('workshopOverlay').dataset.project=project;const names=project==='stool'?{base:'Sitzfläche',side1:'Bein links',side2:'Bein rechts',back:'Querstrebe'}:{base:'Boden',side1:'Seite links',side2:'Seite rechts',back:'Rückwand'};document.querySelectorAll('.snap-slot').forEach(x=>x.textContent=names[x.dataset.slot]);$('wsProjectPicker').classList.remove('show');$('wsMenu').style.display='grid';status('Projekt gewählt. Beginne mit Messen, Markieren und Sägen.');steps('3. Holz messen, markieren und sägen')};
-        window.openWsStation=function(name){
-          if(name==='assemble'&&!ws.done.wood||name==='screw'&&ws.montageStep<5||name==='print'&&!ws.done.screw){status('Diese Station ist noch gesperrt. Halte die echte Arbeitsreihenfolge ein.');return}
-          $('wsMenu').style.display='none';['Wood','Sand','Screw','Print','Assemble'].forEach(n=>{const e=$('ws'+n+'Panel');if(e)e.classList.remove('show')});
-          $(name==='wood'?'wsWoodPanel':name==='sand'?'wsSandPanel':name==='screw'?'wsScrewPanel':name==='print'?'wsPrintPanel':'wsAssemblePanel').classList.add('show')
-          if(name==='wood')woodStage(1)
-        };
-        window.backToWsMenu=function(){document.querySelectorAll('.ws-panel').forEach(x=>x.classList.remove('show'));$('wsMenu').style.display='grid';hideHands()};
+        e.preventDefault();
+        pointer = e.pointerId;
+        hook.setPointerCapture(pointer);
+        cls('tapeLiveHint', 'active', true);
+      });
 
-        function drag(el,area,move,drop,hand){
-          if(!el||el._v33)return;el._v33=true;let on=false,dx=0,dy=0;
-          el.addEventListener('pointerdown',e=>{if(el.id==='wastePiece'&&ws.sawOn){status('Gefahr: Restholz erst anfassen, nachdem die Säge ausgeschaltet wurde.');return}if(el.id==='wsBoard'&&(ws.sawOn||ws.cut>0)){status('Das Brett wird bei ausgeschalteter Säge vor dem Start am Anschlag ausgerichtet.');return}if(el.id==='wsBoard'&&(!ws.sawStopReady||ws.markCount<20||!ws.rulerParked||!ws.pencilParked)){status('Erst vollständig markieren, Werkzeuge ablegen und den Längenanschlag einstellen.');return}if(el.id==='circularSaw'&&!ws.sawOn){status('Die Kappsäge ist aus und bleibt sicher oben.');return}if(el.id==='circularSaw'&&!ws.boardAligned){status('Richte zuerst bei ausgeschalteter Säge das Brett am Anschlag aus.');return}activeWorkshopHand=e.clientX<window.innerWidth/2?'left':'right';on=true;const a=area.getBoundingClientRect(),before=el.getBoundingClientRect();if(el.classList.contains('in-cup')){el.classList.remove('in-cup');el.style.setProperty('left',(before.left-a.left)+'px','important');el.style.setProperty('top',(before.top-a.top)+'px','important');if(el.id==='wsPencil')el.style.setProperty('transform','rotate(-8deg)','important')}if(el.classList.contains('bit-piece')){area.appendChild(el);el.style.position='absolute';el.style.left=(before.left-a.left)+'px';el.style.top=(before.top-a.top)+'px';el.classList.add('dragging-bit')}el.setPointerCapture(e.pointerId);const r=el.getBoundingClientRect();dx=e.clientX-r.left;dy=e.clientY-r.top;showHand(hand,e.clientX,e.clientY);if(el.id==='wsBoard')el.classList.add('dragging');if(el.id==='circularSaw')el.classList.add('dragging-saw');if(el.id==='wsDriver')el.classList.add('dragging-driver')});
-          el.addEventListener('pointermove',e=>{if(!on)return;const a=area.getBoundingClientRect(),nx=(e.clientX-a.left-dx)+'px',ny=(e.clientY-a.top-dy)+'px';if(el.id==='circularSaw'){const maxTop=Math.min(150,Math.max(22,e.clientY-a.top-dy));el.style.setProperty('top',maxTop+'px','important');el.style.setProperty('right','auto','important')}else if(el.id==='wsBoard'){el.style.setProperty('left',nx,'important');el.style.setProperty('top','125px','important')}else if(el.classList.contains('part')){el.style.setProperty('left',nx,'important');el.style.setProperty('top',ny,'important')}else{el.style.left=nx;el.style.top=ny}showHand(hand,e.clientX,e.clientY);if(move)move(e,el,a)});
-          el.addEventListener('pointerup',e=>{if(!on)return;on=false;hideHands();el.classList.remove('dragging','dragging-bit','dragging-saw','dragging-driver');try{el.releasePointerCapture(e.pointerId)}catch(_){};if(drop)drop(e,el)})
+      hook.addEventListener('pointermove', e => {
+        if (e.pointerId !== pointer) return;
+        const a = area.getBoundingClientRect();
+
+        // Länge bleibt logisch exakt; die Darstellung skaliert bei schmalen Flächen.
+        const target = Math.max(1, Math.min(ws.cutLength * 9, a.width - 170));
+        const width = Math.max(0, Math.min(target, e.clientX - a.left - 122));
+        const live = Math.min(ws.cutLength, Math.round(width / target * ws.cutLength));
+
+        style('tapeBlade', 'width', width + 'px');
+        style('tapeHook', 'left', (77 + width) + 'px');
+        text('tapeReadout', `${live} cm`);
+        text('tapeLiveHint', `MAẞBAND: ${live} cm / ZIEL ${ws.cutLength} cm`);
+
+        all('.tape-number').forEach(label => {
+          label.style.left = (Number(label.textContent) / ws.cutLength * target) + 'px';
+        });
+
+        if (width >= target - Math.min(8, target * 0.03) && !ws.tapeReady) {
+          ws.tapeReady = true;
+          style('tapeBlade', 'width', target + 'px');
+          style('tapeHook', 'left', (77 + target) + 'px');
+          const br = $('tapeBlade').getBoundingClientRect();
+          const x = br.left - a.left + br.width;
+          style('markGuide', 'left', x + 'px', 'important');
+          style('cutProgress', 'left', (x + 2.5) + 'px', 'important');
+          cls('tapeCase', 'ready', true);
+          cls('markGuide', 'ruler-target', true);
+          text('tapeReadout', `${ws.cutLength} cm`);
+          woodStage(3);
+          status('Messung fertig. Lineal aus dem Becher an die blaue Hilfe legen.');
         }
+      });
 
-        function checkParking(el){
-          const r=el.getBoundingClientRect(),p=document.querySelector('.tool-cup').getBoundingClientRect();
-          return !(r.right<p.left-55||r.left>p.right+55||r.bottom<p.top-55||r.top>p.bottom+55);
+      ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => {
+        hook.addEventListener(type, endTape);
+      });
+    }
+
+    if (stop) {
+      let pointer = null;
+      let startX = 0;
+      let shift = 0;
+
+      const finishStop = (e, cancelled = false) => {
+        if (pointer === null || (e && e.pointerId !== pointer)) return;
+        const id = pointer;
+        pointer = null;
+        try { if (stop.hasPointerCapture(id)) stop.releasePointerCapture(id); } catch (_) {}
+        if (!cancelled && shift <= -150) window.moveSawStopAside();
+        else if (!ws.stopAside) stop.style.removeProperty('transform');
+      };
+      cancelInteractions.add(() => finishStop(null, true));
+
+      stop.addEventListener('pointerdown', e => {
+        if (e.target.closest('input') || !stop.classList.contains('needs-aside') ||
+            ws.sawOn || pointer !== null || e.button > 0) return;
+        pointer = e.pointerId;
+        startX = e.clientX;
+        shift = 0;
+        stop.setPointerCapture(pointer);
+        e.preventDefault();
+      });
+      stop.addEventListener('pointermove', e => {
+        if (e.pointerId !== pointer) return;
+        shift = Math.min(0, e.clientX - startX);
+        stop.style.setProperty('transform', `translateX(${shift}px)`, 'important');
+      });
+      stop.addEventListener('pointerup', e => finishStop(e));
+      stop.addEventListener('pointercancel', e => finishStop(e, true));
+      stop.addEventListener('lostpointercapture', e => finishStop(e, true));
+    }
+
+    $('sawStopSlider')?.addEventListener('pointerdown', () => {
+      cls('sawMeasureHint', 'active', true);
+      root()?.classList.add('adjusting-saw-measure');
+    });
+    ['pointerup', 'pointercancel', 'blur'].forEach(type => {
+      $('sawStopSlider')?.addEventListener(type, () => {
+        cls('sawMeasureHint', 'active', false);
+        root()?.classList.remove('adjusting-saw-measure');
+      });
+    });
+    // Funktioniert auch ohne Inline-oninput im HTML.
+    $('sawStopSlider')?.addEventListener('input', e => {
+      if (!e.target.hasAttribute('oninput')) window.updateSawStop(e.target.value);
+    });
+
+    drag(ruler, area, null, () => {
+      if (checkParking(ruler) && ws.markCount >= 20) {
+        ws.rulerParked = true;
+        snapIntoCup(ruler);
+        updateParking();
+        return;
+      }
+      if (!ws.tapeReady) {
+        status('Gewählte Länge zuerst vollständig mit dem Maßband messen.');
+        return;
+      }
+
+      const a = area.getBoundingClientRect();
+      const r = ruler.getBoundingClientRect();
+      const g = $('markGuide').getBoundingClientRect();
+
+      if (Math.abs(r.right - g.left) < 120 || Math.abs(r.left - g.left) < 120) {
+        style('wsRuler', 'left', (g.left - a.left - r.width + 6) + 'px', 'important');
+        style('wsRuler', 'top', (g.top - a.top - 38) + 'px', 'important');
+        ws.ruler = true;
+        cls('wsRuler', 'tool-step-ok', true);
+        cls('markGuide', 'ruler-target', false);
+        cls('markGuide', 'ready', true);
+        woodStage(4);
+        status('Lineal eingerastet. Mit dem Bleistift an der Kante markieren.');
+      } else {
+        ws.ruler = false;
+        status('Lineal in die gestrichelte Fläche legen.');
+      }
+    }, hand, {
+      start() { if (ws.markCount < 20) ws.ruler = false; }
+    });
+
+    let lastMark = null;
+    drag(pencil, area, (e, el, a) => {
+      if (!ws.ruler || ws.markCount >= 20) return;
+
+      const g = $('markGuide').getBoundingClientRect();
+      const p = el.getBoundingClientRect();
+      const near = Math.abs((p.left - 34) - (g.left + g.width / 2)) < 100;
+      if (!near) {
+        lastMark = null;
+        el.classList.remove('marking', 'snapped-pencil');
+        return;
+      }
+
+      el.style.setProperty('left', (g.left - a.left + 34 + g.width / 2) + 'px', 'important');
+      el.classList.add('marking', 'snapped-pencil');
+
+      const ratio = Math.max(0, Math.min(1, (e.clientY - g.top) / Math.max(1, g.height)));
+      const current = Math.round(ratio * 19);
+      const from = lastMark === null ? current : lastMark;
+
+      for (let i = Math.min(from, current); i <= Math.max(from, current); i++) {
+        if ($('markCanvas').querySelector(`[data-i="${i}"]`)) continue;
+        const segment = document.createElement('div');
+        segment.className = 'mark-segment';
+        segment.dataset.i = i;
+        segment.style.left = (g.left - a.left) + 'px';
+        segment.style.top = (g.top - a.top + i / 19 * g.height) + 'px';
+        $('markCanvas').appendChild(segment);
+        ws.markCount++;
+      }
+
+      lastMark = current;
+      finishMarking();
+    }, () => {
+      pencil.classList.remove('marking', 'snapped-pencil');
+      lastMark = null;
+      if (checkParking(pencil) && ws.markCount >= 20) {
+        ws.pencilParked = true;
+        snapIntoCup(pencil);
+        updateParking();
+      }
+    }, hand, {
+      cancel() {
+        lastMark = null;
+        pencil.classList.remove('marking', 'snapped-pencil');
+      }
+    });
+
+    let guideOffset = null;
+    const shiftMarks = x => {
+      style('markGuide', 'left', x + 'px', 'important');
+      style('cutProgress', 'left', (x + 2.5) + 'px', 'important');
+      all('.mark-segment').forEach(e => e.style.left = x + 'px');
+    };
+
+    drag(board, area, (e, el) => {
+      const x = parseFloat(el.style.left) + (guideOffset || 0);
+      shiftMarks(x);
+    }, () => {
+      const a = area.getBoundingClientRect();
+      const b = board.getBoundingClientRect();
+      const g = $('markGuide').getBoundingClientRect();
+      const hookX = a.left + a.width * 0.56 - ws.cutLength * 9;
+      const delta = hookX - b.left;
+
+      if (ws.sawStopReady && Math.abs(delta) < 120) {
+        style('wsBoard', 'left', ((parseFloat(board.style.left) || 0) + delta) + 'px', 'important');
+
+        // Markierung auf die tatsächliche Sägeposition bringen.
+        shiftMarks(a.width * 0.56 - g.width / 2);
+        ws.boardAligned = true;
+        cls('wsBoard', 'stop-snapped', true);
+        status('Holzkante am Anschlag. Markierung unter dem Sägeblatt.');
+      } else {
+        status('Linke Holzkante näher an den L-förmigen Anschlaghaken schieben.');
+      }
+      guideOffset = null;
+    }, hand, {
+      start() {
+        guideOffset = $('markGuide').getBoundingClientRect().left -
+          board.getBoundingClientRect().left;
+      },
+      cancel() { guideOffset = null; }
+    });
+
+    let lastChipTime = 0;
+    drag(saw, area, (e, el, a) => {
+      if (!ws.sawOn) return;
+
+      const g = $('markGuide').getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      const sawTop = parseFloat(el.style.top) || 22;
+
+      // Die Säge bewegt sich auf einer festen vertikalen Bahn.
+      el.style.setProperty('left', (g.left - a.left + g.width / 2 - r.width * 0.62) + 'px', 'important');
+      el.classList.add('cut-aligned', 'saw-track-lock');
+
+      const penetration = Math.max(0, Math.min(100, (sawTop - 22) / 128 * 100));
+      ws.cut = Math.max(ws.cut, penetration);
+      style('cutProgress', 'height', (ws.cut * g.height / 100) + 'px');
+
+      if (penetration > 4 && performance.now() - lastChipTime > 100) {
+        lastChipTime = performance.now();
+        spawnChips(g.left + g.width / 2, Math.min(g.bottom, e.clientY));
+      }
+
+      if (ws.cut >= 99) {
+        ws.cut = 100;
+        style('cutProgress', 'height', g.height + 'px');
+        cls('wsBoard', 'saw-locked', true);
+      }
+    }, () => {
+      returnSaw();
+      if (ws.cut >= 100) {
+        status('Schnitt fertig. Sägekopf ist oben – Säge ausschalten.');
+      }
+    }, hand, {
+      cancel: returnSaw
+    });
+
+    drag($('wastePiece'), area, null, (e, waste) => {
+      if (ws.sawOn || !ws.stopAside || !sawIsUp()) return;
+      const shelf = $('wasteShelf');
+      if (shelf && overlap(waste.getBoundingClientRect(), shelf.getBoundingClientRect())) {
+        ws.wasteStored = true;
+        cls('wastePiece', 'stored', true);
+        cls('wasteShelf', 'ready', true);
+        cls('wsBoard', 'cut-ready', true);
+        cls('circularSaw', 'saw-finished', true);
+        if ($('sawAfterHint')) $('sawAfterHint').className = 'saw-after-hint';
+        status('Restholz sicher im Regal. Fertiges Holz anklicken.');
+      } else {
+        status('Restholz in das markierte Regal legen.');
+      }
+    }, hand);
+
+    board?.addEventListener('click', () => {
+      if (ws.cut < 100 || ws.sawOn) return;
+      if (!ws.wasteStored) {
+        status('Zuerst Anschlag zur Seite schieben und Restholz ins Regal legen.');
+        return;
+      }
+      cls('wsWoodPanel', 'show', false);
+      cls('wsSandPanel', 'show', true);
+      if (!ws.done.wood && !find('.splinter')) buildSplinters();
+      status('Die raue rechte Schnittkante mit dem Schleifklotz glätten.');
+      steps('4. Schnittkante schleifen');
+    });
+  }
+
+  window.toggleWsSaw = function () {
+    // Ausschalten ist nie durch Vorbedingungen blockiert.
+    if (ws.sawOn) {
+      setSawPower(false);
+
+      if (ws.cut >= 100) {
+        if (!sawIsUp()) returnSaw();
+        releaseWaste();
+        status('Säge aus. Anschlag mit der Hand nach links zur Seite schieben.');
+      } else {
+        returnSaw();
+        status('Säge ausgeschaltet. Für die Fortsetzung Brett unverändert lassen.');
+      }
+      return;
+    }
+
+    if (ws.cut >= 100) {
+      status('Schnitt abgeschlossen. Säge bleibt aus.');
+      return;
+    }
+
+    if (!ws.goggles || !ws.ears || !ws.rulerParked || !ws.pencilParked ||
+        ws.markCount < 20 || !ws.sawStopReady || !ws.boardAligned) {
+      status('Säge bleibt aus: Sicherheitsausrüstung, Markierung, Werkzeugablage und Brettausrichtung prüfen.');
+      return;
+    }
+
+    const area = $('woodArea').getBoundingClientRect();
+    const g = $('markGuide').getBoundingClientRect();
+    const saw = $('circularSaw');
+    const width = saw.getBoundingClientRect().width;
+    style('circularSaw', 'left', (g.left - area.left + g.width / 2 - width * 0.62) + 'px', 'important');
+    style('circularSaw', 'top', '22px', 'important');
+    style('circularSaw', 'right', 'auto', 'important');
+    setSawPower(true);
+    if ($('sawStopSlider')) $('sawStopSlider').disabled = true;
+    status('Säge läuft. Sägekopf am Griff langsam absenken.');
+  };
+
+  function releaseWaste() {
+    if (ws.cut < 100 || ws.sawOn) return;
+    const a = $('woodArea').getBoundingClientRect();
+    const g = $('markGuide').getBoundingClientRect();
+    style('wastePiece', 'left', (g.left - a.left + 14) + 'px');
+    style('wastePiece', 'top', '125px');
+    cls('wastePiece', 'show', true);
+    cls('wastePiece', 'safe-to-move', ws.stopAside);
+    cls('sawStopSystem', 'needs-aside', !ws.stopAside);
+    woodStage(6);
+
+    if ($('sawAfterHint')) {
+      $('sawAfterHint').className = 'saw-after-hint show-waste';
+      text('sawAfterHint', 'SÄGE AUS – ANSCHLAG ZUERST ZUR SEITE SCHIEBEN');
+    }
+  }
+
+  window.moveSawStopAside = function () {
+    if (ws.cut < 100 || ws.sawOn || !sawIsUp() || ws.stopAside) return;
+    ws.stopAside = true;
+    cls('sawStopSystem', 'needs-aside attached', false);
+    cls('sawStopSystem', 'aside', true);
+    style('sawStopSystem', 'transform', 'translateX(-230px)', 'important');
+    cls('wastePiece', 'safe-to-move', true);
+    text('sawAfterHint', 'ANSCHLAG WEG – RESTHOLZ FREIGEGEBEN');
+    status('Restholz jetzt in das Regal legen.');
+  };
+
+  function particle(area, className, x, y, lifetime = 800) {
+    if (!area) return;
+    const e = document.createElement('div');
+    e.className = className;
+    e.style.left = x + 'px';
+    e.style.top = y + 'px';
+    e.style.setProperty('--x', (Math.random() * 100 - 50) + 'px');
+    e.style.setProperty('--y', (-10 - Math.random() * 65) + 'px');
+    area.appendChild(e);
+    later(() => e.remove(), lifetime);
+  }
+
+  function spawnChips(x, y) {
+    const area = $('woodArea');
+    const a = area.getBoundingClientRect();
+    for (let i = 0; i < 5; i++) {
+      particle(area, 'wood-chip' + (i < 2 ? ' big-chip' : ''), x - a.left, y - a.top);
+    }
+    particle(area, 'saw-dust-cloud', x - a.left, y - a.top, 950);
+  }
+
+  function buildSplinters() {
+    const area = $('sandingArea');
+    const wood = area?.querySelector('.sand-wood');
+    const layer = $('splinterLayer');
+    if (!area || !wood || !layer) return;
+
+    const a = area.getBoundingClientRect();
+    const w = wood.getBoundingClientRect();
+    layer.replaceChildren();
+    ws.sandCount = 0;
+    style('sandProgressBar', 'width', '0%');
+
+    // Alle Splitter befinden sich an der tatsächlich zu schleifenden Schnittkante.
+    for (let i = 0; i < 64; i++) {
+      const s = document.createElement('div');
+      s.className = 'splinter';
+      s.style.left = (w.right - a.left - 14 + Math.random() * 5) + 'px';
+      s.style.top = (w.top - a.top + 4 + i * (w.height - 8) / 63) + 'px';
+      s.style.transform = `rotate(${80 + Math.random() * 20}deg)`;
+      layer.appendChild(s);
+    }
+  }
+
+  window.selectSandGrit = function (grit, button) {
+    if (![80, 120, 180].includes(Number(grit))) return;
+    all('.sandpaper-sheet').forEach(e => e.classList.remove('active'));
+    button?.classList.add('active');
+    cls('sandBlockV32', 'grit80', Number(grit) === 80);
+    cls('sandBlockV32', 'grit180', Number(grit) === 180);
+    status(`K${grit} eingesetzt. Schleifklotz über die rechte Schnittkante führen.`);
+  };
+
+  function wireSand() {
+    const area = $('sandingArea');
+    drag($('sandBlockV32'), area, (e, el, a) => {
+      if (ws.done.wood) return;
+      const b = el.getBoundingClientRect();
+      let removed = 0;
+
+      all('.splinter:not(.removed)').forEach(s => {
+        if (!overlap(b, s.getBoundingClientRect())) return;
+        s.classList.add('removed');
+        ws.sandCount++;
+        removed++;
+      });
+
+      const total = all('.splinter').length || 64;
+      style('sandProgressBar', 'width', Math.min(100, ws.sandCount / total * 100) + '%');
+
+      if (removed) {
+        particle(area, 'sanding-dust', e.clientX - a.left, e.clientY - a.top);
+        particle(area, 'sanding-chip', e.clientX - a.left, e.clientY - a.top);
+      }
+
+      if (ws.sandCount >= total) {
+        ws.done.wood = true;
+        cls('smoothShine', 'show', true);
+        cls('wsCardWood', 'done', true);
+        cls('wsCardAssemble', 'locked', false);
+        status('Schnittkante glatt. Holzteile zusammenstecken und anschließend montieren.');
+        steps('5. Holzteile zusammenstecken und montieren');
+        later(window.backToWsMenu, 1100);
+      }
+    }, null, $('wsSandHand'), { constrain: true });
+  }
+
+  function crackWoodAt(screw) {
+    const board = find('.screw-board');
+    if (!board || board.classList.contains('cracked')) return;
+    const b = board.getBoundingClientRect();
+    const r = screw.getBoundingClientRect();
+    board.style.setProperty('--crack-x', Math.max(12, Math.min(88, (r.left + r.width / 2 - b.left) / b.width * 100)) + '%');
+    board.style.setProperty('--crack-y', Math.max(3, Math.min(30, (r.top + r.height / 2 - b.top) / b.height * 100)) + '%');
+    board.classList.add('cracked');
+  }
+
+  function cancelScrewJob() {
+    stopTimeout(screwJob);
+    screwJob = null;
+    cls('wsDriver', 'drilling', false);
+    all('.screw.driving').forEach(e => e.classList.remove('driving'));
+    style('screwProgress', 'display', 'none');
+  }
+
+  function wireScrew() {
+    const area = $('screwArea');
+    const driver = $('wsDriver');
+    const zone = $('bitDropZone');
+    const hand = $('wsScrewHand');
+    if (!area || !driver) return;
+
+    let target = null;
+    const cancelDriving = () => {
+      cancelScrewJob();
+      target = null;
+    };
+    cancelInteractions.add(cancelDriving);
+
+    all('.bit-piece').forEach(bit => {
+      bitHomes.set(bit, {
+        parent: bit.parentNode,
+        next: bit.nextSibling,
+        style: bit.style.cssText
+      });
+
+      drag(bit, area, null, () => {
+        if (!zone || !overlap(bit.getBoundingClientRect(), zone.getBoundingClientRect())) return;
+        cancelDriving();
+        all('.bit-piece').forEach(e => e.classList.remove('selected', 'loaded-bit'));
+        ws.bit = bit.dataset.bit;
+        bit.classList.add('selected');
+        cls('wsDriver', 'bit-loaded', ws.bit === 'cross');
+        bit.classList.toggle('loaded-bit', ws.bit === 'cross');
+        status(ws.bit === 'cross'
+          ? 'Kreuz-Bit eingesetzt. Akkuschrauber ruhig an eine gerade eingesetzte Schraube halten.'
+          : 'Dieser Bit passt nicht. Kreuz-Bit einsetzen.');
+      }, hand);
+    });
+
+    drag(driver, area, () => {
+      if (ws.bit !== 'cross' || ws.done.screw || find('.screw-board.cracked')) {
+        cancelDriving();
+        return;
+      }
+
+      const tip = driver.querySelector('.inserted-bit');
+      if (!tip) return;
+      const t = tip.getBoundingClientRect();
+      const tx = t.right;
+      const ty = t.top + t.height / 2;
+
+      const found = all('.screw.placed-screw:not(.done)').find(s => {
+        const r = s.getBoundingClientRect();
+        return Math.hypot(tx - r.left - r.width / 2, ty - r.top - r.height / 2) < 55;
+      }) || null;
+
+      if (found === target) return;
+      cancelDriving();
+      target = found;
+      if (!found) return;
+
+      if (found.classList.contains('wrong-angle')) {
+        crackWoodAt(found);
+        target = null;
+        status('Stopp: Holz an schräger Schraube beschädigt. Schraubstation zurücksetzen.');
+        return;
+      }
+
+      const r = found.getBoundingClientRect();
+      const a = area.getBoundingClientRect();
+      style('screwProgress', 'left', (r.left - a.left - 8) + 'px');
+      style('screwProgress', 'top', (r.top - a.top - 8) + 'px');
+      style('screwProgress', 'display', 'block');
+      cls('wsDriver', 'drilling', true);
+      found.classList.add('driving');
+      status('Akkuschrauber ruhig und gerade halten …');
+
+      screwJob = later(() => {
+        screwJob = null;
+        if (target !== found || !visible() || found.classList.contains('done')) return;
+        found.classList.add('done');
+        found.querySelector('.screw-depth span')?.style.setProperty('width', '100%');
+        cancelDriving();
+        ws.screws++;
+        status(`Schraube ${ws.screws} von 3 eingedreht.`);
+
+        if (ws.screws >= 3) {
+          ws.done.screw = true;
+          cls('wsCardScrew', 'done', true);
+          cls('wsCardPrint', 'locked', false);
+          steps('7. 3D-Druckteil auswählen und drucken');
+          later(window.backToWsMenu, 850);
         }
-        function snapIntoCup(el){['left','top','transform'].forEach(p=>el.style.removeProperty(p));el.classList.remove('right-hand-pencil');el.classList.add('in-cup','parked')}
-        function updateParking(){
-          if(ws.rulerParked&&ws.pencilParked){document.querySelector('.tool-cup').classList.add('cup-ready');status('Werkzeuge ordentlich im Becher. Jetzt den Längenanschlag der Kappsäge auf '+ws.cutLength+' cm schieben.')}
+      }, 1200);
+    }, cancelDriving, hand, {
+      constrain: true,
+      cancel: cancelDriving
+    });
+
+    all('.screw').forEach(s => {
+      s.addEventListener('click', () => {
+        if (!s.classList.contains('wrong-angle') || s.classList.contains('done')) return;
+        // Vor dem Schrauben darf eine schiefe Schraube korrigiert werden.
+        s.classList.remove('wrong-angle');
+        s.dataset.angle = '0';
+        s.style.setProperty('--screw-angle', '0deg');
+        status('Schraube gerade ausgerichtet. Jetzt Akkuschrauber ansetzen.');
+      });
+    });
+  }
+
+  window.setScrewAngle = function (value) {
+    const v = Number(value);
+    if (!Number.isFinite(v)) return;
+    ws.currentScrewAngle = v;
+    text('screwAngleReadout', `${v > 0 ? '+' : ''}${v}°`);
+  };
+
+  window.placeLooseScrew = function (n, button) {
+    if (ws.montageStep !== 5 || ws.done.screw || !button ||
+        button.classList.contains('used') || find('.screw-board.cracked')) return;
+
+    const screw = all('.screw').find(e => e.dataset.screw === String(n));
+    if (!screw) return;
+    const angle = ws.currentScrewAngle;
+    screw.dataset.angle = angle;
+    screw.style.setProperty('--screw-angle', angle + 'deg');
+    screw.classList.add('placed-screw');
+    screw.classList.toggle('wrong-angle', Math.abs(angle) > 5);
+    button.classList.add('used');
+
+    status(Math.abs(angle) > 5
+      ? 'Schraube schief. Vor dem Schrauben anklicken und gerade ausrichten.'
+      : `Schraube ${n} gerade eingesetzt. Akkuschrauber ansetzen.`);
+  };
+
+  window.resetScrewStation = function () {
+    if (ws.done.screw) {
+      status('Schraubstation bereits abgeschlossen. Für einen neuen Versuch Werkstatt neu starten.');
+      return;
+    }
+
+    cancelAllInteractions();
+    cancelScrewJob();
+    ws.screws = 0;
+    ws.currentScrewAngle = 0;
+    all('.screw').forEach(s => {
+      s.classList.remove('done', 'placed-screw', 'wrong-angle', 'driving');
+      s.style.removeProperty('--screw-angle');
+      s.dataset.angle = '0';
+      s.querySelector('.screw-depth span')?.style.setProperty('width', '0%');
+    });
+    all('.loose-screw').forEach(e => e.classList.remove('used'));
+    const board = find('.screw-board');
+    board?.classList.remove('cracked');
+    ['--crack-x', '--crack-y'].forEach(p => board?.style.removeProperty(p));
+    removeStyle('wsDriver', ['left', 'top', 'right', 'bottom', '--driver-x', '--driver-y']);
+    if ($('screwAngleSlider')) $('screwAngleSlider').value = '0';
+    text('screwAngleReadout', '0°');
+    cls('wsResetScrew', 'resetting', true);
+    later(() => cls('wsResetScrew', 'resetting', false), 600);
+    status('Station zurückgesetzt. Schrauben gerade einsetzen; eingesetzter Bit bleibt erhalten.');
+  };
+
+  function printConfigLocked() {
+    return ws.printing || ws.printReady || ws.done.print;
+  }
+
+  function printTime(seconds) {
+    const s = Math.max(0, Math.ceil(seconds));
+    return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  }
+
+  function screen(lines) {
+    const e = $('printerScreen');
+    if (!e) return;
+    e.replaceChildren();
+    lines.forEach((line, i) => {
+      if (i) e.appendChild(document.createElement('br'));
+      e.appendChild(document.createTextNode(line));
+    });
+  }
+
+  function updatePrint() {
+    const model = models[ws.model]?.[0] || '–';
+    const quality = qualities[ws.quality];
+    const duration = quality ? printTime(quality.seconds) : '--:--';
+
+    text('printSummary', `Modell: ${model} | ${ws.material || '–'} | Farbe: ${ws.color || '–'} | ${quality?.label || '–'} | Dauer ${duration}`);
+    screen([
+      `MODELL: ${model}`,
+      `MATERIAL: ${ws.material || '–'}`,
+      `QUALITÄT: ${quality?.label || '–'}`,
+      `ZEIT: ${duration}`,
+      'STATUS: BEREIT'
+    ]);
+    text('printTimeBadge', `DRUCKZEIT ${duration}`);
+    if ($('wsPrintStart')) {
+      $('wsPrintStart').disabled = !(
+        ws.done.screw && ws.model && ws.color && ws.material && quality
+      ) || printConfigLocked();
+    }
+  }
+
+  window.selectWsModel = function (m) {
+    if (printConfigLocked() || !models[m]) return;
+    ws.model = m;
+    all('.model-card').forEach(e => e.classList.remove('selected'));
+    cls(models[m][1], 'selected', true);
+    if ($('printObject')) $('printObject').className = 'print-object ' + m;
+    updatePrint();
+  };
+
+  window.selectWsColor = function (c) {
+    if (printConfigLocked() || !colors[c]) return;
+    ws.color = c;
+    all('.color-swatch').forEach(e => e.classList.toggle('selected', e.dataset.color === c));
+    style('printObject', '--print-color', colors[c]);
+    updatePrint();
+  };
+
+  window.selectWsMaterial = function (v) {
+    if (printConfigLocked()) return;
+    const select = $('wsMaterial');
+    if (select && ![...select.options].some(o => o.value === v)) return;
+    ws.material = v || null;
+    updatePrint();
+  };
+
+  window.selectWsQuality = function (v) {
+    if (printConfigLocked()) return;
+    ws.quality = qualities[v] ? v : null;
+    updatePrint();
+  };
+
+  window.startWsPrint = function () {
+    if (printConfigLocked() || !ws.done.screw || !models[ws.model] ||
+        !colors[ws.color] || !ws.material || !qualities[ws.quality]) return;
+
+    ws.printing = true;
+    const model = models[ws.model];
+    const quality = qualities[ws.quality];
+    const box = $('printerScreen')?.parentElement;
+    const started = performance.now();
+    const duration = quality.seconds * 1000;
+
+    box?.classList.add('is-printing');
+    cls('printerHead', 'printing', true);
+    all('#wsPrintPanel button,#wsPrintPanel select').forEach(e => e.disabled = true);
+    style('printObject', 'width', model[2] + 'px');
+    style('printObject', 'height', '2px');
+
+    function tickPrint() {
+      const elapsed = performance.now() - started;
+      const ratio = Math.min(1, elapsed / duration);
+      const percent = ratio * 100;
+      const height = Math.max(2, model[3] * ratio);
+      const layer = Math.max(1, Math.ceil(quality.layers * ratio));
+      const remaining = Math.max(0, (duration - elapsed) / 1000);
+      const sweep = (elapsed / 650) % 2;
+      const travel = sweep <= 1 ? sweep : 2 - sweep;
+      const x = 105 + travel * 245;
+
+      style('printerHead', 'left', x + 'px');
+      style('printerHead', 'top', (193 - height) + 'px');
+      style('extrusionLine', 'left', (x + 23) + 'px');
+      style('extrusionLine', 'top', (210 - height) + 'px');
+      style('printProgress', 'width', percent + '%');
+      style('printObject', 'height', height + 'px');
+      text('layerCounter', `SCHICHT ${layer} / ${quality.layers}`);
+      text('printTimeBadge', `RESTZEIT ${printTime(remaining)}`);
+      screen([
+        `MODELL: ${model[0]}`,
+        `MATERIAL: ${ws.material}`,
+        `SCHICHT: ${layer}`,
+        `RESTZEIT: ${printTime(remaining)}`,
+        `STATUS: DRUCKT ${Math.round(percent)}%`
+      ]);
+
+      if (ratio < 1) return;
+
+      stopInterval(printJob);
+      printJob = null;
+      ws.printing = false;
+      cls('printerHead', 'printing', false);
+      box?.classList.remove('is-printing');
+      box?.classList.add('print-finished');
+      text('printTimeBadge', 'DRUCK FERTIG · ABKÜHLEN');
+      screen([`MODELL: ${model[0]}`, `MATERIAL: ${ws.material}`, 'STATUS: ABKÜHLEN']);
+      status('Druck abgeschlossen. Kurze simulierte Abkühlphase abwarten.');
+
+      later(() => {
+        ws.printReady = true;
+        style('wsPrintTake', 'display', 'inline-block');
+        if ($('wsPrintTake')) $('wsPrintTake').disabled = false;
+        text('printTimeBadge', 'FERTIG · ENTNAHME BEREIT');
+        screen([`MODELL: ${model[0]}`, `MATERIAL: ${ws.material}`, 'STATUS: ENTNAHME BEREIT']);
+        status('Bauteil bereit zur Entnahme.');
+      }, 1500);
+    }
+
+    tickPrint();
+    printJob = every(tickPrint, 75);
+  };
+
+  window.takeWsPrint = function () {
+    if (!ws.printReady || ws.done.print) return;
+    ws.printReady = false;
+    ws.done.print = true;
+    style('wsPrintTake', 'display', 'none');
+    cls('wsCardPrint', 'done', true);
+    style('attachPrintBtn', 'display', 'inline-block');
+    cls('printVictory', 'show', true);
+    status(`${models[ws.model][0]} entnommen. Zusatzteil am Holzkörper befestigen.`);
+    steps('8. Gedrucktes Zusatzteil befestigen');
+    later(() => {
+      cls('printVictory', 'show', false);
+      window.backToWsMenu();
+    }, 1700);
+  };
+
+  function assemblySparks(slot) {
+    const fx = $('assemblyFx');
+    const area = $('assemblyArea');
+    if (!slot || !fx || !area) return;
+    const a = area.getBoundingClientRect();
+    const r = slot.getBoundingClientRect();
+
+    for (let i = 0; i < 14; i++) {
+      const spark = document.createElement('i');
+      spark.className = 'assembly-spark';
+      spark.style.left = (r.left - a.left + r.width / 2) + 'px';
+      spark.style.top = (r.top - a.top + r.height / 2) + 'px';
+      spark.style.setProperty('--x', (Math.cos(i / 14 * Math.PI * 2) * 65) + 'px');
+      spark.style.setProperty('--y', (Math.sin(i / 14 * Math.PI * 2) * 45) + 'px');
+      fx.appendChild(spark);
+      later(() => spark.remove(), 800);
+    }
+  }
+
+  function unlockMontage(done, next) {
+    cls(done, 'ready locked', false);
+    cls(done, 'done', true);
+    if (next) {
+      cls(next, 'locked', false);
+      cls(next, 'ready', true);
+    }
+  }
+
+  function setMontageProgress(value) {
+    style('montageProgressBar', 'width', value + '%');
+    text('montageProgressText', `MONTAGE ${value}%`);
+  }
+
+  function finishPuzzleBuild() {
+    if (ws.puzzleFinished || ws.placed < 4) return;
+    ws.puzzleFinished = true;
+
+    // Das Puzzle beendet NICHT die Montage.
+    cls('assemblyLiveBuild', 'puzzle-complete', true);
+    cls('puzzleCompleteFx', 'show', true);
+    text('assemblyProgressText', 'BAUPUZZLE 100% – MONTAGE FOLGT');
+    cls('assemblyMontage', 'show', true);
+    cls('assemblyArea', 'dowel-step', true);
+    status('Grundform steht. Beide Holzdübel einsetzen, danach Leim, Hammer, Winkel und Zwinge verwenden.');
+    steps('5. Werkstück vollständig montieren');
+    later(() => cls('puzzleCompleteFx', 'show', false), 1600);
+  }
+
+  window.insertAssemblyDowel = function (el) {
+    if (ws.placed < 4 || ws.montageStep !== 0 ||
+        !el?.classList.contains('dowel-hole') || el.classList.contains('filled')) return;
+    el.classList.add('filled');
+    assemblySparks(el);
+    ws.dowels++;
+    setMontageProgress(ws.dowels * 10);
+    status(`Holzdübel ${ws.dowels} von 2 eingesetzt.`);
+
+    if (ws.dowels >= 2) {
+      ws.montageStep = 1;
+      cls('assemblyArea', 'dowel-step', false);
+      unlockMontage('toolDowel', 'toolGlue');
+      status('Beide Holzdübel sitzen. Holzleim dünn auftragen.');
+    }
+  };
+
+  window.startMontageTool = function (tool) {
+    if (ws.placed < 4 || ws.montageStep >= 5) return;
+
+    if (tool === 'dowel' && ws.montageStep === 0) {
+      const hole = find('.dowel-hole:not(.filled)');
+      if (hole) window.insertAssemblyDowel(hole);
+      return;
+    }
+
+    if (tool === 'glue' && ws.montageStep === 1) {
+      cls('assemblyGlue', 'show', true);
+      ws.montageStep = 2;
+      setMontageProgress(40);
+      unlockMontage('toolGlue', 'toolHammer');
+      status('Holzleim aufgetragen. Drei kontrollierte Gummihammer-Schläge ausführen.');
+      return;
+    }
+
+    if (tool === 'hammer' && ws.montageStep === 2) {
+      const hammer = $('assemblyHammerVisual');
+      // Laufende Schlaganimation verhindert hektische Mehrfachklicks.
+      if (hammer?.classList.contains('hit')) return;
+
+      ws.hammerHits++;
+      if (hammer) {
+        hammer.classList.remove('hit');
+        void hammer.offsetWidth;
+        hammer.classList.add('hit');
+      }
+      cls('assemblyLiveBuild', 'hammered', true);
+      later(() => {
+        cls('assemblyLiveBuild', 'hammered', false);
+        cls('assemblyHammerVisual', 'hit', false);
+      }, 420);
+
+      status(`Gummihammer: Schlag ${ws.hammerHits} von 3.`);
+      if (ws.hammerHits >= 3) {
+        ws.montageStep = 3;
+        setMontageProgress(60);
+        unlockMontage('toolHammer', 'toolAngle');
+      }
+      return;
+    }
+
+    if (tool === 'angle' && ws.montageStep === 3) {
+      cls('angleBadge', 'show', true);
+      ws.montageStep = 4;
+      setMontageProgress(80);
+      unlockMontage('toolAngle', 'toolClamp');
+      status('Anschlagwinkel geprüft. Werkstück mit der Zwinge festspannen.');
+      return;
+    }
+
+    if (tool === 'clamp' && ws.montageStep === 4) {
+      cls('assemblyLiveBuild', 'clamped', true);
+      ws.montageStep = 5;
+      setMontageProgress(100);
+      unlockMontage('toolClamp', null);
+      cls('wsCardScrew', 'locked', false);
+      status('Werkstück festgespannt. Jetzt mit Akkuschrauber verschrauben.');
+      steps('6. Kreuz-Bit einsetzen und Körper verschrauben');
+      later(window.backToWsMenu, 1300);
+      return;
+    }
+
+    status('Zuerst den markierten Montageschritt ausführen.');
+  };
+
+  function wireAssembly() {
+    const area = $('assemblyArea');
+    all('.part').forEach(part => {
+      drag(part, area, null, () => {
+        if (part.classList.contains('placed')) return;
+        const slot = all('.snap-slot').find(e => e.dataset.slot === part.dataset.part);
+        if (!slot || slot.classList.contains('filled')) return;
+
+        const r = part.getBoundingClientRect();
+        const s = slot.getBoundingClientRect();
+        const cx = r.left + r.width / 2;
+        const cy = r.top + r.height / 2;
+
+        if (cx > s.left && cx < s.right && cy > s.top && cy < s.bottom) {
+          part.classList.add('snap-fly', 'placed');
+          part.dataset.placed = '1';
+          slot.classList.add('filled');
+          slot.textContent = '✓ ' + slot.textContent.replace(/^✓\s*/, '');
+
+          const liveClass = {
+            base: 'build-base',
+            side1: 'build-left',
+            side2: 'build-right',
+            back: 'build-back'
+          }[part.dataset.part];
+          $('assemblyLiveBuild')?.querySelector('.' + liveClass)?.classList.add('built');
+          assemblySparks(slot);
+          ws.placed++;
+
+          const percent = ws.placed * 25;
+          style('assemblyProgressBar', 'width', percent + '%');
+          text('assemblyProgressText', `BAUFORTSCHRITT ${percent}%`);
+          status(`Teil eingerastet – ${ws.placed} von 4.`);
+
+          if (ws.placed === 4) {
+            if ($('assembledProduct')) {
+              $('assembledProduct').className = 'assembled-product show ' + ws.project;
+            }
+            finishPuzzleBuild();
+          }
+        } else {
+          part.classList.add('wrong-part');
+          later(() => part.classList.remove('wrong-part'), 450);
+          status('Passende leuchtende Bauform suchen.');
         }
-        window.chooseCutLength=function(cm){ws.cutLength=cm;ws.tapeReady=false;ws.tapeRetracted=false;ws.ruler=false;ws.markCount=0;ws.sawStopReady=false;$('sawTargetValue').textContent='SOLL: '+cm+' cm';$('sawStopSlider').value=cm===20?21:20;$('sawStopValue').textContent='IST: '+$('sawStopSlider').value+' cm';$('sawStopMarker').style.left=(18+(+$('sawStopSlider').value-20)*9)+'px';$('sawStopSystem').classList.remove('ready');woodStage(2);$('markCanvas').innerHTML='';$('markGuide').classList.remove('ready','ruler-target');$('tapeCase').classList.remove('ready');$('tapeBlade').style.width='0';$('tapeHook').style.left='77px';$('tapeReadout').textContent='0 cm';const scale=$('tapeScale');scale.innerHTML='';for(let n=0;n<=cm;n+=5){const label=document.createElement('span');label.className='tape-number';label.textContent=n;label.style.left=(n*9)+'px';scale.appendChild(label)}$('chosenLength').textContent='Ziel: '+cm+' cm';document.querySelectorAll('#cutLengthPicker button').forEach(b=>b.classList.toggle('selected',b.textContent.trim()===cm+' cm'));status(cm+' cm gewählt. Ziehe den Metallhaken des Maßbands selbst nach rechts.');steps('3. Maßband bis '+cm+' cm herausziehen')};
-        window.updateSawStop=function(v){v=+v;const sys=$('sawStopSystem'),a=$('woodArea').getBoundingClientRect(),sr=sys.getBoundingClientRect(),machineX=a.width*.56,hookX=machineX-v*9;$('sawStopValue').textContent='IST: '+v+' cm';$('sawStopMarker').style.left=(hookX-(sr.left-a.left))+'px';ws.sawStopReady=!!ws.cutLength&&v===ws.cutLength;ws.boardAligned=false;$('wsBoard').classList.remove('stop-snapped');sys.classList.toggle('ready',ws.sawStopReady);sys.classList.toggle('attached',ws.sawStopReady);ws.stopGuideX=0;status(ws.sawStopReady?'Anschlaghaken steht '+v+' cm vom Sägeblatt entfernt. Jetzt bei AUS die linke Holzkante an den Haken schieben.':'SOLL '+(ws.cutLength||'?')+' cm, aber IST '+v+' cm – Säge bleibt gesperrt.')};
+      }, null, {
+        guard: () => ws.done.wood
+      });
+    });
+  }
 
-        function wireWood(){
-          const area=$('woodArea');if(area.dataset.wiredV67)return;area.dataset.wiredV67='1';const ruler=$('wsRuler'),pencil=$('wsPencil'),board=$('wsBoard'),hand=$('wsWoodHand');let lastSawX=null;
-          const stopSystem=$('sawStopSystem');let stopDrag=false,stopStart=0,stopShift=0;stopSystem.addEventListener('pointerdown',e=>{if(e.target.tagName==='INPUT'||!stopSystem.classList.contains('needs-aside'))return;stopDrag=true;stopStart=e.clientX;stopShift=0;stopSystem.setPointerCapture(e.pointerId)});stopSystem.addEventListener('pointermove',e=>{if(!stopDrag)return;stopShift=Math.min(0,e.clientX-stopStart);stopSystem.style.setProperty('transform','translateX('+stopShift+'px)','important');status('Anschlag mit der Hand nach links aus dem Arbeitsbereich schieben.');if(stopShift<-150){stopDrag=false;window.moveSawStopAside()}});stopSystem.addEventListener('pointerup',e=>{if(!stopDrag)return;stopDrag=false;try{stopSystem.releasePointerCapture(e.pointerId)}catch(_){}if(stopShift>-150)stopSystem.style.removeProperty('transform')});
-          const hook=$('tapeHook'),bladeTape=$('tapeBlade');let tapeDrag=false;
-          hook.addEventListener('pointerdown',e=>{if(!ws.cutLength){status('Wähle zuerst 30, 40 oder 50 cm.');return}tapeDrag=true;hook.setPointerCapture(e.pointerId)});
-          hook.addEventListener('pointermove',e=>{if(!tapeDrag)return;const a=area.getBoundingClientRect(),start=a.left+122,target=Math.min(a.width-170,ws.cutLength*9),w=Math.max(0,Math.min(target,e.clientX-start)),live=Math.min(ws.cutLength,Math.round(w/9));bladeTape.style.width=w+'px';hook.style.left=(77+w)+'px';$('tapeReadout').textContent=live+' cm';if(w>=target-8){ws.tapeReady=true;woodStage(3);const br=bladeTape.getBoundingClientRect(),exactX=br.left-a.left+Math.min(ws.cutLength*9,br.width);$('markGuide').style.setProperty('left',exactX+'px','important');$('cutProgress').style.setProperty('left',(exactX+2.5)+'px','important');$('tapeCase').classList.add('ready');$('markGuide').classList.add('ruler-target');$('tapeReadout').textContent=ws.cutLength+' cm';status('Messung fertig. Jetzt das Lineal aus dem Werkzeugbecher an die blaue Hilfe legen.')}});
-          hook.addEventListener('pointerup',e=>{tapeDrag=false;try{hook.releasePointerCapture(e.pointerId)}catch(_){}});
-          hook.addEventListener('pointerdown',()=>$('tapeLiveHint').classList.add('active'));
-          hook.addEventListener('pointermove',()=>{$('tapeLiveHint').innerHTML='MAẞBAND: <b>'+$('tapeReadout').textContent+'</b> herausgezogen'});
-          hook.addEventListener('pointerup',()=>setTimeout(()=>$('tapeLiveHint').classList.remove('active'),500));
-          $('cutLengthPicker').addEventListener('click',e=>{if(e.target.tagName!=='BUTTON')return;const cm=parseInt(e.target.textContent);setTimeout(()=>{$('tapeLiveHint').innerHTML='MAẞBAND: <b>0 cm</b> / ZIEL '+cm+' cm';$('sawMeasureHint').innerHTML='SÄGEANSCHLAG: <b>IST '+$('sawStopSlider').value+' cm</b> · SOLL '+cm+' cm'},0)});
-          $('cutLengthPicker').addEventListener('click',e=>{if(e.target.tagName==='BUTTON')$('markGuide').classList.remove('mark-finished')});
-          $('sawStopSlider').addEventListener('pointerdown',()=>{$('sawMeasureHint').classList.add('active');$('workshopOverlay').classList.add('adjusting-saw-measure')});
-          $('sawStopSlider').addEventListener('input',()=>{$('sawMeasureHint').innerHTML='SÄGEANSCHLAG: <b>IST '+$('sawStopSlider').value+' cm</b> · SOLL '+(ws.cutLength||'–')+' cm'});
-          $('sawStopSlider').addEventListener('input',()=>{$('sawStopSystem').classList.toggle('compact-20',+$('sawStopSlider').value===20)});
-          $('sawStopSlider').addEventListener('pointerup',()=>{setTimeout(()=>$('sawMeasureHint').classList.remove('active'),500);$('workshopOverlay').classList.remove('adjusting-saw-measure')});
-          new MutationObserver(()=>{$('tapeLiveHint').innerHTML='MAẞBAND: <b>'+$('tapeReadout').textContent+'</b>'+(ws.cutLength?' / ZIEL '+ws.cutLength+' cm':' herausgezogen')}).observe($('tapeReadout'),{childList:true,characterData:true,subtree:true});
-          new MutationObserver(()=>{const count=$('markCanvas').querySelectorAll('.mark-segment:not(.final-mark-line)').length;if(count>2){$('wsPencil').classList.add('brief-guide-done');const h=$('wsActionHint');if(h&&h.textContent==='ROT MARKIEREN')h.classList.remove('show')}if(count>=20){const guide=$('markGuide'),canvas=$('markCanvas'),a=area.getBoundingClientRect(),g=guide.getBoundingClientRect();guide.classList.add('mark-finished');if(!canvas.querySelector('.final-mark-line')){const line=document.createElement('div');line.className='mark-segment final-mark-line';line.style.left=(g.left-a.left)+'px';line.style.top=(g.top-a.top)+'px';line.style.height=g.height+'px';canvas.appendChild(line)}}}).observe($('markCanvas'),{childList:true});
-          function retractTape(){if(ws.tapeRetracted)return;ws.tapeRetracted=true;let w=parseFloat(bladeTape.style.width)||0;const timer=setInterval(()=>{w=Math.max(0,w-12);bladeTape.style.width=w+'px';hook.style.left=(77+w)+'px';$('tapeReadout').textContent=Math.max(0,Math.round(w/9))+' cm';if(w<=0){clearInterval(timer);$('tapeCase').classList.remove('ready');status('Markierung fertig – Maßband automatisch eingerollt. Lineal und Bleistift sicher ablegen.');woodStage(5)}},35)}
-          drag(ruler,area,null,()=>{
-            const a=area.getBoundingClientRect(),r=ruler.getBoundingClientRect();
-            if(checkParking(ruler)&&ws.markCount>=20){ws.rulerParked=true;snapIntoCup(ruler);updateParking();return}
-            if(!ws.tapeReady){status('Miss die gewählte Länge zuerst vollständig mit dem Maßband.');return}
-            const g=$('markGuide').getBoundingClientRect();if(Math.abs((r.left+r.width)-g.left)<120||Math.abs(r.left-g.left)<120){ruler.style.left=(g.left-a.left-r.width+6)+'px';ruler.style.top=(g.top-a.top-38)+'px';ws.ruler=true;woodStage(4);ruler.classList.add('tool-step-ok');$('markGuide').classList.remove('ruler-target');$('markGuide').classList.add('ready');status('Lineal eingerastet. Jetzt mit dem beschrifteten Bleistift an der Kante markieren.')}else status('Ziehe das Lineal in die gestrichelte Fläche „LINEAL HIER ANLEGEN“.')
-          },hand);
-          let lastMarkY=null;
-          drag(pencil,area,(e,el,a)=>{
-            if(!ws.ruler)return;
-            const g=$('markGuide').getBoundingClientRect(),pr=el.getBoundingClientRect(),near=Math.abs((pr.left-34)-(g.left+g.width/2))<100;
-            if(near){el.style.left=(g.left-a.left+34+g.width/2)+'px';el.classList.add('marking','snapped-pencil');const tipY=Math.max(g.top,Math.min(g.bottom,e.clientY)),rel=Math.round((tipY-g.top)/5)*5,from=lastMarkY===null?rel:lastMarkY,lo=Math.min(from,rel),hi=Math.max(from,rel);for(let top=lo;top<=hi;top+=5){const key=Math.round(top/5);if(!document.querySelector('.mark-segment[data-i="'+key+'"]')){const s=document.createElement('div');s.className='mark-segment';s.dataset.i=key;s.style.left=(g.left-a.left)+'px';s.style.top=(g.top-a.top+top)+'px';$('markCanvas').appendChild(s);ws.markCount++}}lastMarkY=rel;if(ws.markCount>=20)retractTape()}else{el.classList.remove('marking','snapped-pencil');lastMarkY=null}
-          },()=>{
-            pencil.classList.remove('marking','snapped-pencil');lastMarkY=null;
-            if(checkParking(pencil)&&ws.markCount>=20){ws.pencilParked=true;snapIntoCup(pencil);updateParking()}
-          },hand);
-          pencil.addEventListener('pointerdown',e=>{activeWorkshopHand='right';pencil.classList.add('right-hand-pencil');pencil.style.setProperty('transform','rotate(8deg)','important');pointWorkshopArm(e.clientX,e.clientY)});
-          let guideOffset=null;
-          drag(board,area,(e,el,a)=>{const br=el.getBoundingClientRect(),g=$('markGuide').getBoundingClientRect();if(guideOffset===null)guideOffset=g.left-br.left;const gx=parseFloat(el.style.left)+guideOffset;$('markGuide').style.setProperty('left',gx+'px','important');$('cutProgress').style.setProperty('left',(gx+2.5)+'px','important');document.querySelectorAll('.mark-segment').forEach(s=>s.style.left=gx+'px');status('Schiebe die linke Ecke des Bretts an den L-förmigen Anschlaghaken.')},()=>{const a=area.getBoundingClientRect(),br=board.getBoundingClientRect(),g=$('markGuide').getBoundingClientRect(),hookAbs=a.left+a.width*.56-ws.cutLength*9,delta=hookAbs-br.left;if(ws.sawStopReady&&Math.abs(delta)<120){const nl=(parseFloat(board.style.left)||0)+delta,ng=(g.left-a.left)+delta;board.style.setProperty('left',nl+'px','important');$('markGuide').style.setProperty('left',ng+'px','important');$('cutProgress').style.setProperty('left',(ng+2.5)+'px','important');document.querySelectorAll('.mark-segment').forEach(s=>s.style.left=ng+'px');board.classList.add('stop-snapped');ws.boardAligned=true;status('Holzkante liegt am Anschlaghaken. Deine Markierung steht jetzt automatisch unter dem Sägeblatt.')}else status('Noch näher: linke Holzecke direkt in den L-Haken schieben.');guideOffset=null},hand);
-          board.addEventListener('pointermove',()=>{if(!ws.sawStopReady||!ws.stopGuideX)return;const a=area.getBoundingClientRect(),g=$('markGuide').getBoundingClientRect(),shift=(g.left-a.left)-ws.stopGuideX;$('sawStopSystem').style.setProperty('transform','translateX('+shift+'px)','important')});
-          const saw=$('circularSaw');
-          drag(saw,area,(e,el,a)=>{
-            if(!ws.sawOn){status('Schalte die Säge zuerst ein.');return}
-            const g=$('markGuide').getBoundingClientRect(),sr=el.getBoundingClientRect(),bladeX=sr.left+sr.width*.62,bladeY=sr.top+sr.height*.72,aligned=Math.abs(bladeX-(g.left+g.width/2))<55;
-            el.classList.toggle('cut-aligned',aligned);
-            if(aligned&&bladeY>g.top-70&&bladeY<g.bottom+90){el.classList.add('saw-track-lock');el.style.setProperty('left',(g.left-a.left-sr.width*.62+g.width/2)+'px','important');const sawTop=parseFloat(el.style.top)||22,penetration=Math.max(0,Math.min(100,((sawTop-22)/128)*100));ws.cut=Math.max(ws.cut,penetration);$('cutProgress').style.height=(ws.cut*g.height/100)+'px';if(penetration>4)spawnChips(g.left+g.width/2,Math.min(g.bottom,bladeY));status('Sägekopf gerade nach unten – Schnitttiefe: '+Math.round(ws.cut)+'%');if(ws.cut>=99){ws.cut=100;$('cutProgress').style.height=g.height+'px';el.classList.remove('cut-aligned','saw-track-lock');board.classList.add('saw-locked');$('wastePiece').classList.remove('show','separating');$('sawAfterHint').className='saw-after-hint show-off';$('sawAfterHint').textContent='⚠ SCHNITT FERTIG – SÄGE JETZT AUSSCHALTEN';status('Schnitt fertig. Das Blatt dreht weiter – roten/grünen Knopf auf AUS drücken.')}}else{el.classList.remove('saw-track-lock');status('Sägekopf am hinteren Gelenk gerade nach unten drücken.')}
-          },()=>{saw.classList.remove('cut-aligned','saw-track-lock');saw.classList.add('saw-returning');saw.style.setProperty('top','22px','important');saw.style.setProperty('--saw-angle','-24deg');setTimeout(()=>{saw.classList.remove('saw-returning');if(ws.cut>=100&&ws.sawOn){$('sawAfterHint').className='saw-after-hint show-off';$('sawAfterHint').textContent='✓ SÄGEKOPF OBEN – JETZT AUSSCHALTEN';status('Sägekopf ist wieder sicher oben. Jetzt Säge ausschalten.')}},420);lastSawX=null},hand);
-          const waste=$('wastePiece'),shelf=$('wasteShelf');
-          drag(waste,area,null,()=>{if(ws.sawOn){status('Gefahr: Säge zuerst ausschalten.');return}const r=waste.getBoundingClientRect(),sh=shelf.getBoundingClientRect();if(!(r.right<sh.left||r.left>sh.right||r.bottom<sh.top||r.top>sh.bottom)){ws.wasteStored=true;waste.classList.add('stored');shelf.classList.add('ready');board.classList.add('cut-ready');saw.classList.add('saw-finished');$('sawAfterHint').className='saw-after-hint';status('Restholz sicher im Regal. Das brauchbare Holz blinkt jetzt frei vor der Säge.')}else status('Lege das nicht benötigte Reststück in das RESTHOLZ-REGAL.')},hand);
-          board.addEventListener('click',()=>{if(ws.cut>=100&&!ws.sawOn&&!ws.wasteStored){status('Zuerst das Restholz in das Regal legen.');return}if(ws.cut>=100&&!ws.sawOn&&ws.wasteStored){$('wsWoodPanel').classList.remove('show');$('wsSandPanel').classList.add('show');buildSplinters();status('Jetzt nur die raue rechte Schnittkante langsam abschleifen.');steps('4. Schnittkante des brauchbaren Werkstücks schleifen')}})
-        }
+  window.attachPrintedPart = function () {
+    if (ws.placed < 4 || ws.montageStep !== 5 ||
+        !ws.done.wood || !ws.done.screw || !ws.done.print || ws.done.assemble) {
+      status('Zuerst Holz bearbeiten, vollständig montieren, verschrauben und Druckteil entnehmen.');
+      return;
+    }
 
-        window.toggleWsSaw=function(){
-          if(!ws.rulerParked||!ws.pencilParked){status('Lineal und Bleistift zuerst ordentlich in den Werkzeugbecher zurücklegen.');return}
-          if(ws.markCount<20){status('Markierung ist noch nicht vollständig.');return}
-          if(!ws.sawStopReady){status('Längenanschlag zuerst exakt auf '+ws.cutLength+' cm schieben und einrasten lassen.');return}
-          if(!ws.sawOn&&!ws.boardAligned){status('Säge bleibt aus: Schiebe zuerst das Brett mit der Hand an den eingestellten Anschlaghaken.');return}
-          if(ws.sawOn&&ws.cut>=100&&(parseFloat($('circularSaw').style.top)||22)>35){status('Noch nicht ausschalten: Sägekopf zuerst vollständig nach oben führen.');$('sawAfterHint').className='saw-after-hint show-off';$('sawAfterHint').textContent='↑ SÄGEKOPF ERST HOCH';return}
-          ws.sawOn=!ws.sawOn;$('sawSwitch').classList.toggle('on',ws.sawOn);$('circularSaw').classList.toggle('running',ws.sawOn);
-          if(ws.sawOn){const area=$('woodArea').getBoundingClientRect(),machineX=area.width*.56,saw=$('circularSaw');saw.style.setProperty('left',(machineX-108)+'px','important');saw.style.setProperty('top','22px','important');saw.style.setProperty('--saw-angle','-24deg');saw.style.setProperty('right','auto','important')}
-          if(!ws.sawOn){const saw=$('circularSaw');saw.classList.add('saw-returning');saw.style.setProperty('left','calc(56% - 108px)','important');saw.style.setProperty('top','22px','important');saw.style.setProperty('--saw-angle','-24deg');saw.style.setProperty('right','auto','important');setTimeout(()=>saw.classList.remove('saw-returning'),420)}
-          if(!ws.sawOn&&ws.cut>=100){woodStage(6);const area=$('woodArea').getBoundingClientRect(),g=$('markGuide').getBoundingClientRect(),waste=$('wastePiece');waste.style.left=(g.left-area.left+14)+'px';waste.style.top='125px';waste.classList.add('show');waste.classList.remove('safe-to-move');$('sawStopSystem').classList.add('needs-aside');$('sawAfterHint').className='saw-after-hint show-waste';$('sawAfterHint').textContent='SÄGE AUS – ANSCHLAG ZUERST ZUR SEITE SCHIEBEN';status('Säge aus. Schiebe jetzt den Anschlag mit der Hand zur Seite.')}else status(ws.sawOn?'Kappsäge läuft. Brett und Markierung sind bereits sicher ausgerichtet – jetzt Sägekopf absenken.':'Säge ist ausgeschaltet.')
-        };
-        window.moveSawStopAside=function(){if(ws.cut<100||ws.sawOn||!$('sawStopSystem').classList.contains('needs-aside'))return;ws.stopAside=true;$('sawStopSystem').classList.remove('needs-aside','attached');$('sawStopSystem').classList.add('aside');$('sawStopSystem').style.setProperty('transform','translateX(-230px)','important');$('wastePiece').classList.add('safe-to-move');$('sawAfterHint').textContent='✓ ANSCHLAG WEG – RESTHOLZ JETZT FREIGEGEBEN';status('Anschlag mit der Hand zur Seite geschoben. Jetzt darf das Restholz ins Regal.')};
+    ws.done.assemble = true;
+    cls('wsCardAssemble', 'done', true);
+    all('.ws-panel').forEach(e => e.classList.remove('show'));
+    style('wsMenu', 'display', 'none');
+    cls('wsFinalDisplay', 'show', true);
 
-        function spawnChips(x,y){const area=$('woodArea'),a=area.getBoundingClientRect();for(let i=0;i<5;i++){const d=document.createElement('div');d.className='wood-chip'+(i<2?' big-chip':'');d.style.left=(x-a.left)+'px';d.style.top=(y-a.top)+'px';d.style.transform='rotate('+(Math.random()*100)+'deg)';d.style.setProperty('--x',(Math.random()*150-75)+'px');d.style.setProperty('--y',(Math.random()*100-45)+'px');area.appendChild(d);setTimeout(()=>d.remove(),800)}for(let i=0;i<2;i++){const dust=document.createElement('div');dust.className='saw-dust-cloud';dust.style.left=(x-a.left-8)+'px';dust.style.top=(y-a.top-8)+'px';dust.style.setProperty('--x',(Math.random()*80-40)+'px');dust.style.setProperty('--y',(-20-Math.random()*45)+'px');area.appendChild(dust);setTimeout(()=>dust.remove(),950)}}
-        function buildSplinters(){const area=$('sandingArea'),wood=area.querySelector('.sand-wood'),layer=$('splinterLayer'),a=area.getBoundingClientRect(),w=wood.getBoundingClientRect();layer.innerHTML='';for(let i=0;i<64;i++){const s=document.createElement('div');s.className='splinter';if(i<40){s.style.left=(w.right-a.left-14+Math.random()*5)+'px';s.style.top=(w.top-a.top+4+i*(w.height-10)/40)+'px'}else if(i<52){s.style.left=(w.left-a.left+10+(i-40)*(w.width-30)/12)+'px';s.style.top=(w.top-a.top-2+Math.random()*5)+'px'}else{s.style.left=(w.left-a.left+10+(i-52)*(w.width-30)/12)+'px';s.style.top=(w.bottom-a.top-4+Math.random()*5)+'px'}s.style.transform='rotate('+(80+Math.random()*20)+'deg)';layer.appendChild(s)}}
-        window.selectSandGrit=function(grit,button){document.querySelectorAll('.sandpaper-sheet').forEach(x=>x.classList.remove('active'));button.classList.add('active');const block=$('sandBlockV32');block.classList.remove('grit80','grit180');if(grit===80)block.classList.add('grit80');if(grit===180)block.classList.add('grit180');status('K'+grit+' eingesetzt. Jetzt den Schleifklotz über die rechte Kante führen.')};
-        function wireSand(){
-          const area=$('sandingArea'),block=$('sandBlockV32'),hand=$('wsSandHand');
-          if(!block.dataset.freeDrag){block.dataset.freeDrag='1';let moving=false,startX=0,startY=0,startTX=0,startTY=0,baseLeft=0,baseTop=0;block.addEventListener('pointerdown',e=>{moving=true;startX=e.clientX;startY=e.clientY;startTX=parseFloat(block.style.getPropertyValue('--sand-x'))||0;startTY=parseFloat(block.style.getPropertyValue('--sand-y'))||0;const r=block.getBoundingClientRect(),a=area.getBoundingClientRect();baseLeft=r.left-a.left-startTX;baseTop=r.top-a.top-startTY;block.setPointerCapture(e.pointerId)});block.addEventListener('pointermove',e=>{if(!moving)return;const a=area.getBoundingClientRect(),nx=Math.max(-baseLeft,Math.min(a.width-block.offsetWidth-baseLeft,startTX+e.clientX-startX)),ny=Math.max(-baseTop,Math.min(a.height-block.offsetHeight-baseTop,startTY+e.clientY-startY));block.style.setProperty('--sand-x',nx+'px');block.style.setProperty('--sand-y',ny+'px')});block.addEventListener('pointerup',e=>{moving=false;try{block.releasePointerCapture(e.pointerId)}catch(_){}})}
-          drag(block,area,(e,el,a)=>{
-            const br=el.getBoundingClientRect();
-            document.querySelectorAll('.splinter:not(.removed)').forEach(s=>{const r=s.getBoundingClientRect();if(!(br.right<r.left||br.left>r.right||br.bottom<r.top||br.top>r.bottom)){s.classList.add('removed');ws.sandCount++;$('sandProgressBar').style.width=Math.min(100,ws.sandCount/55*100)+'%';spawnSandDust(e.clientX-a.left,e.clientY-a.top);spawnSandingChip(e.clientX-a.left,e.clientY-a.top)}});
-            if(ws.sandCount>=55&&!ws.done.wood){ws.done.wood=true;$('smoothShine').classList.add('show');$('wsCardWood').classList.add('done');$('wsCardAssemble').classList.remove('locked');status('Kante ist glatt. Jetzt werden die Holzteile zuerst zusammengesteckt.');steps('5. Holzteile ohne Schrauben zusammenstecken');setTimeout(backToWsMenu,1100)}
-          },null,hand)
-        }
-        function spawnSandDust(x,y){for(let i=0;i<2;i++){const d=document.createElement('div');d.className='sanding-dust';d.style.left=x+'px';d.style.top=y+'px';d.style.setProperty('--x',(Math.random()*70-35)+'px');d.style.setProperty('--y',(Math.random()*50-10)+'px');$('sandingArea').appendChild(d);setTimeout(()=>d.remove(),800)}}
-        function spawnSandingChip(x,y){const d=document.createElement('div');d.className='sanding-chip';d.style.left=x+'px';d.style.top=y+'px';d.style.setProperty('--x',(Math.random()*90-45)+'px');d.style.setProperty('--y',(-15-Math.random()*45)+'px');$('sandingArea').appendChild(d);setTimeout(()=>d.remove(),800)}
+    const names = {
+      stool: 'Dein Mini-Werkstatthocker',
+      holder: 'Dein Stiftehalter',
+      box: 'Deine Mini-Holzkiste'
+    };
+    text('wsFinalText', `${names[ws.project]} ist fertig – inklusive ${models[ws.model][0]}.`);
+    status('Werkstück erfolgreich fertiggestellt!');
+    steps('9. Sicherheitsquiz abschließen');
+  };
 
-        function wireScrew(){
-          const area=$('screwArea'),driver=$('wsDriver'),hand=$('wsScrewHand'),zone=$('bitDropZone'),progress=$('screwProgress');
-          document.querySelectorAll('.bit-piece').forEach(bit=>{
-            drag(bit,area,null,()=>{
-              const r=bit.getBoundingClientRect(),z=zone.getBoundingClientRect();
-              if(!(r.right<z.left||r.left>z.right||r.bottom<z.top||r.top>z.bottom)){
-                document.querySelectorAll('.bit-piece').forEach(b=>b.classList.remove('selected','loaded-bit'));bit.classList.add('selected');ws.bit=bit.dataset.bit;
-                if(ws.bit==='cross'){bit.classList.add('loaded-bit');driver.classList.add('bit-loaded');status('Kreuz-Bit sitzt hörbar im Spannfutter. Greife jetzt den ganzen Akkuschrauber.')}else{driver.classList.remove('bit-loaded');status('Dieser Bit passt nicht zur Kreuzschraube. Wähle Kreuz und schiebe ihn ins Spannfutter.')}
-              }
-            },hand)
-          });
-          let target=null,timer=null;
-          if(!driver.dataset.freeDriver){driver.dataset.freeDriver='1';let moving=false,startX=0,startY=0,startTX=0,startTY=0,baseLeft=0,baseTop=0;driver.addEventListener('pointerdown',e=>{moving=true;startX=e.clientX;startY=e.clientY;startTX=parseFloat(driver.style.getPropertyValue('--driver-x'))||0;startTY=parseFloat(driver.style.getPropertyValue('--driver-y'))||0;const r=driver.getBoundingClientRect(),a=area.getBoundingClientRect();baseLeft=r.left-a.left-startTX;baseTop=r.top-a.top-startTY;driver.setPointerCapture(e.pointerId)});driver.addEventListener('pointermove',e=>{if(!moving)return;const a=area.getBoundingClientRect(),nx=Math.max(-baseLeft,Math.min(a.width-driver.offsetWidth-baseLeft,startTX+e.clientX-startX)),ny=Math.max(-baseTop,Math.min(a.height-driver.offsetHeight-baseTop,startTY+e.clientY-startY));driver.style.setProperty('--driver-x',nx+'px');driver.style.setProperty('--driver-y',ny+'px')});driver.addEventListener('pointerup',e=>{moving=false;try{driver.releasePointerCapture(e.pointerId)}catch(_){}})}
-          drag(driver,area,(e,el,a)=>{
-            if(ws.bit!=='cross'){status('Setze zuerst den Kreuz-Bit ein.');return}
-            const bitTip=el.querySelector('.inserted-bit').getBoundingClientRect(),tipX=bitTip.right,tipY=bitTip.top+bitTip.height/2;
-            let found=null;document.querySelectorAll('.screw.placed-screw:not(.done)').forEach(s=>{const r=s.getBoundingClientRect();if(Math.hypot(tipX-(r.left+r.width/2),tipY-(r.top+r.height/2))<55)found=s});
-            if(found!==target){clearTimeout(timer);driver.classList.remove('drilling');document.querySelectorAll('.screw.driving').forEach(s=>s.classList.remove('driving'));target=found;progress.style.display='none';if(found){if(found.classList.contains('wrong-angle')){crackWoodAt(found);status('Stopp: Genau an dieser schrägen Schraube reißt das Holz. Station neu starten.');target=null;return}const r=found.getBoundingClientRect(),ar=area.getBoundingClientRect();progress.style.left=(r.left-ar.left-8)+'px';progress.style.top=(r.top-ar.top-8)+'px';progress.style.display='block';driver.classList.add('drilling');found.classList.add('driving');status('Bit greift – Akkuschrauber ruhig und gerade halten …');timer=setTimeout(()=>{driver.classList.remove('drilling');found.classList.remove('driving');found.classList.add('done');found.querySelector('.screw-depth span').style.width='100%';progress.style.display='none';ws.screws++;target=null;status('Schraube '+ws.screws+' von 3 sichtbar eingedreht.');if(ws.screws===3){ws.done.screw=true;$('wsCardScrew').classList.add('done');$('wsCardPrint').classList.remove('locked');steps('6. 3D-Druckteil auswählen und drucken');setTimeout(backToWsMenu,850)}},1200)}}
-          },()=>{clearTimeout(timer);driver.classList.remove('drilling');document.querySelectorAll('.screw.driving').forEach(s=>s.classList.remove('driving'));target=null;progress.style.display='none'},hand)
-        }
-        window.setScrewAngle=function(v){ws.currentScrewAngle=Number(v);$('screwAngleReadout').textContent=(v>0?'+':'')+v+'°'};
-        window.placeLooseScrew=function(n,button){const screw=document.querySelector('.screw[data-screw="'+n+'"]');if(!screw||button.classList.contains('used'))return;const angle=Number(ws.currentScrewAngle||0);screw.dataset.angle=angle;screw.style.setProperty('--screw-angle',angle+'deg');screw.classList.add('placed-screw');screw.classList.toggle('wrong-angle',Math.abs(angle)>5);button.classList.add('used');status(Math.abs(angle)>5?'Die Schraube steht schief. Tippe sie an und richte sie vor dem Schrauben gerade aus.':'Schraube '+n+' gerade eingesetzt. Jetzt den Akkuschrauber ansetzen.')};
-        function crackWoodAt(screw){const board=document.querySelector('.screw-board');if(board.classList.contains('cracked'))return;const b=board.getBoundingClientRect(),r=screw.getBoundingClientRect();board.style.setProperty('--crack-x',Math.max(12,Math.min(88,(r.left+r.width/2-b.left)/b.width*100))+'%');board.style.setProperty('--crack-y',Math.max(3,Math.min(30,(r.top+r.height/2-b.top)/b.height*100))+'%');board.classList.add('cracked')}
-        window.resetScrewStation=function(){const keepBit=ws.bit==='cross';ws.screws=0;ws.currentScrewAngle=0;document.querySelectorAll('.screw').forEach(s=>{s.classList.remove('done','placed-screw','wrong-angle');s.style.removeProperty('--screw-angle');s.dataset.angle='0';const d=s.querySelector('.screw-depth span');if(d)d.style.width='0'});document.querySelectorAll('.loose-screw').forEach(b=>b.classList.remove('used'));if(keepBit){ws.bit='cross';$('wsDriver').classList.add('bit-loaded');document.querySelectorAll('.bit-piece').forEach(b=>b.classList.toggle('loaded-bit',b.dataset.bit==='cross'))}else{ws.bit=null;document.querySelectorAll('.bit-piece').forEach(b=>b.classList.remove('selected','loaded-bit'));$('wsDriver').classList.remove('bit-loaded')}$('wsDriver').style.removeProperty('--driver-x');$('wsDriver').style.removeProperty('--driver-y');$('screwAngleSlider').value=0;$('screwAngleReadout').textContent='0°';const board=document.querySelector('.screw-board');board.classList.remove('cracked');board.style.removeProperty('--crack-x');board.style.removeProperty('--crack-y');const b=$('wsResetScrew');b.classList.add('resetting');setTimeout(()=>b.classList.remove('resetting'),600);status(keepBit?'Station zurückgesetzt. Kreuz-Bit bleibt sicher im Spannfutter. Schrauben neu und gerade einsetzen.':'Station zurückgesetzt. Passenden Kreuz-Bit wählen und Schrauben gerade einsetzen.')};
-        document.querySelectorAll('.screw').forEach(s=>s.addEventListener('click',()=>{if(!s.classList.contains('wrong-angle'))return;crackWoodAt(s);status('Holz gerissen: Der Riss beginnt genau an der schräg eingesetzten Schraube.')}));
+  window.startWsQuiz = function () {
+    if (!ws.done.assemble) return;
+    quizBusy = false;
+    ws.quiz = 0;
+    cls('wsFinalDisplay', 'show', false);
+    cls('wsQuiz', 'show', true);
+    renderQuiz();
+  };
 
-        const modelNames={tag:'Namensschild',logo:'3D-Logo',gear:'Zahnrad',hook:'Werkzeughaken',star:'Quinoa-Stern',keychain:'Schlüsselanhänger',stand:'Handyhalter',cube:'3D-Würfel',rocket:'Mini-Rakete',medal:'Werkstatt-Medaille',robot:'Mini-Roboter',molecule:'Molekül-Modell',trophy:'Quinoa-Pokal'};
-        window.selectWsModel=function(m){if(ws.printing)return;ws.model=m;document.querySelectorAll('.model-card').forEach(x=>x.classList.remove('selected'));$({tag:'modelTag',logo:'modelLogo',gear:'modelGear',hook:'modelHook',star:'modelStar',keychain:'modelKeychain',stand:'modelStand',cube:'modelCube',rocket:'modelRocket',medal:'modelMedal',robot:'modelRobot',molecule:'modelMolecule',trophy:'modelTrophy'}[m]).classList.add('selected');$('printObject').className='print-object '+m;updatePrint()};
-        window.selectWsColor=function(c){if(ws.printing)return;ws.color=c;document.querySelectorAll('.color-swatch').forEach(x=>x.classList.toggle('selected',x.dataset.color===c));$('printObject').style.setProperty('--print-color',({green:'#16a34a',orange:'#f59e0b',red:'#dc2626',purple:'#7c3aed',white:'#f8fafc',black:'#111827',blue:'#2563eb'})[c]);updatePrint()};
-        window.selectWsMaterial=function(v){ws.material=v;updatePrint()};window.selectWsQuality=function(v){ws.quality=v;updatePrint()};
-        function updatePrint(){const model=ws.model?modelNames[ws.model]:'-',quality=ws.quality==='fine'?'Fein · 0,12 mm':ws.quality==='normal'?'Standard · 0,20 mm':ws.quality==='draft'?'Schnell · 0,28 mm':'-',seconds=ws.quality==='fine'?55:ws.quality==='normal'?42:ws.quality==='draft'?30:0,time=seconds?'00:'+(seconds<10?'0':'')+seconds:'--:--';$('printSummary').textContent='Modell: '+model+' | '+(ws.material||'-')+' | Farbe: '+(ws.color||'-')+' | '+quality+' | Dauer '+time;$('printerScreen').innerHTML='MODELL: '+model+'<br>MATERIAL: '+(ws.material||'-')+'<br>QUALITÄT: '+quality+'<br>ZEIT: '+time+'<br>STATUS: BEREIT';if($('printTimeBadge'))$('printTimeBadge').textContent='DRUCKZEIT '+time;$('wsPrintStart').disabled=!(ws.model&&ws.color&&ws.material&&ws.quality)}
-        window.startWsPrint=function(){if(ws.printing||ws.printReady||!ws.model||!ws.color||!ws.material||!ws.quality)return;ws.printing=true;const box=$('printerScreen').parentElement,head=$('printerHead'),line=$('extrusionLine'),obj=$('printObject'),total=ws.quality==='fine'?55:ws.quality==='normal'?42:30;box.classList.add('is-printing');$('wsPrintStart').disabled=true;head.classList.add('printing');document.querySelectorAll('#wsPrintPanel button,#wsPrintPanel select').forEach(x=>{if(x.id!=='wsPrintTake')x.disabled=true});let n=0,pass=0,step=ws.quality==='fine'?.75:ws.quality==='normal'?1.25:2;const dims={tag:[125,30],logo:[78,72],gear:[78,78],hook:[60,88],star:[82,80],keychain:[108,40],stand:[86,82],cube:[78,78],rocket:[62,94],medal:[78,78],robot:[72,82],molecule:[62,62],trophy:[70,86]}[ws.model];obj.style.width=dims[0]+'px';obj.style.height='2px';const timer=setInterval(()=>{n=Math.min(100,n+step);pass++;const h=Math.max(2,n*dims[1]/100),layer=Math.max(1,Math.round(n*(ws.quality==='fine'?3.2:ws.quality==='normal'?2.2:1.4))),travel=105+((pass%18)/17)*245,remaining=Math.max(0,Math.ceil(total*(100-n)/100)),eta='00:'+(remaining<10?'0':'')+remaining;head.style.left=(Math.floor(pass/18)%2?455-travel:travel)+'px';head.style.top=(193-h)+'px';line.style.left=(parseFloat(head.style.left)+23)+'px';line.style.top=(210-h)+'px';$('printProgress').style.width=n+'%';obj.style.height=h+'px';$('layerCounter').textContent='SCHICHT '+layer+' · DÜSE '+(ws.quality==='fine'?'205':'210')+'°C';$('printTimeBadge').textContent='RESTZEIT '+eta;$('printerScreen').innerHTML='MODELL: '+modelNames[ws.model]+'<br>MATERIAL: '+ws.material+'<br>SCHICHT: '+layer+'<br>RESTZEIT: '+eta+'<br>STATUS: DRUCKT '+Math.round(n)+'%';if(n>=100){clearInterval(timer);head.classList.remove('printing');box.classList.remove('is-printing');box.classList.add('print-finished');$('printTimeBadge').textContent='RESTZEIT 00:00 · FERTIG';$('printerScreen').innerHTML='MODELL: '+modelNames[ws.model]+'<br>MATERIAL: '+ws.material+'<br>SCHICHTEN: '+layer+'<br>RESTZEIT: 00:00<br>STATUS: ABKÜHLEN ✓';ws.printing=false;ws.printReady=true;$('wsPrintTake').style.display='inline-block';status('Schichtdruck abgeschlossen. Das Modell kühlt ab und ist bereit zur Entnahme.')}},75)};
-        window.takeWsPrint=function(){if(!ws.printReady)return;ws.printReady=false;ws.done.print=true;$('wsPrintTake').style.display='none';$('wsCardPrint').classList.add('done');$('attachPrintBtn').style.display='inline-block';$('printVictory').classList.add('show');status(modelNames[ws.model]+' erfolgreich entnommen. Finale 3D-Mission geschafft!');steps('8. Gedrucktes Zusatzteil am fertigen Holzkörper befestigen');setTimeout(()=>{$('printVictory').classList.remove('show');backToWsMenu()},1700)};
+  function renderQuiz() {
+    const q = quiz[ws.quiz];
+    const box = $('wsQuizOptions');
+    if (!q || !box) return;
+    quizBusy = false;
+    text('wsQuizProgress', `Frage ${ws.quiz + 1} von ${quiz.length}`);
+    text('wsQuizQuestion', q.q);
+    box.replaceChildren();
 
-        function assemblySparks(slot){const fx=$('assemblyFx'),a=$('assemblyArea').getBoundingClientRect(),r=slot.getBoundingClientRect();for(let i=0;i<14;i++){const spark=document.createElement('i');spark.className='assembly-spark';spark.style.left=(r.left-a.left+r.width/2)+'px';spark.style.top=(r.top-a.top+r.height/2)+'px';spark.style.setProperty('--x',(Math.cos(i/14*Math.PI*2)*(35+Math.random()*45))+'px');spark.style.setProperty('--y',(Math.sin(i/14*Math.PI*2)*(25+Math.random()*35))+'px');fx.appendChild(spark);setTimeout(()=>spark.remove(),800)}}
-        function unlockMontage(done,next){$(done).classList.remove('ready');$(done).classList.add('done');if(next){$(next).classList.remove('locked');$(next).classList.add('ready')}}
-        function setMontageProgress(value){$('montageProgressBar').style.width=value+'%';$('montageProgressText').textContent='MONTAGE '+value+'%'}
-        window.insertAssemblyDowel=function(el){if(ws.placed<4||ws.montageStep!==0||el.classList.contains('filled'))return;el.classList.add('filled');assemblySparks(el);ws.dowels++;status('Holzdübel '+ws.dowels+' von 2 eingesetzt.');if(ws.dowels===2){ws.montageStep=1;$('assemblyArea').classList.remove('dowel-step');unlockMontage('toolDowel','toolGlue');status('Beide Dübel sitzen. Jetzt Holzleim dünn auftragen.')}};
-        window.startMontageTool=function(tool){if(ws.placed<4)return;if(tool==='dowel'&&ws.montageStep===0){const holes=[...document.querySelectorAll('.dowel-hole')];$('assemblyArea').classList.add('dowel-step');holes.forEach((hole,i)=>setTimeout(()=>{hole.classList.add('filled');assemblySparks(hole)},i*280));ws.dowels=2;ws.montageStep=1;setMontageProgress(20);setTimeout(()=>{$('assemblyArea').classList.remove('dowel-step');unlockMontage('toolDowel','toolGlue')},620);status('Beide Holzdübel wurden sichtbar eingesetzt. Jetzt Holzleim auftragen.');return}if(tool==='glue'&&ws.montageStep===1){$('assemblyGlue').classList.add('show');ws.montageStep=2;setMontageProgress(40);unlockMontage('toolGlue','toolHammer');status('Leim gleichmäßig aufgetragen. Jetzt die Verbindung mit dem Gummihammer fügen.')}else if(tool==='hammer'&&ws.montageStep===2){$('assemblyLiveBuild').classList.add('hammered');setTimeout(()=>$('assemblyLiveBuild').classList.remove('hammered'),1100);ws.montageStep=3;setMontageProgress(60);unlockMontage('toolHammer','toolAngle');status('Drei kontrollierte Schläge: Die Verbindung sitzt bündig.')}else if(tool==='angle'&&ws.montageStep===3){$('angleBadge').classList.add('show');ws.montageStep=4;setMontageProgress(80);unlockMontage('toolAngle','toolClamp');status('Anschlagwinkel geprüft: Das Werkstück steht exakt bei 90 Grad.')}else if(tool==='clamp'&&ws.montageStep===4){$('assemblyLiveBuild').classList.add('clamped');ws.montageStep=5;setMontageProgress(100);unlockMontage('toolClamp',null);$('wsCardAssemble').classList.add('done');$('wsCardScrew').classList.remove('locked');status('Werkstück festgespannt. Jetzt darf sicher verschraubt werden.');steps('6. Passenden Bit einsetzen und Körper verschrauben');setTimeout(backToWsMenu,1300)}else status('Bitte zuerst den gelb markierten Montageschritt ausführen.')};
-        const montageToolBase=window.startMontageTool;window.startMontageTool=function(tool){if(tool==='dowel'&&ws.placed>=4&&ws.montageStep===0){const holes=[...document.querySelectorAll('.dowel-hole')],hole=holes[ws.dowels||0];if(!hole)return;$('assemblyArea').classList.add('dowel-step');hole.classList.add('filled');assemblySparks(hole);ws.dowels=(ws.dowels||0)+1;status('Holzdübel '+ws.dowels+' von 2 eingesetzt. Noch einmal klicken für den nächsten Dübel.');if(ws.dowels>=2){ws.montageStep=1;setMontageProgress(20);setTimeout(()=>{$('assemblyArea').classList.remove('dowel-step');unlockMontage('toolDowel','toolGlue')},350)}return}if(tool==='hammer'&&ws.montageStep===2){ws.hammerHits=(ws.hammerHits||0)+1;const hammer=$('assemblyHammerVisual');hammer.classList.remove('hit');void hammer.offsetWidth;hammer.classList.add('hit');$('assemblyLiveBuild').classList.add('hammered');setTimeout(()=>{$('assemblyLiveBuild').classList.remove('hammered');hammer.classList.remove('hit')},420);status('Gummihammer: Schlag '+ws.hammerHits+' von 3.');if(ws.hammerHits>=3){ws.montageStep=3;setMontageProgress(60);unlockMontage('toolHammer','toolAngle')}return}montageToolBase(tool)};
-        function finishPuzzleBuild(){if(ws.puzzleFinished||ws.placed<4)return;ws.puzzleFinished=true;ws.montageStep=5;$('assemblyMontage').classList.remove('show');$('assemblyArea').classList.remove('dowel-step');$('assemblyLiveBuild').classList.add('puzzle-complete');$('puzzleCompleteFx').classList.add('show');$('assemblyProgressText').textContent='BAUPUZZLE 100% – FERTIG';$('wsCardAssemble').classList.add('done');$('wsCardScrew').classList.remove('locked');const live=$('assemblyLiveBuild');for(let i=0;i<3;i++)setTimeout(()=>assemblySparks(live),i*240);status('Baupuzzle abgeschlossen. Alle vier Holzteile sitzen – Akkuschrauber-Station freigeschaltet.');steps('6. Schrauben einsetzen und mit Akkuschrauber befestigen');setTimeout(backToWsMenu,1900)}setInterval(finishPuzzleBuild,120);
-        function wireAssembly(){const area=$('assemblyArea');document.querySelectorAll('.part').forEach(part=>{if(part.dataset.assemblyWired)return;part.dataset.assemblyWired='1';drag(part,area,null,()=>{if(part.classList.contains('placed'))return;const slot=document.querySelector('.snap-slot[data-slot="'+part.dataset.part+'"]');const r=part.getBoundingClientRect(),s=slot.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;if(cx>s.left&&cx<s.right&&cy>s.top&&cy<s.bottom){part.classList.add('snap-fly','placed');slot.classList.add('filled');slot.textContent='✓ '+slot.textContent.replace('✓ ','');const liveClass={base:'build-base',side1:'build-left',side2:'build-right',back:'build-back'}[part.dataset.part];const live=$('assemblyLiveBuild').querySelector('.'+liveClass);if(live)live.classList.add('built');assemblySparks(slot);ws.placed++;const percent=ws.placed*25;$('assemblyProgressBar').style.width=percent+'%';$('assemblyProgressText').textContent='BAUFORTSCHRITT '+percent+'%';status('Teil eingerastet – '+ws.placed+' von 4.');if(ws.placed===4){$('assembledProduct').className='assembled-product show '+(ws.project==='stool'?'stool':ws.project==='holder'?'holder':'box');$('assemblyMontage').classList.add('show');$('assemblyArea').classList.add('dowel-step');status('Grundform steht. Jetzt beginnt die echte Montage: Setze beide Holzdübel ein.');steps('5. Dübel, Leim, Hammer, Winkel und Schraubzwinge verwenden')}}else{part.classList.add('wrong-part');setTimeout(()=>part.classList.remove('wrong-part'),450);status('Falscher Bauplatz – suche die passende leuchtende Form.')}},null)})}
-        window.attachPrintedPart=function(){if(ws.placed<4)return;ws.done.assemble=true;$('wsCardAssemble').classList.add('done');$('wsAssemblePanel').classList.remove('show');$('wsFinalDisplay').classList.add('show');$('wsFinalText').textContent=ws.project==='stool'?'Dein Mini-Werkstatthocker ist fertig – inklusive 3D-Emblem.':ws.project==='holder'?'Dein Stiftehalter ist fertig – inklusive 3D-Logo.':'Deine Mini-Holzkiste ist fertig – inklusive 3D-Namensschild.';status('Werkstück erfolgreich fertiggestellt!');steps('8. Sicherheitsquiz abschließen')};
-        window.startWsQuiz=function(){ws.quiz=0;$('wsFinalDisplay').classList.remove('show');$('wsQuiz').classList.add('show');renderQuiz()};
-        function renderQuiz(){const q=quiz[ws.quiz];$('wsQuizProgress').textContent='Frage '+(ws.quiz+1)+' von '+quiz.length;$('wsQuizQuestion').textContent=q.q;const box=$('wsQuizOptions');box.innerHTML='';q.a.forEach((t,i)=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>answerQuiz(i,b);box.appendChild(b)})}
-        function answerQuiz(i,b){const q=quiz[ws.quiz];if(i===q.c){b.style.background='#dcfce7';setTimeout(()=>{ws.quiz++;if(ws.quiz>=quiz.length){$('wsQuiz').classList.remove('show');status('Werkstatt erfolgreich abgeschlossen.');steps('✅ Werkstatt abgeschlossen');setTimeout(closeWorkshop,900)}else renderQuiz()},500)}else{b.style.background='#fee2e2';status('Nicht ganz. Überlege noch einmal.')}}
-        setInterval(()=>{const c=$('assemblyMissionCount');if(c)c.textContent=ws.placed+' / 4'},180);
-        document.addEventListener('DOMContentLoaded',()=>{wireWood();wireSand();wireScrew();wireAssembly()});setTimeout(()=>{wireWood();wireSand();wireScrew();wireAssembly()},700)
-      })();
+    q.a.forEach((value, index) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = value;
+      b.addEventListener('click', () => answerQuiz(index, b));
+      box.appendChild(b);
+    });
+  }
+
+  function answerQuiz(index, button) {
+    if (quizBusy) return;
+    const q = quiz[ws.quiz];
+    if (!q) return;
+
+    if (index !== q.c) {
+      button.style.background = '#fee2e2';
+      status('Nicht ganz. Überlege noch einmal.');
+      return;
+    }
+
+    quizBusy = true;
+    button.style.background = '#dcfce7';
+    all('#wsQuizOptions button').forEach(e => e.disabled = true);
+
+    later(() => {
+      ws.quiz++;
+      if (ws.quiz >= quiz.length) {
+        cls('wsQuiz', 'show', false);
+        status('Werkstatt erfolgreich abgeschlossen.');
+        steps('✅ Werkstatt abgeschlossen');
+        later(window.closeWorkshop, 900);
+      } else {
+        renderQuiz();
+      }
+    }, 500);
+  }
+
+  function initialize() {
+    if (initialized) return true;
+    if (!root()) {
+      console.error('Werkstatt: #workshopOverlay fehlt.');
+      return false;
+    }
+
+    initialized = true;
+
+    // TextContent statt HTML-Strings für variable Bildschirmtexte.
+    if ($('printerScreen')) $('printerScreen').style.whiteSpace = 'pre-line';
+
+    wireWood();
+    wireSand();
+    wireScrew();
+    wireAssembly();
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && visible()) {
+        e.preventDefault();
+        window.closeWorkshop();
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      cancelAllInteractions();
+      if (ws.sawOn) {
+        setSawPower(false);
+        returnSaw();
+        if (ws.cut >= 100) releaseWaste();
+      }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) return;
+      cancelAllInteractions();
+      if (ws.sawOn) {
+        setSawPower(false);
+        returnSaw();
+        if (ws.cut >= 100) releaseWaste();
+      }
+    });
+
+    window.addEventListener('message', e => {
+      if (
+        window.parent === window ||
+        e.source !== window.parent ||
+        e.origin !== location.origin ||
+        !e.data
+      ) return;
+
+      if (e.data.type === 'werkstatt-open') window.openWorkshop();
+      if (e.data.type === 'werkstatt-close') window.closeWorkshop();
+    });
+
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'werkstatt-ready' }, location.origin);
+    }
+
+    return true;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize, { once: true });
+  } else {
+    initialize();
+  }
+})();

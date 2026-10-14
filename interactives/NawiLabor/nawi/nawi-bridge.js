@@ -2,7 +2,7 @@
 (function(){'use strict';
  const send=(type,extra)=>parent.postMessage(Object.assign({type:type,channel:'nawi-labor'},extra||{}),location.origin);
  function closed(){const o=document.getElementById('nawiLabOverlay');return !o||o.getAttribute('aria-hidden')==='true'||getComputedStyle(o).display==='none';}
- function abort(){const o=document.getElementById('nawiLabOverlay'); if(o){o.style.display='none';o.setAttribute('aria-hidden','true');} send('nawi-close',{reason:'abort'});}
+ function abort(){ if(typeof window.cancelNawiLifecycle==='function') window.cancelNawiLifecycle(); const o=document.getElementById('nawiLabOverlay'); if(o){o.style.display='none';o.setAttribute('aria-hidden','true');} send('nawi-close',{reason:'abort'});}
  const wait=()=>{ if(typeof window.openNawiLab!=='function'||typeof window.closeNawiLab!=='function'){setTimeout(wait,10);return;}
   const original=window.closeNawiLab;
   window.closeNawiLab=function(){const was=closed(), result=original.apply(this,arguments); if(!was&&closed()) send('nawi-close',{reason:'complete'}); return result;};

@@ -700,3 +700,258 @@
       .printer-head.printing{animation:none!important;transition:left .075s linear,top .075s linear!important}.extrusion-line{display:none;position:absolute;width:3px;height:22px;border-radius:3px;background:linear-gradient(#fbbf24,var(--print-color,#2563eb));box-shadow:0 0 8px #f59e0b;z-index:11;pointer-events:none}.printer-box.is-printing .extrusion-line{display:block;animation:extrudePulse .18s linear infinite alternate}@keyframes extrudePulse{to{opacity:.45;height:18px}}
       .print-object::before,.print-object::after{pointer-events:none}.print-object.tag::after{content:"QUINOA";position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.72);font-size:14px;font-weight:950;letter-spacing:.1em;text-shadow:0 2px rgba(0,0,0,.3)}.print-object.logo::after{content:"Q";position:absolute;inset:12%;display:grid;place-items:center;border:6px solid rgba(255,255,255,.65);border-radius:8px;color:#fff;font-size:35px;font-weight:950}.print-object.gear::after{content:"";position:absolute;left:35%;top:35%;width:30%;height:30%;border-radius:50%;background:#07121b;box-shadow:inset 0 0 0 5px rgba(255,255,255,.18)}.print-object.hook::after{content:"";position:absolute;left:29%;top:8%;width:27%;height:20%;border-radius:50%;background:#07121b}.print-object.star::after{content:"Q";position:absolute;inset:28%;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.24);color:#fff;font-weight:950}.print-object.stand::after{content:"";position:absolute;left:24%;right:24%;bottom:14%;height:12px;border-radius:4px;background:#07121b}.print-object.cube{border-radius:12px!important;clip-path:polygon(50% 0,100% 24%,100% 76%,50% 100%,0 76%,0 24%)}.print-object.cube::before{content:"";position:absolute;left:49%;top:0;width:3px;height:100%;background:rgba(255,255,255,.45);transform:rotate(30deg)}.print-object.rocket{clip-path:polygon(50% 0,75% 23%,78% 62%,100% 87%,69% 80%,50% 100%,31% 80%,0 87%,22% 62%,25% 23%)}.print-object.rocket::after{content:"";position:absolute;left:38%;top:27%;width:24%;height:24%;border-radius:50%;background:#07121b;box-shadow:inset 0 0 0 4px #a5f3fc}.print-object.medal{border-radius:50%!important}.print-object.medal::before{content:"";position:absolute;left:30%;right:30%;top:-28%;height:42%;background:linear-gradient(90deg,#ef4444 0 45%,#fff 46% 54%,#2563eb 55%);clip-path:polygon(0 0,100% 0,72% 100%,28% 100%)}.print-object.medal::after{content:"★";position:absolute;inset:17%;display:grid;place-items:center;border-radius:50%;border:5px solid rgba(255,255,255,.55);color:#fff;font-size:31px}.layer-counter{position:absolute;left:18px;bottom:16px;color:#a5f3fc;font:900 10px monospace;letter-spacing:.08em}.printer-box.print-finished .print-object{animation:finishedPrintGlow 1.1s ease-in-out infinite alternate}@keyframes finishedPrintGlow{to{filter:brightness(1.2) drop-shadow(0 0 11px var(--print-color,#22d3ee))}}
       @media(max-width:1050px){#wsPrintPanel .model-picker{grid-template-columns:repeat(5,1fr)!important}}
+      /* Responsive Bedienoberfläche – nach allen bisherigen Regeln einfügen */
+#workshopOverlay {
+  touch-action: auto !important;
+}
+
+/* Dekoration darf keine Eingaben abfangen. */
+#workshopOverlay > .ws-quinoa-logo,
+#workshopOverlay > .ws-logo-cables,
+#workshopOverlay > .ws-avatar-arm,
+#workshopOverlay > .ws-status,
+#workshopOverlay > .ws-steps {
+  pointer-events: none !important;
+}
+
+/* Touch-Ziele bleiben groß, Beschriftungen dürfen umbrechen. */
+#workshopOverlay button {
+  min-height: 44px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  touch-action: manipulation;
+}
+
+#workshopOverlay select {
+  min-height: 44px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+#workshopOverlay input[type="range"] {
+  min-height: 44px !important;
+  touch-action: none;
+}
+
+/* Willkommen und Quiz: auch bei geringer Höhe scrollbar. */
+#workshopOverlay .ws-welcome,
+#workshopOverlay .ws-quiz {
+  padding: 16px !important;
+  overflow: auto !important;
+  align-items: safe center;
+  touch-action: pan-y;
+}
+
+#workshopOverlay .ws-welcome-card,
+#workshopOverlay .ws-quiz-card {
+  width: min(700px, 100%) !important;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow: auto !important;
+  touch-action: pan-y;
+}
+
+/* Sicherheitscheck, Projektwahl, Menü und Abschlussfenster. */
+#workshopOverlay .ws-safety,
+#workshopOverlay .ws-project-picker,
+#workshopOverlay .ws-menu,
+#workshopOverlay .final-display {
+  position: absolute !important;
+  left: 12px !important;
+  right: 12px !important;
+  top: 160px !important;
+  bottom: 12px !important;
+  width: auto !important;
+  height: auto !important;
+  transform: none !important;
+  overflow: auto !important;
+  padding: 16px !important;
+  touch-action: pan-y;
+}
+
+#workshopOverlay .ws-menu {
+  align-content: start;
+}
+
+#workshopOverlay .ws-menu::before {
+  position: static !important;
+  display: block;
+}
+
+#workshopOverlay .ws-card {
+  grid-template-columns: 40px minmax(0, 1fr) 32px !important;
+}
+
+#workshopOverlay .ws-card .ico {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+#workshopOverlay .ws-card b {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+#workshopOverlay .ws-card small {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+#workshopOverlay .ws-card .check {
+  grid-column: 3 !important;
+}
+
+/* Stationsfenster: Inhalte können horizontal und vertikal scrollen. */
+#workshopOverlay .ws-panel {
+  top: 160px !important;
+  bottom: 12px !important;
+  left: 12px !important;
+  right: 12px !important;
+  padding: 16px !important;
+  overflow: auto !important;
+  touch-action: pan-x pan-y;
+  overscroll-behavior: contain;
+}
+
+#workshopOverlay .ws-panel-head {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#workshopOverlay .ws-panel-head h2 {
+  flex: 1 1 240px;
+  font-size: clamp(18px, 3vw, 28px);
+}
+
+#workshopOverlay .ws-controls,
+#workshopOverlay .color-picker,
+#workshopOverlay .print-mission {
+  flex-wrap: wrap;
+}
+
+/*
+ * Arbeitsflächen nicht unter ihre funktionierende Werkzeugbreite
+ * verkleinern. Auf kleinen Geräten im Stationsfenster scrollen.
+ */
+#workshopOverlay .wood-area,
+#workshopOverlay .sanding-area,
+#workshopOverlay .screw-area,
+#workshopOverlay .assembly-area,
+#workshopOverlay .printer-area {
+  width: 100% !important;
+  min-width: 900px !important;
+  margin: 12px 0 !important;
+  touch-action: pan-x pan-y;
+}
+
+#workshopOverlay .wood-area {
+  height: 610px !important;
+}
+
+#workshopOverlay .sanding-area,
+#workshopOverlay .screw-area {
+  height: 570px !important;
+}
+
+#workshopOverlay .assembly-area {
+  height: 500px !important;
+}
+
+#workshopOverlay .printer-area {
+  height: 430px !important;
+}
+
+/* Nur tatsächliche Drag-Werkzeuge verhindern Touch-Scrollen. */
+#workshopOverlay .part,
+#workshopOverlay .real-ruler,
+#workshopOverlay .real-pencil,
+#workshopOverlay .wood-board,
+#workshopOverlay .tape-hook,
+#workshopOverlay .sand-block-v32,
+#workshopOverlay .driver,
+#workshopOverlay .bit-piece,
+#workshopOverlay .waste-piece,
+#workshopOverlay .saw-grip,
+#workshopOverlay .saw-stop-system {
+  touch-action: none !important;
+}
+
+/* Eine einzige Bewegungssteuerung: keine zusätzliche Translation. */
+#workshopOverlay .sand-block-v32,
+#workshopOverlay .driver {
+  transform: none !important;
+}
+
+/* Bit wird beim Ziehen aus der Werkzeugablage herausgenommen. */
+#workshopOverlay .bit-piece.dragging-bit {
+  position: absolute !important;
+}
+
+/* Bereits verbaute Teile bleiben wirklich deaktiviert. */
+#workshopOverlay .assembly-area .part.placed {
+  pointer-events: none !important;
+}
+
+#workshopOverlay #wsPrintPanel .model-picker {
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)) !important;
+}
+
+#workshopOverlay #wsPrintPanel .printer-settings {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+#workshopOverlay #wsPrintPanel .printer-settings label {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 600px), (max-height: 600px) {
+  #workshopOverlay .ws-quinoa-logo {
+    width: 150px !important;
+    height: 62px !important;
+    top: 8px !important;
+  }
+
+  #workshopOverlay .ws-logo-cables {
+    display: none !important;
+  }
+
+  #workshopOverlay .ws-status {
+    top: 76px !important;
+    max-height: 54px;
+    overflow: hidden;
+    font-size: 12px;
+    padding: 8px !important;
+  }
+
+  #workshopOverlay .ws-panel,
+  #workshopOverlay .ws-safety,
+  #workshopOverlay .ws-project-picker,
+  #workshopOverlay .ws-menu,
+  #workshopOverlay .final-display {
+    top: 140px !important;
+  }
+
+  #workshopOverlay .ws-welcome-card {
+    padding: 84px 16px 20px !important;
+  }
+
+  #workshopOverlay .ws-welcome-card h1 {
+    font-size: 24px !important;
+  }
+
+  #workshopOverlay .ws-gear,
+  #workshopOverlay .safety-locker,
+  #workshopOverlay .ws-project-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  #workshopOverlay .safety-item {
+    height: 130px;
+  }
+
+  #workshopOverlay .ws-steps {
+    display: none !important;
+  }
+}
