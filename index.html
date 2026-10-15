@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
     <script src="https://unpkg.com/aframe-event-set-component@5/dist/aframe-event-set-component.min.js"></script>
     <script src="https://unpkg.com/aframe-layout-component@5.3.0/dist/aframe-layout-component.min.js"></script>
     <script src="https://unpkg.com/aframe-template-component@3.2.2/dist/aframe-template-component.min.js"></script>
@@ -14,6 +15,13 @@
     <script src="./interactives/Lernwerkstatt/werkstatt-scene.js"></script>
     <script src="./interactives/NawiLabor/nawi-scene.js"></script>
 
+    <script src="interactives/Pausenhof/football-model.js"></script>
+    <script src="./interactives/Klassenraum/klassenraum-scene.js"></script>
+    <script src="interactives/Pausenhof/pausenhof-scene.js"></script>
+    <!-- Dreidimensionaler Fußball -->
+    <script src="interactives/Pausenhof/football-model.js"></script>
+    <script src="./interactives/Bibliothek/bibliothek-scene.js"></script>
+    <script src="./interactives/Kueche/kueche-scene.js"></script>
 
     <style>
       a-scene { touch-action: none; }
@@ -117,13 +125,13 @@
             </p>
             <button id="start-btn" class="start-btn" type="button">Tour starten</button>
             <p id="start-desc" class="start-text">
-            
+
             </p>
             <p id="start-desc" class="start-text">
-                <b>Desktop</b>: &nbsp;&nbsp;&nbsp;Ziehen sie den schwarzen Kreis zu den Links und klicken sie um den Raum zu wechseln.
+                <b>Desktop</b>: &nbsp;&nbsp;&nbsp;Klicke auf die Links und klicken sie um den Raum zu wechseln.
             </p>
             <p id="start-desc" class="start-text">
-                <b>VR Modus</b>: &nbsp;&nbsp;&nbsp;Schauen sie auf die Links und blinzeln sie um den Raum zu wechseln.
+                <b>VR Modus</b>: &nbsp;&nbsp;&nbsp;Schaue auf die Links und blinzele um den Raum zu wechseln.
             </p>
         </div>
     </div>
@@ -272,6 +280,33 @@
 
       <!-- Klassenraum -->
       <a-entity id="panel-Klassenraum" visible="false" position="0 1.2 -2.0" rotation="0 0 0">
+
+
+        <!-- Klassenraum-Spiel öffnen -->
+        <a-entity
+          id="klassenraum-game-button"
+          position="0.95 -0.3 0.02"
+          rounded-thumbnail="radius: 0.06; shadowOpacity: 0.18"
+          geometry="primitive: plane; width: 1.1; height: 0.5"
+          material="shader: flat; color: #2563eb; side: double"
+          class="clickable link"
+          onclick="
+            event.stopPropagation();
+            if (this.closest('[id^=panel-]').getAttribute('visible') === true) {
+              window.openKlassenraumModule();
+            }
+          ">
+          <a-text
+            value="Game Lab starten"
+            align="center"
+            anchor="center"
+            color="#ffffff"
+            width="1.5"
+            position="0 0 0.015">
+          </a-text>
+        </a-entity>
+
+
         <a-entity id="info-icon-Klassenraum"
                   position="-0.0 -0.3 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
@@ -285,7 +320,7 @@
                   rotation="0 0 0">
           <a-plane width="3.6" height="2.0" color="#fff" opacity="0.95"></a-plane>
 
-          <a-text value="Das ist der Klassenraum der Klasse 9A. Wir sind 26 Schueler/innen. 
+          <a-text value="Das ist der Klassenraum der Klasse 9A. Wir sind 26 Schueler/innen.
                   Hier werden alle Faecher unterrichtet ausser manchmal die Praxisstunden Nawi, Zukunft und Sport."
                   color="#000" position="0 -0.05 0.02" width="3.2" align="center"
                   material="depthTest: false; depthWrite: false"></a-text>
@@ -302,27 +337,27 @@
       <!-- Nawi (gleiches Muster wie Klassenraum) -->
       <a-entity id="panel-Nawi" visible="false" position="3 1.2 -1.5.0" rotation="0 -45 0">
 
-      <!-- Nawi-Spiel: Die Buttonfläche selbst ist anklickbar -->
-      <a-entity
-        id="nawi-start"
-        nawi-start
-        geometry="primitive: plane; width: 1.8; height: 0.65"
-        material="shader: flat; color: #0ea5e9; side: double"
-        rounded-thumbnail="radius: 0.06; shadowOpacity: 0.18"
-        position="3 -1 0.5"
-        rotation="0 -80 0"
-        event-set__enter="_event: mouseenter; scale: 1.08 1.08 1"
-        event-set__leave="_event: mouseleave; scale: 1 1 1">
+        <!-- Nawi-Spiel: Die Buttonfläche selbst ist anklickbar -->
+        <a-entity
+          id="nawi-start"
+          nawi-start
+          geometry="primitive: plane; width: 1.8; height: 0.65"
+          material="shader: flat; color: #0ea5e9; side: double"
+          rounded-thumbnail="radius: 0.06; shadowOpacity: 0.18"
+          position="3 -1 0.5"
+          rotation="0 -80 0"
+          event-set__enter="_event: mouseenter; scale: 1.08 1.08 1"
+          event-set__leave="_event: mouseleave; scale: 1 1 1">
 
-        <a-text
-          value="Nawi-Labor\nSTARTEN"
-          align="center"
-          anchor="center"
-          color="#ffffff"
-          width="2.7"
-          position="0 0 0.02">
-        </a-text>
-      </a-entity>
+          <a-text
+            value="Nawi-Labor\nSTARTEN"
+            align="center"
+            anchor="center"
+            color="#ffffff"
+            width="2.7"
+            position="0 0 0.02">
+          </a-text>
+        </a-entity>
 
         <a-entity id="info-icon-Nawi"
                   position="-0.0 -0.3 0.02"
@@ -423,6 +458,29 @@
       <!-- Hof -->
       <a-entity id="panel-Hof" visible="false" position="2.5 1.5 4.0" rotation="0 -155 0">
         <a-plane width="0.94" height="1.78" color="#000" position="0 0 -0.002" opacity="0.7"></a-plane>
+
+        <!-- Schwebender Fußball als Einstieg in die Sport-Arena -->
+        <a-entity id="pausenhof-game-button"
+          position="-3 1.7 6.2"
+          rotation="0 100 0"
+          onclick="
+            event.stopPropagation();
+            if (this.closest('[id^=panel-]').getAttribute('visible') === true) {
+              window.openPausenhofModule();
+            }
+          ">
+          <a-entity animation="property: position; from: 0 0 0; to: 0 0.09 0; dir: alternate; loop: true; dur: 1500; easing: easeInOutSine">
+            <a-entity football-model rotation="15 10 10"
+              animation="property: rotation; from: 15 10 10; to: 15 370 10; loop: true; dur: 18000; easing: linear"></a-entity>
+            <a-sphere class="clickable link" radius="0.36"
+              material="visible: false"></a-sphere>
+          </a-entity>
+          <a-text value="Sport-Arena starten" align="center" anchor="center"
+            color="red" width="1.8" position="0 -0.52 0.04"></a-text>
+        </a-entity>
+
+
+
         <a-video id="hof-video-plane"
                  class="link"
                  src="#HofVideo"
@@ -459,6 +517,28 @@
 
       <!-- Bibliothek -->
       <a-entity id="panel-Bibliothek" visible="false" position="1.8 2.5 -3" rotation="0 -20 0">
+
+        <!-- Bibliothek Escape-Abenteuer starten -->
+        <a-entity
+          id="bibliothek-start"
+          bibliothek-start
+          geometry="primitive: plane; width: 1.8; height: 0.65"
+          material="shader: flat; color: #795548; side: double"
+          rounded-thumbnail="radius: 0.06; shadowOpacity: 0.18"
+          position="0 -0.9 0.04"
+          event-set__enter="_event: mouseenter; scale: 1.08 1.08 1"
+          event-set__leave="_event: mouseleave; scale: 1 1 1">
+
+          <a-text
+            value="Escape-Abenteuer\nSTARTEN"
+            align="center"
+            anchor="center"
+            color="#ffffff"
+            width="2.7"
+            position="0 0 0.02">
+          </a-text>
+        </a-entity>
+
         <a-entity id="info-icon-Bibliothek"
                   position="-0.0 -0.3 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
@@ -477,6 +557,28 @@
 
       <!-- Küche -->
       <a-entity id="panel-Kueche" visible="false" position="0 1.5 -2.0" rotation="0 0 0">
+
+        <!-- Koch-AG starten -->
+        <a-entity
+          id="kueche-start"
+          kueche-start
+          geometry="primitive: plane; width: 1.8; height: 0.65"
+          material="shader: flat; color: #159ed0; side: double"
+          rounded-thumbnail="radius: 0.06; shadowOpacity: 0.18"
+          position="0 -0.9 0.04"
+          event-set__enter="_event: mouseenter; scale: 1.08 1.08 1"
+          event-set__leave="_event: mouseleave; scale: 1 1 1">
+
+          <a-text
+            value="Koch-AG starten"
+            align="center"
+            anchor="center"
+            color="#ffffff"
+            width="2.7"
+            position="0 0 0.02">
+          </a-text>
+        </a-entity>
+
         <a-entity id="info-icon-Kueche"
                   position="-0.0 -0.3 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
@@ -984,5 +1086,12 @@
 
       <script src="./interactives/Lernwerkstatt/werkstatt-loader.js" defer></script>
       <script src="./interactives/NawiLabor/nawi-loader.js" defer></script>
+      <script src="./interactives/Klassenraum/klassenraum-loader.js" defer></script>
+      <script src="./interactives/Pausenhof/pausenhof-loader.js"></script>
+      <script src="./interactives/Kueche/kueche-loader.js" defer></script>
+      <script src="./interactives/Bibliothek/bibliothek-loader.js" defer></script>
+
+
+
   </body>
 </html>
