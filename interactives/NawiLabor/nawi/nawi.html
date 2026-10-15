@@ -1,0 +1,50 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nawi-Labor</title><link rel="stylesheet" href="nawi.css">
+<link rel="stylesheet" href="nawi-device.css"></head><body>
+<div id="nawiLabOverlay" aria-hidden="true">
+      <div id="nawiLogoHanger" class="nawi-logo-hanger"><i></i></div>
+      <div id="nawiWelcome" class="nawi-welcome"><div class="nawi-welcome-card"><img id="nawiHeroLogo" class="nawi-hero-logo" src="assets/asset-001.jpg" alt="Quinoa Nawi Experimente"><h1>Willkommen im Quinoa-Nawi-Labor</h1><p>Werde selbst zur Forscherin oder zum Forscher: Schutzbrille aufsetzen, Stoffe sicher untersuchen, eine Reaktion beobachten und den Laborplatz anschließend sauber hinterlassen.</p><button class="nawi-start-button" onclick="startNawiExperience()">🧪 EXPERIMENT STARTEN</button><small>SICHER ARBEITEN · BEOBACHTEN · VERSTEHEN</small></div></div>
+      <div class="lab-room-back"><div class="lab-shelf"></div></div>
+      <div class="lab-topbar"><div class="lab-title">🧪 Nawi-Labor: Säure-Base-Reaktion</div></div>
+      <div id="labStatus" class="lab-status">Setze zuerst die Schutzbrille auf. Danach: Flasche gedrückt halten, über das Reagenzglas ziehen und kippen.</div>
+      <div class="school-logo-top"><img src="assets/asset-002.png" alt="Quinoa Schule Logo"></div>
+      <div class="lab-table"></div><div class="table-acid-film" id="tableAcidFilm"></div><div class="lab-table-leg l"></div><div class="lab-table-leg r"></div>
+      <div class="puddle" id="labPuddle"></div>
+      <div class="body-coat" id="labCoat"></div><div class="leg left"></div><div class="leg right"></div><div class="shoe left"></div><div class="shoe right"></div>
+      <div class="arm left" id="leftArm"><div class="hand"></div></div><div class="arm right" id="rightArm"><div class="hand"></div></div>
+      <div class="lab-object goggles" id="labGoggles" onclick="putOnGoggles()"><div class="strap"></div><div class="bridge"></div></div><div class="goggle-check">✓ Schutzbrille aufgesetzt</div><div class="info-dot" style="left:calc(19% + 118px);top:52%;" onclick="showLabInfo(event,'Schutzbrille','Die Schutzbrille schützt die Augen. Im Experiment wird danach nur eine sehr leichte Sichtveränderung angezeigt, damit sie nicht stört.')">!</div>
+      <div class="burner-hint" id="burnerHint">Jetzt Brenner-Knopf drücken</div><div class="lab-object burner" id="labBurner" onclick="toggleBurner()"><div class="flame" id="labFlame"></div><div class="burner-tube"></div><div class="burner-base"></div><div class="burner-button"></div></div><div id="burnerClickZone" class="burner-click-zone" onclick="toggleBurner()"></div><div class="info-dot" style="left:calc(50% + 55px);top:61%;" onclick="showLabInfo(event,'Gasbrenner','Der rote Knopf startet den Gasbrenner erst, wenn beide Flüssigkeiten im Reagenzglas sind.')">!</div>
+      <div class="lab-object tube" id="reactionTube"><div class="tube-glass"></div><div id="tubeLiquid" class="tube-liquid"></div><div class="tube-stand"></div></div>
+      <div class="info-dot" style="left:calc(50% + 38px);top:45%;" onclick="showLabInfo(event,'Reagenzglas','Hier werden die Lösungen gesammelt. Beim Mischen entsteht Kohlenstoffdioxid, sichtbar durch Bläschen und Schaum.')">!</div>
+      <div class="lab-object bottle green" id="greenBottle" data-chem="green" data-name="Natriumhydrogencarbonat-Lösung"><div class="bottle-cap"></div><div class="bottle-neck"></div><div class="bottle-body"><div class="bottle-liquid"></div></div><div class="bottle-label">Natriumhydrogencarbonat</div></div>
+      <div class="info-dot" style="left:31%;top:52%;" onclick="showLabInfo(event,'Natriumhydrogencarbonat','Eine schwach basische Lösung. Zusammen mit Essigsäure bildet sie CO₂-Gas, Wasser und Natriumacetat.')">!</div>
+      <div class="lab-object bottle blue" id="blueBottle" data-chem="blue" data-name="Essigsäure-Lösung"><div class="bottle-cap"></div><div class="bottle-neck"></div><div class="bottle-body"><div class="bottle-liquid"></div></div><div class="bottle-label">Essigsäure</div></div>
+      <div class="info-dot" style="right:30%;top:52%;" onclick="showLabInfo(event,'Essigsäure','Essigsäure ist eine milde Säure. Mit Natriumhydrogencarbonat entsteht eine schäumende CO₂-Reaktion.')">!</div>
+      <div id="labInfoCard" class="info-card"></div>
+      <div id="labFoam" class="foam"></div>
+      <div id="pourLayer" class="pour-stream"></div>
+      <div id="cleanHook" class="clean-hook" onpointerdown="pickCleaningCloth(event)" onclick="pickCleaningCloth(event)"><span class="cloth-icon"></span><span>Lappen nehmen & sauber wischen</span></div>
+      <div id="heldCloth" class="held-cloth"></div>
+      <div id="sinkHint" class="sink-hint">Gläser am Waschbecken spülen</div>
+      <div id="labSink" class="sink-zone" onclick="startSinkWash(event)">
+        <div class="sink-faucet"></div><div class="sink-handle"></div><div class="water-stream"></div>
+        <div class="sink-counter"><div class="sink-basin"></div></div>
+        <div class="sink-glass g1"></div><div class="sink-glass g2"></div><div class="water-splash"></div>
+      </div>
+      <div id="dryRack" class="dry-rack"><div class="rack-lines"></div><div class="rack-base"></div><div class="rack-glass a"></div><div class="rack-glass b"></div></div>
+      <div id="washGlass1" class="wash-glass green"></div><div id="washGlass2" class="wash-glass blue"></div><div id="waterTarget" class="wash-guide">Glas unter den Wasserstrahl halten</div><div id="rackTarget" class="wash-guide">Sauberes Glas hier ins Regal stellen</div>
+      <div id="wipeSheen" class="wipe-sheen"></div>
+      <div id="completionToast" class="completion-toast">Sehr schön! Du hast das Experiment offiziell sicher durchgeführt.<small>In wenigen Sekunden kommt das Abschluss-Quiz.</small></div>
+
+      <div id="labQuiz" class="quiz-modal">
+        <div class="quiz-card">
+          <h2>✅ Abschluss-Quiz</h2>
+          <div class="quiz-progress" id="quizProgress">Frage 1 von 5</div>
+          <p id="quizQuestion">Frage wird geladen...</p>
+          <div class="quiz-options" id="quizOptions"></div>
+          <button id="quizFinish" class="quiz-finish" onclick="finishLabQuiz()">Tour beenden</button>
+        </div>
+      </div>
+      <div class="safety-tint"></div><div class="lab-vignette"></div>
+      <div id="labActionHelp" class="lab-action"><b>Steuerung:</b><br>Flasche anklicken und gedrückt halten. Ziehe sie über das Reagenzglas. Je stärker du seitlich ziehst/kippst, desto mehr Flüssigkeit läuft aus der Öffnung.</div>
+    </div>
+<script src="nawi.js"></script><script src="nawi-bridge.js"></script></body></html>

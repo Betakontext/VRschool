@@ -1,0 +1,156 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Werkstattspiel</title><style>html,body{margin:0;width:100%;height:100%;overflow:hidden}</style><link rel="stylesheet" href="werkstatt.css"></head><body>
+<div id="workshopOverlay" aria-hidden="true">
+      <div class="ws-ceiling"><i></i><i></i><i></i></div><div class="ws-wall"><div class="pegboard"><b class="tool-shape hammer"></b><b class="tool-shape hand-saw"></b><b class="tool-shape wrench"></b><b class="tool-shape pliers"></b><b class="tool-shape square-tool"></b></div></div><div class="ws-board"></div><div class="ws-bench"></div>
+      <div class="ws-room-label a">Holzlager</div><div class="ws-room-label b">Maschinen</div><div class="ws-room-label c">3D-Druck</div><div class="ws-room-label d">Montage</div>
+      <div class="ws-header"><button class="ws-close" onclick="closeWorkshop()">Zurück zur Tour</button></div>
+      <div class="ws-logo-cables"><i></i></div>
+      <img id="wsQuinoaLogo" class="ws-quinoa-logo" src="assets/ws-quinoa-logo.jpg" alt="Quinoa Werkstatt Logo">
+      <div id="wsArmLeft" class="ws-avatar-arm left resting"><div class="ws-avatar-hand"></div></div><div id="wsArmRight" class="ws-avatar-arm right resting"><div class="ws-avatar-hand"></div></div>
+      <div id="wsWelcome" class="ws-welcome"><div class="ws-welcome-card"><h1>Willkommen in der Quinoa-Werkstatt</h1><p>Dein Werkstück wartet auf dich. Miss genau, arbeite sicher und baue Schritt für Schritt dein eigenes Ergebnis.</p><button class="ws-play-button" onclick="startWorkshopExperience()">▶ WERKSTATT-ERLEBNIS STARTEN</button></div></div>
+      <div id="wsStatus" class="ws-status">Ziehe zuerst Schutzbrille und Gehörschutz an.</div>
+      <div id="wsSteps" class="ws-steps">1. Sicherheitsausrüstung anziehen</div>
+      <div id="wsActionHint" class="ws-action-hint"></div>
+
+      <div id="wsSafety" class="ws-safety">
+        <h2>Sicherheit zuerst</h2><p>Vor Maschinenarbeit Schutzbrille und Gehörschutz anziehen.</p>
+        <div class="safety-avatar"><div class="safety-head"><div class="worn-goggles"></div><div class="worn-ears"></div></div><div class="safety-arm left-arm"><span class="safety-hand">🤚</span></div><div class="safety-arm right-arm"><span class="safety-hand">🤚</span></div></div>
+        <div class="safety-locker"><div class="safety-item goggles-item"><span></span><b>Schutzbrille</b><small>Augenschutz</small></div><div class="safety-item ears-item"><span></span><b>Gehörschutz</b><small>Lärmschutz</small></div></div>
+        <div class="ws-gear"><button id="wsGoggles" onclick="toggleWsGear('goggles')">Schutzbrille anziehen</button><button id="wsEars" onclick="toggleWsGear('ears')">Gehörschutz anziehen</button></div>
+      </div>
+
+      <div id="wsProjectPicker" class="ws-project-picker">
+        <h2>Was möchtest du bauen?</h2><p>Alle Stationen führen zu einem sichtbaren Endprodukt.</p>
+        <div class="ws-project-grid">
+          <button class="ws-project" onclick="chooseWsProject('box')"><span>🧰</span>Mini-Holzkiste<small>Holz sägen, schleifen, verschrauben und beschriften.</small></button>
+          <button class="ws-project" onclick="chooseWsProject('holder')"><span>✏️</span>Stiftehalter<small>Holzteile bearbeiten, montieren und 3D-Logo hinzufügen.</small></button>
+          <button class="ws-project" onclick="chooseWsProject('stool')"><span>🪑</span>Mini-Werkstatthocker<small>Sitzfläche, Beine und Streben zu einem kleinen Hocker zusammensetzen.</small></button>
+        </div>
+      </div>
+
+      <div id="wsMenu" class="ws-menu" style="display:none">
+        <button id="wsCardWood" class="ws-card" onclick="openWsStation('wood')"><span class="check">1</span><span class="ico">📏</span><b>Messen & Sägen</b><small>Lineal platzieren, selbst markieren und Holz durch die feste Kreissäge schieben.</small></button>
+        <button id="wsCardAssemble" class="ws-card locked" onclick="openWsStation('assemble')"><span class="check">2</span><span class="ico">🧩</span><b>3D-Baupuzzle</b><small>Holzteile greifen, am Hologramm ausrichten und das Werkstück zusammensetzen.</small></button>
+        <button id="wsCardScrew" class="ws-card locked" onclick="openWsStation('screw')"><span class="check">3</span><span class="ico">🔩</span><b>Verschrauben</b><small>Passenden Bit einsetzen und den bereits zusammengesteckten Körper verschrauben.</small></button>
+        <button id="wsCardPrint" class="ws-card locked" onclick="openWsStation('print')"><span class="check">4</span><span class="ico">🖨️</span><b>3D-Drucker</b><small>Zusatzteil gestalten, drucken, entnehmen und am Werkstück befestigen.</small></button>
+      </div>
+
+      <div id="wsWoodPanel" class="ws-panel">
+        <div class="ws-panel-head"><h2>📏 Messen, Markieren und Sägen</h2><button class="ws-back" onclick="backToWsMenu()">Zurück</button></div>
+        <div id="woodStageBar" class="wood-stage-bar"><span data-stage="1">1 Länge</span><span data-stage="2">2 Messen</span><span data-stage="3">3 Lineal</span><span data-stage="4">4 Markieren</span><span data-stage="5">5 Sägen</span><span data-stage="6">6 Aufräumen</span></div>
+        <div class="ws-info">1. Schnittlänge wählen. 2. Maßband selbst bis zum Zielmaß herausziehen. 3. Normales 30-cm-Lineal an die gemessene Stelle legen. 4. Entlang der weißen Hilfe markieren. 5. Werkzeuge ablegen und selbst sägen.</div>
+        <div id="cutLengthPicker" class="cut-length-picker"><b>Wie lang soll das Werkstück werden?</b><button onclick="chooseCutLength(20)">20 cm</button><button onclick="chooseCutLength(30)">30 cm</button><button onclick="chooseCutLength(40)">40 cm</button><span id="chosenLength">Noch nicht gewählt</span></div>
+        <div id="woodArea" class="wood-area">
+          <div class="workbench-depth"><i></i><i></i><i></i></div>
+          <div class="tool-cup"><span>WERKZEUGE</span><div id="toolCupReturnZone"></div></div>
+          <div id="wsBoard" class="wood-board clamped"></div>
+          <div id="tapeCase" class="tape-case"><b id="tapeReadout">0 cm</b><div id="tapeBlade" class="tape-blade"><div id="tapeScale" class="tape-scale"></div></div><div id="tapeHook" class="tape-hook">↔</div></div>
+          <div id="tapeLiveHint" class="measure-live-hint">MAẞBAND: <b>0 cm</b> herausgezogen</div>
+          <div id="wsRuler" class="real-ruler normal-ruler in-cup"><div class="ruler-numbers"><i>0</i><i>5</i><i>10</i><i>15</i><i>20</i><i>25</i><i>30</i></div></div>
+          <div id="wsPencil" class="real-pencil in-cup"></div>
+          <div id="markGuide" class="mark-guide"></div><div id="markCanvas" class="mark-canvas"></div>
+          <div id="cutProgress" class="cut-progress"></div>
+          <div id="sawStopSystem" class="saw-stop-system"><b>SÄGE-LÄNGENANSCHLAG</b><div class="stop-readouts"><em id="sawTargetValue">SOLL: –</em><strong id="sawStopValue">IST: 20 cm</strong></div><div id="sawStopMarker" class="saw-stop-marker"></div><input id="sawStopSlider" type="range" min="20" max="40" step="1" value="20" oninput="event.stopPropagation();updateSawStop(this.value)"><div class="stop-scale"><span>20</span><span>25</span><span>30</span><span>35</span><span>40</span></div><div class="stop-aside-text">Nach dem Schnitt: Anschlag nach links schieben</div></div>
+          <div id="sawMeasureHint" class="measure-live-hint">SÄGEANSCHLAG: <b>IST 20 cm</b> · SOLL –</div>
+          <div class="cut-zone"></div><div class="saw-table-slot"></div>
+          <button id="sawSwitch" class="saw-switch" onclick="toggleWsSaw()">Kreissäge</button>
+          <div id="sawAfterHint" class="saw-after-hint"></div>
+          <div id="essentialWoodHint" class="essential-wood-hint"></div>
+          <div id="sawHelp" class="saw-help">⚠ Erst markieren und Werkzeuge ablegen – dann Säge einschalten</div>
+          <div id="circularSaw" class="circular-saw"><div class="body"></div><div class="blade"></div><div class="saw-guard"></div><div class="saw-grip">GREIFEN &amp; NACH UNTEN FÜHREN</div><div class="saw-cable"><b></b></div></div>
+          <div id="wastePiece" class="waste-piece">RESTHOLZ</div><div id="wasteShelf" class="waste-shelf">RESTHOLZ-REGAL</div>
+          <div id="toolParking" class="tool-parking"></div>
+          <div id="wsWoodHand" class="ws-hand"></div>
+          <div class="ws-tool-hint">Messen, markieren, Werkzeuge ablegen – danach die laufende Säge selbst entlang der roten Linie führen</div>
+        </div>
+      </div>
+
+      <div id="wsSandPanel" class="ws-panel">
+        <div class="ws-panel-head"><h2>🧽 Schleifplatz – raue Schnittkante glätten</h2><button class="ws-back" onclick="backToWsMenu()">Zurück</button></div>
+        <div class="ws-info">Wähle einfach ein Schleifpapier aus der Kiste und führe den Schleifklotz über die raue rechte Holzkante.</div>
+        <div id="sandingArea" class="sanding-area">
+          <div class="sand-wood"></div><div id="splinterLayer"></div><div id="smoothShine" class="smooth-shine"></div>
+          <div class="sandpaper-box"><b>SCHLEIFPAPIER-KISTE</b><div class="sandpaper-slots"><button class="sandpaper-sheet" onclick="selectSandGrit(80,this)">K80<br>GROB</button><button class="sandpaper-sheet active" onclick="selectSandGrit(120,this)">K120<br>MITTEL</button><button class="sandpaper-sheet" onclick="selectSandGrit(180,this)">K180<br>FEIN</button></div></div>
+          <div id="sandBlockV32" class="sand-block-v32"></div><div id="wsSandHand" class="ws-hand"></div>
+          <div class="sand-progress-box">KANTE GLÄTTEN<div class="sand-progress-track"><span id="sandProgressBar"></span></div></div><div class="ws-tool-hint">Schleifklotz greifen → über die rechte Kante bewegen</div>
+        </div>
+      </div>
+
+      <div id="wsScrewPanel" class="ws-panel">
+        <div class="ws-panel-head"><h2>🔩 Zusammengestecktes Werkstück verschrauben</h2><button id="wsResetScrew" class="ws-reset-screw" onclick="resetScrewStation()">↻ Station neu starten</button><button class="ws-back" onclick="backToWsMenu()">Zurück</button></div>
+        <div class="ws-info">Prüfe zuerst die Schraubenform. Ziehe den passenden Bit aus dem Koffer in das Spannfutter. Halte anschließend den Akkuschrauber gerade und ruhig auf jede Schraube.</div>
+        <div id="screwArea" class="screw-area">
+          <div class="screw-board"></div>
+          <div class="screw-safety-note"><span>✓ Passenden Kreuz-Bit verwenden</span><span>✓ Schraube immer gerade ansetzen</span></div>
+          <div class="bit-tray"><div class="bit-piece" data-bit="flat">Schlitz</div><div class="bit-piece" data-bit="cross">Kreuz</div><div class="bit-piece" data-bit="hex">Inbus</div></div>
+          <div class="screw-case">SCHRAUBENKASTEN – EINZELN EINSETZEN<div class="screw-case-row"><button class="loose-screw" onclick="placeLooseScrew(1,this)">＋</button><button class="loose-screw" onclick="placeLooseScrew(2,this)">＋</button><button class="loose-screw" onclick="placeLooseScrew(3,this)">＋</button></div></div>
+          <div class="screw-angle-panel"><label>ANSETZWINKEL <b id="screwAngleReadout">0°</b></label><input id="screwAngleSlider" type="range" min="-18" max="18" value="0" oninput="setScrewAngle(this.value)"><small>Grüner Bereich: −5° bis +5°</small></div>
+          <div class="screw s1" data-screw="1"><div class="screw-depth"><span></span></div></div>
+          <div class="screw s2" data-screw="2"><div class="screw-depth"><span></span></div></div>
+          <div class="screw s3" data-screw="3"><div class="screw-depth"><span></span></div></div>
+          <div id="bitDropZone" class="bit-drop-zone"></div>
+          <div id="wsDriver" class="driver"><div class="driver-handle"></div><div class="driver-battery">18V</div><div class="driver-trigger"></div><div class="chuck"></div><div class="inserted-bit"></div></div>
+          <div id="screwProgress" class="screw-progress"></div><div id="wsScrewHand" class="ws-hand"></div>
+        </div>
+      </div>
+
+      <div id="wsPrintPanel" class="ws-panel">
+        <div class="ws-panel-head"><h2>🖨️ 3D-Drucker einstellen</h2><button class="ws-back" onclick="backToWsMenu()">Zurück</button></div>
+        <div class="ws-info">Wähle Modell, Material, Farbe und Druckqualität. Beobachte den Druck Schicht für Schicht und entnimm das fertige Bauteil selbst.</div>
+        <div class="print-mission"><b>FINALE FABLAB-MISSION</b><span>1 MODELL → 1 MATERIAL → 1 FARBE → DRUCKEN → SELBST ENTNEHMEN</span></div>
+        <div class="model-picker">
+          <button id="modelTag" class="model-card" onclick="selectWsModel('tag')"><span>🏷️</span>Namensschild</button>
+          <button id="modelLogo" class="model-card" onclick="selectWsModel('logo')"><span>🔷</span>3D-Logo</button>
+          <button id="modelGear" class="model-card" onclick="selectWsModel('gear')"><span>⚙️</span>Zahnrad</button>
+          <button id="modelHook" class="model-card" onclick="selectWsModel('hook')"><span>🪝</span>Werkzeughaken</button>
+          <button id="modelStar" class="model-card" onclick="selectWsModel('star')"><span>⭐</span>Quinoa-Stern</button>
+          <button id="modelKeychain" class="model-card" onclick="selectWsModel('keychain')"><span>🔑</span>Schlüsselanhänger</button>
+          <button id="modelStand" class="model-card" onclick="selectWsModel('stand')"><span>📱</span>Handyhalter</button>
+          <button id="modelCube" class="model-card" onclick="selectWsModel('cube')"><span>🧊</span>3D-Würfel</button>
+          <button id="modelRocket" class="model-card" onclick="selectWsModel('rocket')"><span>🚀</span>Mini-Rakete</button>
+          <button id="modelMedal" class="model-card" onclick="selectWsModel('medal')"><span>🏅</span>Werkstatt-Medaille</button>
+          <button id="modelRobot" class="model-card" onclick="selectWsModel('robot')"><span>🤖</span>Mini-Roboter</button>
+          <button id="modelMolecule" class="model-card" onclick="selectWsModel('molecule')"><span>🧬</span>Molekül-Modell</button>
+          <button id="modelTrophy" class="model-card" onclick="selectWsModel('trophy')"><span>🏆</span>Quinoa-Pokal</button>
+        </div>
+        <div class="printer-settings"><label>Material <select id="wsMaterial" onchange="selectWsMaterial(this.value)"><option value="">Bitte wählen</option><option value="PLA">PLA – leicht</option><option value="PETG">PETG – stabil</option><option value="WOOD-PLA">Wood-PLA – Holzoptik</option><option value="TPU">TPU – flexibel</option></select></label><label>Qualität <select id="wsQuality" onchange="selectWsQuality(this.value)"><option value="">Bitte wählen</option><option value="draft">Schnell · 0,28 mm</option><option value="normal">Standard · 0,20 mm</option><option value="fine">Fein · 0,12 mm</option></select></label></div>
+        <div class="color-picker"><button class="color-swatch" data-color="blue" style="background:#2563eb" onclick="selectWsColor('blue')"></button><button class="color-swatch" data-color="green" style="background:#16a34a" onclick="selectWsColor('green')"></button><button class="color-swatch" data-color="orange" style="background:#f59e0b" onclick="selectWsColor('orange')"></button><button class="color-swatch" data-color="red" style="background:#dc2626" onclick="selectWsColor('red')"></button><button class="color-swatch" data-color="purple" style="background:#7c3aed" onclick="selectWsColor('purple')"></button><button class="color-swatch" data-color="white" style="background:#f8fafc" onclick="selectWsColor('white')"></button><button class="color-swatch" data-color="black" style="background:#111827" onclick="selectWsColor('black')"></button></div>
+        <div id="printSummary" class="print-summary">Noch kein Modell und keine Farbe ausgewählt.</div>
+        <div class="printer-area"><div class="printer-box"><div class="printer-spool"></div><div class="printer-rail"></div><div class="printer-screen" id="printerScreen">MODELL: -<br>FARBE: -<br>FORTSCHRITT: 0%</div><div id="printerHead" class="printer-head"></div><div id="extrusionLine" class="extrusion-line"></div><div class="print-bed"></div><div id="printObject" class="print-object"></div><div id="layerCounter" class="layer-counter">SCHICHT 0</div><div id="printTimeBadge" class="print-time-badge">RESTZEIT --:--</div></div><div id="printVictory" class="print-victory"><div><b>3D-MISSION ERFOLGREICH</b><span>★★★</span><small>Dein individuelles Bauteil ist bereit für das Werkstück!</small></div></div></div>
+        <div class="print-bar"><span id="printProgress"></span></div><div class="ws-controls"><button id="wsPrintStart" class="primary" onclick="startWsPrint()" disabled>Druck starten</button><button id="wsPrintTake" class="success" onclick="takeWsPrint()" style="display:none">Bauteil entnehmen</button></div>
+      </div>
+
+      <div id="wsAssemblePanel" class="ws-panel">
+        <div class="ws-panel-head"><h2>🧩 3D-Baupuzzle – Werkstück zusammensetzen</h2><button class="ws-back" onclick="backToWsMenu()">Zurück</button></div>
+        <div class="ws-info">Greife jedes Holzteil und ziehe es auf die gleich beschriftete Hologramm-Fläche. Alle vier Teile ergeben dein fertiges Werkstück.</div>
+        <div class="assembly-progress-ui"><b id="assemblyProgressText">BAUFORTSCHRITT 0%</b><div><span id="assemblyProgressBar"></span></div></div>
+        <div id="assemblyArea" class="assembly-area">
+          <div id="assemblyMission" class="assembly-mission"><b>BAU-MISSION</b><span id="assemblyMissionCount">0 / 4</span><small>Greife ein Holzteil und lasse es in der passenden Hologrammform einrasten.</small></div>
+          <div class="assembly-build-label">WERKSTÜCK-BAUPLATZ</div>
+          <div class="part base" data-part="base"></div><div class="part side1" data-part="side1"></div><div class="part side2" data-part="side2"></div><div class="part back" data-part="back"></div>
+          <div id="assemblyTarget" class="assembly-target"><div class="snap-slot" data-slot="base">Boden</div><div class="snap-slot" data-slot="side1">Seite links</div><div class="snap-slot" data-slot="side2">Seite rechts</div><div class="snap-slot" data-slot="back">Rückwand</div></div>
+          <div id="assemblyLiveBuild" class="assembly-live-build"><i class="build-base"></i><i class="build-left"></i><i class="build-right"></i><i class="build-back"></i><strong>LIVE-BAU</strong></div>
+          <div id="assemblyFx" class="assembly-fx"></div>
+          <i class="dowel-hole d1" onclick="insertAssemblyDowel(this)"></i><i class="dowel-hole d2" onclick="insertAssemblyDowel(this)"></i><div id="assemblyGlue" class="glue-line"></div><div id="angleBadge" class="angle-badge">✓ 90° RECHTWINKLIG</div>
+          <div id="assemblyHammerVisual" class="assembly-hammer-visual"></div>
+          <div id="assembledProduct" class="assembled-product box"></div>
+          <div id="puzzleCompleteFx" class="puzzle-complete-fx"><b>🏆 BAU ABGESCHLOSSEN</b><span>★★★</span><small>Alle 4 Bauteile sitzen richtig – Akkuschrauber freigeschaltet</small></div>
+          <div id="assemblyMontage" class="assembly-montage"><div class="montage-status"><b id="montageProgressText">MONTAGE 0%</b><span><i id="montageProgressBar"></i></span></div><div class="montage-track"><button id="toolDowel" class="montage-tool ready" onclick="startMontageTool('dowel')"><span>🪵</span>1 DÜBEL<br><small>Einsetzen</small></button><button id="toolGlue" class="montage-tool locked" onclick="startMontageTool('glue')"><span>🧴</span>2 HOLZLEIM</button><button id="toolHammer" class="montage-tool locked" onclick="startMontageTool('hammer')"><span>🔨</span>3 GUMMIHAMMER</button><button id="toolAngle" class="montage-tool locked" onclick="startMontageTool('angle')"><span>📐</span>4 WINKEL PRÜFEN</button><button id="toolClamp" class="montage-tool locked" onclick="startMontageTool('clamp')"><span>🗜️</span>5 FESTSPANNEN</button></div></div>
+        </div>
+        <div class="ws-controls"><button id="attachPrintBtn" class="primary" onclick="attachPrintedPart()" style="display:none">3D-Druckteil befestigen</button></div>
+      </div>
+
+      <div id="wsFinalDisplay" class="final-display"><h2>🎉 Dein Werkstück ist fertig!</h2><p id="wsFinalText"></p><div class="final-product-stage"><div id="wsFinalModel" class="final-product-model"></div></div><button class="ws-close" onclick="startWsQuiz()">Sicherheitsquiz starten</button>
+</div>
+      <div id="wsQuiz" class="ws-quiz"><div class="ws-quiz-card"><h2>Werkstatt-Quiz</h2><div id="wsQuizProgress"></div><p id="wsQuizQuestion"></p><div id="wsQuizOptions" class="ws-quiz-options"></div></div></div>
+    </div>
+<script src="werkstatt.js" defer></script><script defer>
+(()=>{
+ const parentWin=window.parent, embedded=parentWin!==window, origin=location.origin;
+ function close(){ if(embedded){ parentWin.postMessage({type:'werkstatt-close'},origin); } else { const o=document.getElementById('workshopOverlay'); if(o){o.style.display='none';o.setAttribute('aria-hidden','true')} } }
+ window.addEventListener('message',e=>{if(!embedded||e.source!==parentWin||e.origin!==origin)return;if(e.data&&e.data.type==='werkstatt-open'){ if(typeof window.openWorkshop==='function') window.openWorkshop(); else {const o=document.getElementById('workshopOverlay');if(o){o.style.display='block';o.setAttribute('aria-hidden','false')}}}});
+ document.addEventListener('DOMContentLoaded',()=>{const o=document.getElementById('workshopOverlay'); if(o){ o.setAttribute('aria-hidden','false'); } if(embedded)parentWin.postMessage({type:'werkstatt-ready'},origin);});
+ // Original close controls remain; intercept close-labelled controls after their handlers without altering game logic.
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-workshop-close],.ws-close,.close-workshop');if(b) setTimeout(close,0)});
+ window.closeWorkshop=close; window.wsClose=close;
+})();
+</script></body></html>

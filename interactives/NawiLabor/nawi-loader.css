@@ -1,0 +1,19 @@
+/* Rounded, centered Nawi game frame over the still-visible tour. */
+.nawi-frame-dialog{
+  position:fixed; inset:0; z-index:1200000; display:grid; place-items:center;
+  padding:clamp(8px,2vw,24px); box-sizing:border-box;
+  background:rgb(17 17 17 / 73%);
+}
+.nawi-frame{
+  display:block; width:min(1100px,100%); height:min(760px,100%);
+  min-width:0; min-height:0; border:0; border-radius:12px; background:#07131b;
+  box-shadow:0 18px 55px rgb(0 0 0 / 42%);
+}
+.nawi-frame-abort{
+  position:absolute; z-index:2; right:clamp(16px,3vw,38px); top:clamp(16px,3vw,38px);
+  width:42px; height:42px; padding:0; border:0; border-radius:50%;
+  background:#9d3d36; color:#fff; font:700 29px/1 Arial,sans-serif; cursor:pointer;
+  box-shadow:0 2px 8px rgb(0 0 0 / 35%);
+}
+.nawi-frame-abort:hover{background:#7d2e29}
+.nawi-frame-abort:focus-visible{outline:3px solid #f2bd2e;outline-offset:3px}
