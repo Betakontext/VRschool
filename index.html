@@ -7,10 +7,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
     <script src="https://unpkg.com/aframe-event-set-component@5/dist/aframe-event-set-component.min.js"></script>
     <script src="https://unpkg.com/aframe-layout-component@5.3.0/dist/aframe-layout-component.min.js"></script>
     <script src="https://unpkg.com/aframe-template-component@3.2.2/dist/aframe-template-component.min.js"></script>
 
+    <script src="interactives/Pausenhof/football-model.js"></script>
+    <script src="./interactives/Klassenraum/klassenraum-scene.js"></script>
+    <script src="interactives/Pausenhof/pausenhof-scene.js"></script>
+    <!-- Dreidimensionaler Fußball -->
+    <script src="interactives/Pausenhof/football-model.js"></script>
     <script src="./interactives/Bibliothek/bibliothek-scene.js"></script>
     <script src="./interactives/Kueche/kueche-scene.js"></script>
 
@@ -116,7 +122,7 @@
             </p>
             <button id="start-btn" class="start-btn" type="button">Tour starten</button>
             <p id="start-desc" class="start-text">
-            
+
             </p>
             <p id="start-desc" class="start-text">
                 <b>Desktop</b>: &nbsp;&nbsp;&nbsp;Klicke auf die Links und klicken sie um den Raum zu wechseln.
@@ -163,6 +169,9 @@
         <img id="Klassenraum-thumb" src="img/Klassenraum-thumb.jpg">
         <img id="Logo-thumb" src="img/QuinoaBildung-Logo.png">
 
+        <!-- Interaktives -->
+        <img id="holzbohle-textur" src="interactives/Lernwerkstatt/werkstatt/assets/Holzbohle_Textur.jpg">
+
         <!-- Platzhalter -->
         <img id="placeholder" src="img/placeholder.jpg">
 
@@ -199,6 +208,7 @@
         </a-entity>
       </script>
 
+
       <!-- Link-Gruppen -->
       <a-entity id="links0" layout="type: line; margin: 1.2" position="-5 1.9 -1" rotation="0 90 0">
         <a-entity template="src: #link" data-id="Werkstatt" data-thumb="#Werkstatt-thumb"></a-entity>
@@ -215,7 +225,7 @@
         <a-entity template="src: #link" data-id="Nawi" data-thumb="#Nawi-thumb"></a-entity>
         <a-entity template="src: #link" data-id="Klassenraum" data-thumb="#Klassenraum-thumb"></a-entity>
       </a-entity>
-      <a-entity id="links4" layout="type: line; margin: 1.2" position="5 -0.35 0.8" rotation="0 -110 0">
+      <a-entity id="links4" layout="type: line; margin: 1.2" position="3.3 5 -2.1" rotation="0 -60 0">
         <a-entity template="src: #link" data-id="Infokasten" data-thumb="#Logo-thumb"></a-entity>
       </a-entity>
 
@@ -267,6 +277,33 @@
 
       <!-- Klassenraum -->
       <a-entity id="panel-Klassenraum" visible="false" position="0 1.2 -2.0" rotation="0 0 0">
+
+
+        <!-- Klassenraum-Spiel öffnen -->
+        <a-entity
+          id="klassenraum-game-button"
+          position="0.95 -0.3 0.02"
+          rounded-thumbnail="radius: 0.06; shadowOpacity: 0.18"
+          geometry="primitive: plane; width: 1.1; height: 0.5"
+          material="shader: flat; color: #2563eb; side: double"
+          class="clickable link"
+          onclick="
+            event.stopPropagation();
+            if (this.closest('[id^=panel-]').getAttribute('visible') === true) {
+              window.openKlassenraumModule();
+            }
+          ">
+          <a-text
+            value="Game Lab starten"
+            align="center"
+            anchor="center"
+            color="#ffffff"
+            width="1.5"
+            position="0 0 0.015">
+          </a-text>
+        </a-entity>
+
+
         <a-entity id="info-icon-Klassenraum"
                   position="-0.0 -0.3 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
@@ -280,7 +317,7 @@
                   rotation="0 0 0">
           <a-plane width="3.6" height="2.0" color="#fff" opacity="0.95"></a-plane>
 
-          <a-text value="Das ist der Klassenraum der Klasse 9A. Wir sind 26 Schueler/innen. 
+          <a-text value="Das ist der Klassenraum der Klasse 9A. Wir sind 26 Schueler/innen.
                   Hier werden alle Faecher unterrichtet ausser manchmal die Praxisstunden Nawi, Zukunft und Sport."
                   color="#000" position="0 -0.05 0.02" width="3.2" align="center"
                   material="depthTest: false; depthWrite: false"></a-text>
@@ -296,6 +333,7 @@
 
       <!-- Nawi (gleiches Muster wie Klassenraum) -->
       <a-entity id="panel-Nawi" visible="false" position="3 1.2 -1.5.0" rotation="0 -45 0">
+
         <a-entity id="info-icon-Nawi"
                   position="-0.0 -0.3 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
@@ -323,9 +361,13 @@
       </a-entity>
 
       <!-- Werkstatt -->
-      <a-entity id="panel-Werkstatt" visible="false" position="0 1.2 -2.0" rotation="0 0 0">
+      <a-entity id="panel-Werkstatt"
+                visible="false"
+                position="0 1.2 -2.0"
+                rotation="0 0 0">
+
         <a-entity id="info-icon-Werkstatt"
-                  position="-0.0 -0.3 0.02"
+                  position="-0.4 -0.55 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
                   material="src: img/Infobutton.png; transparent: true"
                   class="clickable"
@@ -350,9 +392,33 @@
         </a-entity>
       </a-entity>
 
+
       <!-- Hof -->
       <a-entity id="panel-Hof" visible="false" position="2.5 1.5 4.0" rotation="0 -155 0">
         <a-plane width="0.94" height="1.78" color="#000" position="0 0 -0.002" opacity="0.7"></a-plane>
+
+        <!-- Schwebender Fußball als Einstieg in die Sport-Arena -->
+        <a-entity id="pausenhof-game-button"
+          position="-3 1.7 6.2"
+          rotation="0 100 0"
+          onclick="
+            event.stopPropagation();
+            if (this.closest('[id^=panel-]').getAttribute('visible') === true) {
+              window.openPausenhofModule();
+            }
+          ">
+          <a-entity animation="property: position; from: 0 0 0; to: 0 0.09 0; dir: alternate; loop: true; dur: 1500; easing: easeInOutSine">
+            <a-entity football-model rotation="15 10 10"
+              animation="property: rotation; from: 15 10 10; to: 15 370 10; loop: true; dur: 18000; easing: linear"></a-entity>
+            <a-sphere class="clickable link" radius="0.36"
+              material="visible: false"></a-sphere>
+          </a-entity>
+          <a-text value="Sport-Arena starten" align="center" anchor="center"
+            color="red" width="1.8" position="0 -0.52 0.04"></a-text>
+        </a-entity>
+
+
+
         <a-video id="hof-video-plane"
                  class="link"
                  src="#HofVideo"
@@ -517,7 +583,7 @@
 
     </a-scene>
 
-   <script>
+    <script>
 
       // Abgerundete Thumbnail-Flächen mit dezentem Schatten
       AFRAME.registerComponent('rounded-thumbnail', {
@@ -956,6 +1022,8 @@
       });
       </script>
 
+      <script src="./interactives/Klassenraum/klassenraum-loader.js" defer></script>
+      <script src="interactives/Pausenhof/pausenhof-loader.js"></script>
       <script src="./interactives/Kueche/kueche-loader.js" defer></script>
       <script src="./interactives/Bibliothek/bibliothek-loader.js" defer></script>
 
