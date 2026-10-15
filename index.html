@@ -12,6 +12,9 @@
     <script src="https://unpkg.com/aframe-layout-component@5.3.0/dist/aframe-layout-component.min.js"></script>
     <script src="https://unpkg.com/aframe-template-component@3.2.2/dist/aframe-template-component.min.js"></script>
 
+    <script src="./interactives/Lernwerkstatt/werkstatt-scene.js"></script>
+    <script src="./interactives/NawiLabor/nawi-scene.js"></script>
+
     <script src="interactives/Pausenhof/football-model.js"></script>
     <script src="./interactives/Klassenraum/klassenraum-scene.js"></script>
     <script src="interactives/Pausenhof/pausenhof-scene.js"></script>
@@ -334,6 +337,28 @@
       <!-- Nawi (gleiches Muster wie Klassenraum) -->
       <a-entity id="panel-Nawi" visible="false" position="3 1.2 -1.5.0" rotation="0 -45 0">
 
+        <!-- Nawi-Spiel: Die Buttonfläche selbst ist anklickbar -->
+        <a-entity
+          id="nawi-start"
+          nawi-start
+          geometry="primitive: plane; width: 1.8; height: 0.65"
+          material="shader: flat; color: #0ea5e9; side: double"
+          rounded-thumbnail="radius: 0.06; shadowOpacity: 0.18"
+          position="3 -1 0.5"
+          rotation="0 -80 0"
+          event-set__enter="_event: mouseenter; scale: 1.08 1.08 1"
+          event-set__leave="_event: mouseleave; scale: 1 1 1">
+
+          <a-text
+            value="Nawi-Labor\nSTARTEN"
+            align="center"
+            anchor="center"
+            color="#ffffff"
+            width="2.7"
+            position="0 0 0.02">
+          </a-text>
+        </a-entity>
+
         <a-entity id="info-icon-Nawi"
                   position="-0.0 -0.3 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
@@ -365,6 +390,43 @@
                 visible="false"
                 position="0 1.2 -2.0"
                 rotation="0 0 0">
+
+        <!-- Werkstattspiel: 3D-Holzbohle gegenüber den Raumwechsel-Links -->
+        <a-entity position="2.4 -0.5 6.5" rotation="0 -105 0">
+
+          <!-- Anklickbare Bohle mit externer Holztextur -->
+          <a-box
+            id="werkstatt-start"
+            werkstatt-start
+            width="2"
+            height="0.65"
+            depth="0.16"
+            material="src: #holzbohle-textur; color: #FFFFFF; roughness: 0.95; metalness: 0"
+            event-set__enter="_event: mouseenter; scale: 1.08 1.08 1.08"
+            event-set__leave="_event: mouseleave; scale: 1 1 1">
+
+            <!-- Dunkles Schild für gute Lesbarkeit -->
+            <a-plane
+              width="1.58"
+              height="0.43"
+              position="0 0 0.085"
+              material="shader: flat; color: #273C32">
+            </a-plane>
+
+            <!-- Beschriftung vor dem Schild -->
+            <a-text
+              value="Werkstattspiel\nSTARTEN"
+              align="center"
+              anchor="center"
+              width="2.4"
+              color="#FFFFFF"
+              position="0 0 0.092">
+            </a-text>
+
+          </a-box>
+        </a-entity>
+
+
 
         <a-entity id="info-icon-Werkstatt"
                   position="-0.4 -0.55 0.02"
@@ -1022,8 +1084,10 @@
       });
       </script>
 
+      <script src="./interactives/Lernwerkstatt/werkstatt-loader.js" defer></script>
+      <script src="./interactives/NawiLabor/nawi-loader.js" defer></script>
       <script src="./interactives/Klassenraum/klassenraum-loader.js" defer></script>
-      <script src="interactives/Pausenhof/pausenhof-loader.js"></script>
+      <script src="./interactives/Pausenhof/pausenhof-loader.js"></script>
       <script src="./interactives/Kueche/kueche-loader.js" defer></script>
       <script src="./interactives/Bibliothek/bibliothek-loader.js" defer></script>
 
