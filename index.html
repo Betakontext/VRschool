@@ -14,8 +14,6 @@
 
     <script src="./interactives/Lernwerkstatt/werkstatt-scene.js"></script>
     <script src="./interactives/NawiLabor/nawi-scene.js"></script>
-
-    <script src="interactives/Pausenhof/football-model.js"></script>
     <script src="./interactives/Klassenraum/klassenraum-scene.js"></script>
     <script src="interactives/Pausenhof/pausenhof-scene.js"></script>
     <!-- Dreidimensionaler Fußball -->
@@ -116,25 +114,30 @@
   </head>
   <body>
 
+
     <!-- Startmenü-Overlay -->
     <div id="start-overlay" aria-hidden="false">
-        <div class="start-content" role="dialog" aria-labelledby="start-title" aria-describedby="start-desc">
-            <h2 id="start-title" class="start-title">Herzlich willkommen zu unserer virtuellen Tour</h2>
-            <p id="start-desc" class="start-text">
-                Entdecke unsere Räume in 360°. Tippe oder klicke auf „Tour starten“, um zu beginnen.
-            </p>
-            <button id="start-btn" class="start-btn" type="button">Tour starten</button>
-            <p id="start-desc" class="start-text">
-
-            </p>
-            <p id="start-desc" class="start-text">
-                <b>Desktop</b>: &nbsp;&nbsp;&nbsp;Klicke auf die Links und klicken sie um den Raum zu wechseln.
-            </p>
-            <p id="start-desc" class="start-text">
-                <b>VR Modus</b>: &nbsp;&nbsp;&nbsp;Schaue auf die Links und blinzele um den Raum zu wechseln.
-            </p>
+      <div class="start-content" role="dialog"
+          aria-labelledby="start-title" aria-describedby="start-desc">
+        <h2 id="start-title" class="start-title">Herzlich willkommen zur virtuellen Schule</h2>
+        <p id="start-desc" class="start-text">
+          Entdecke unsere immersiven Lernräume und Spiele im 360° Rundgang am PC, Tablet oder mit deiner VR Brille. Tippe oder klicke auf „Tour starten“, um zu beginnen.
+        </p>
+        <button id="start-btn" class="start-btn" type="button">Tour starten</button>
+        <div class="start-instructions" style="margin-top: 128px;">
+          <p class="start-text">
+            <b>Immersiver Modus:</b> Bewege dein Gerät im Raum um diesen zu erkunden.
+          </p>
+          <p class="start-text">
+            <b>Desktop - PC / Tablet / Mobile:</b> Klicke auf die Links, um den Raum zu wechseln.
+          </p>
+          <p class="start-text">
+            <b>VR Modus:</b> Schaue auf die Links bis der kleine schwarze Kreis diese trifft und blinzele um sie auszuwählen.
+          </p>
         </div>
+      </div>
     </div>
+
 
     <!-- Ladebalken -->
     <div class="loading-bar"><div id="progress"></div></div>
