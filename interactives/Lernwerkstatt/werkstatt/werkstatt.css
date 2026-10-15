@@ -955,3 +955,16 @@
     display: none !important;
   }
 }
+
+/* Internen Zurück-zur-Tour-Button ausblenden */
+#workshopOverlay .ws-header .ws-close {
+  display: none !important;
+}
+
+
+/* Gesamtes Werkstatt-Schild ausblenden */
+.ws-board {
+  display: none !important;
+}
+
+
