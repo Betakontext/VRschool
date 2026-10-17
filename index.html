@@ -305,6 +305,7 @@
 
           <!-- Nawi-Spiel: Die Buttonfläche selbst ist anklickbar -->
           <a-entity id="nawi-start"
+                    class="clickable link"
                     nawi-start
                     geometry="primitive: plane; width: 1.8; height: 0.65"
                     material="shader: flat; color: #0ea5e9; side: double"
@@ -368,7 +369,7 @@
           <a-entity id="akkuschrauber" gltf-model="https://raw.githubusercontent.com/Betakontext/VRschool/V3_2_C/interactives/glb/Akkuschrauber.glb"
                     position="2.0 -0.2 -2.7" rotation="0 150 0" scale="0.55 0.55 0.55" visible="false"></a-entity>
           <a-box id="akkuschrauber-trigger" class="link"
-                 position="2 0.2 -2.7" rotation="0 150 0""
+                 position="2 0.2 -2.7" rotation="0 150 0"
                  width="1.2" height="1.2" depth="0.5"
                  material="opacity: 0; transparent: true; depthWrite: false"></a-box>
 
@@ -377,13 +378,14 @@
 
               <!-- Anklickbare Bohle mit externer Holztextur -->
               <a-box id="werkstatt-start"
-                     werkstatt-start
-                     width="2"
-                     height="0.65"
-                     depth="0.16"
-                     material="src: #holzbohle-textur; color: #FFFFFF; roughness: 0.95; metalness: 0"
-                     event-set__enter="_event: mouseenter; scale: 1.08 1.08 1.08"
-                     event-set__leave="_event: mouseleave; scale: 1 1 1">
+                    class="clickable link"
+                    werkstatt-start
+                    width="2"
+                    height="0.65"
+                    depth="0.16"
+                    material="src: #holzbohle-textur; color: #FFFFFF; roughness: 0.95; metalness: 0"
+                    event-set__enter="_event: mouseenter; scale: 1.08 1.08 1.08"
+                    event-set__leave="_event: mouseleave; scale: 1 1 1">
 
                   <!-- Dunkles Schild für gute Lesbarkeit -->
                   <a-plane width="1.58"
@@ -500,6 +502,7 @@
         <a-entity
           id="bibliothek-start"
           bibliothek-start
+          class="clickable link"
           geometry="primitive: plane; width: 1.8; height: 0.65"
           material="shader: flat; color: #795548; side: double"
           rounded-thumbnail="radius: 0.06; shadowOpacity: 0.18"
@@ -613,16 +616,21 @@
       </a-entity>
 
       <!-- Kamera + Cursor -->
-      <a-entity camera look-controls="magicWindow: true; touchEnabled: true" position="0 1.6 0">
-        <!-- <a-cursor raycaster="objects: .link, .clickable; interval: 100; far: 50; recursive: true"
-                  fuse="true" fuse-timeout="900"></a-cursor>-->
+      <a-entity
+        id="tour-camera"
+        camera
+        look-controls="touchEnabled: true"
+        position="0 1.6 0">
         <a-cursor
           id="tour-cursor"
-          cursor="rayOrigin: mouse; fuse: false"
-          raycaster="objects: .link, .clickable; interval: 100; far: 50; recursive: true"
+          position="0 0 -1"
+          cursor="rayOrigin: mouse; fuse: false; fuseTimeout: 900"
+          raycaster="objects: .link, .clickable; interval: 100; far: 50"
+          material="shader: flat; color: #000; depthTest: false; depthWrite: false"
           visible="false">
         </a-cursor>
       </a-entity>
+
 
     </a-scene>
 
@@ -1149,6 +1157,46 @@
             });
         });
     </script>
+
+
+
+    <script>
+    // VR-Umschaltung
+    (() => {
+      const scene = document.querySelector('a-scene');
+      const cursor = document.getElementById('tour-cursor');
+      if (!scene || !cursor) return;
+
+      function updateCursorMode() {
+        const inVR = scene.is('vr-mode');
+
+        // Erst Verweilauswahl deaktivieren, damit ein laufender
+        // Auswahlvorgang beim Moduswechsel abgebrochen wird.
+        cursor.setAttribute('cursor', 'fuse', false);
+
+        // VR: Strahl entlang der Kamerablickrichtung.
+        // Desktop / Smartphone außerhalb von VR: Maus bzw. Touch.
+        cursor.setAttribute(
+          'cursor', 'rayOrigin', inVR ? 'entity' : 'mouse'
+        );
+        cursor.setAttribute('cursor', 'fuseTimeout', 900);
+        cursor.setAttribute('cursor', 'fuse', inVR);
+        cursor.setAttribute('visible', inVR);
+
+        cursor.components.raycaster?.refreshObjects();
+      }
+
+      scene.addEventListener('enter-vr', updateCursorMode);
+      scene.addEventListener('exit-vr', updateCursorMode);
+
+      if (scene.hasLoaded) {
+        updateCursorMode();
+      } else {
+        scene.addEventListener('loaded', updateCursorMode, { once: true });
+      }
+    })();
+    </script>
+
 
       <script src="./interactives/Lernwerkstatt/werkstatt-loader.js" defer></script>
       <script src="./interactives/NawiLabor/nawi-loader.js" defer></script>
