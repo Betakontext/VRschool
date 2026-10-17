@@ -615,21 +615,26 @@
         </a-entity>
       </a-entity>
 
-      <!-- Kamera + Cursor -->
-      <a-entity
-        id="tour-camera"
-        camera
-        look-controls="touchEnabled: true"
-        position="0 1.6 0">
+      <!-- Kamera mit getrenntem VR-Blickcursor und Mauscursor -->
+      <a-entity id="tour-camera"
+                camera
+                look-controls="touchEnabled: true"
+                position="0 1.6 0">
         <a-cursor
           id="tour-cursor"
           position="0 0 -1"
-          cursor="rayOrigin: mouse; fuse: false; fuseTimeout: 900"
-          raycaster="objects: .link, .clickable; interval: 100; far: 50"
+          cursor="rayOrigin: entity; fuse: true; fuseTimeout: 900"
+          raycaster="objects: .link, .clickable; interval: 100; far: 50; enabled: false"
           material="shader: flat; color: #000; depthTest: false; depthWrite: false"
           visible="false">
         </a-cursor>
+        <a-entity
+          id="tour-mouse-cursor"
+          cursor="rayOrigin: mouse; fuse: false"
+          raycaster="objects: .link, .clickable; interval: 100; far: 50">
+        </a-entity>
       </a-entity>
+
 
 
     </a-scene>
@@ -1161,41 +1166,57 @@
 
 
     <script>
-    // VR-Umschaltung
+    // Getrennte Eingabewege:
+    // VR: kameragebundener schwarzer Kreis wie in der Referenz.
+    // Außerhalb von VR: Maus-/Touchcursor.
     (() => {
       const scene = document.querySelector('a-scene');
-      const cursor = document.getElementById('tour-cursor');
-      if (!scene || !cursor) return;
+      const gazeCursor = document.getElementById('tour-cursor');
+      const mouseCursor = document.getElementById('tour-mouse-cursor');
 
-      function updateCursorMode() {
-        const inVR = scene.is('vr-mode');
+      if (!scene || !gazeCursor || !mouseCursor) return;
 
-        // Erst Verweilauswahl deaktivieren, damit ein laufender
-        // Auswahlvorgang beim Moduswechsel abgebrochen wird.
-        cursor.setAttribute('cursor', 'fuse', false);
-
-        // VR: Strahl entlang der Kamerablickrichtung.
-        // Desktop / Smartphone außerhalb von VR: Maus bzw. Touch.
-        cursor.setAttribute(
-          'cursor', 'rayOrigin', inVR ? 'entity' : 'mouse'
-        );
-        cursor.setAttribute('cursor', 'fuseTimeout', 900);
-        cursor.setAttribute('cursor', 'fuse', inVR);
-        cursor.setAttribute('visible', inVR);
-
-        cursor.components.raycaster?.refreshObjects();
+      function deactivate(el) {
+        // Komponenten pausieren, damit auch ihre Eingabe-Listener
+        // und ein eventuell laufender Fuse-Vorgang deaktiviert werden.
+        el.pause();
+        el.setAttribute('raycaster', 'enabled', false);
+        el.setAttribute('visible', false);
       }
 
-      scene.addEventListener('enter-vr', updateCursorMode);
-      scene.addEventListener('exit-vr', updateCursorMode);
+      function activate(el, visible) {
+        el.setAttribute('raycaster', 'enabled', true);
+        el.setAttribute('visible', visible);
+        el.play();
+        el.components.raycaster?.refreshObjects();
+      }
+
+      function setInputMode(inVR) {
+        // Zuerst beide deaktivieren: nie zwei aktive Auswahlwege.
+        deactivate(gazeCursor);
+        deactivate(mouseCursor);
+
+        if (inVR) {
+          activate(gazeCursor, true);
+        } else {
+          // Keine Geometrie erforderlich: Der Mauscursor arbeitet unsichtbar.
+          activate(mouseCursor, false);
+        }
+      }
+
+      scene.addEventListener('enter-vr', () => setInputMode(true));
+      scene.addEventListener('exit-vr', () => setInputMode(false));
 
       if (scene.hasLoaded) {
-        updateCursorMode();
+        setInputMode(scene.is('vr-mode'));
       } else {
-        scene.addEventListener('loaded', updateCursorMode, { once: true });
+        scene.addEventListener('loaded', () => {
+          setInputMode(scene.is('vr-mode'));
+        }, { once: true });
       }
     })();
     </script>
+
 
 
       <script src="./interactives/Lernwerkstatt/werkstatt-loader.js" defer></script>
