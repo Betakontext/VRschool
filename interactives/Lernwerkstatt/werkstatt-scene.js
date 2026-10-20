@@ -50,22 +50,5 @@ AFRAME.registerComponent('werkstatt-start', {
   }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-  const scene = document.querySelector('a-scene');
-  const cursor = document.getElementById('tour-cursor');
-  if (!scene || !cursor) return;
 
-  const configureCursor = (vr) => {
-    cursor.setAttribute('cursor', {
-      rayOrigin: vr ? 'entity' : 'mouse',
-      fuse: vr,
-      fuseTimeout: 900
-    });
-    cursor.setAttribute('visible', vr);
-  };
-
-  scene.addEventListener('enter-vr', () => configureCursor(true));
-  scene.addEventListener('exit-vr', () => configureCursor(false));
-  configureCursor(scene.is('vr-mode'));
-});
 
