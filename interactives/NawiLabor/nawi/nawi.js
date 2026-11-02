@@ -3,7 +3,8 @@
         let gogglesOn=false, burnerOn=false, reactionDone=false, labQuizDone=false, washingDone=false, washingActive=false;
         let poured={green:false, blue:false};
         let active=null;
-        let cleaning=false, wipeProgress=0, lastWipe={x:0,y:0}, cleanedElements=new Set(), messTargets=[], lastCleanTime=0;
+        let cleaning=false, wipeProgress=0, wipeDistance=0, cleaningStarted=0, lastWipe={x:0,y:0}, cleanedElements=new Set(), messTargets=[], lastCleanTime=0;
+        let spillCtx=null,spillDpr=1,spillInitialInk=0,lastInkCheck=1;
         let helpFadeTimer=null;
         let offsets={x:0,y:0};
         // Local lifecycle tracking: reset/close must not leave reaction, wash or drop callbacks alive.
@@ -31,40 +32,22 @@
         };
         window.closeNawiLab=function(){ if(reactionDone && !labQuizDone){ setStatus('Erst Arbeitsplatz sauber machen und das Abschluss-Quiz beenden. Danach kannst du zurück zur Tour.'); return; } const o=$('nawiLabOverlay'); if(o){cancelLifecycle(); end(); stopSinkFoam(); o.style.display='none';o.setAttribute('aria-hidden','true');} };
         function resetNawiLab(){
-          cancelLifecycle(); cleaning=false; wipeProgress=0; washState={placed:0,active:null,cleanTimer:null};
+          cancelLifecycle(); cleaning=false; wipeProgress=0; wipeDistance=0; cleaningStarted=0; washState={placed:0,active:null,cleanTimer:null};
           gogglesOn=false; burnerOn=false; reactionDone=false; labQuizDone=false; poured={green:false,blue:false}; active=null;
           $('nawiLabOverlay').classList.remove('goggles-on'); $('labGoggles') && $('labGoggles').classList.remove('worn'); resetArms(); $('labFlame').style.display='none';
           $('tubeLiquid').style.height='0'; $('tubeLiquid').style.background='linear-gradient(#63d471,#16a34a)';
-          $('labFoam').innerHTML=''; $('labFoam').style.opacity=''; $('pourLayer').innerHTML=''; $('labPuddle').classList.remove('big'); const film=$('tableAcidFilm'); if(film){film.classList.remove('show'); film.style.opacity='';} const coat=$('labCoat'); if(coat) coat.classList.remove('stained'); const hook=$('cleanHook'); if(hook){hook.classList.remove('show','clean-ready','locked-clean');} const held=$('heldCloth'); if(held) held.style.display='none'; const hint=$('burnerHint'); if(hint){hint.classList.remove('show'); hint.textContent='Jetzt Brenner-Knopf drücken';} const burn=$('labBurner'); if(burn) burn.classList.remove('burner-ready','needs-off'); const bcz=$('burnerClickZone'); if(bcz) bcz.classList.remove('show'); const wipe=$('wipeSheen'); if(wipe) wipe.classList.remove('run'); const toast=$('completionToast'); if(toast) toast.classList.remove('show'); const quiz=$('labQuiz'); if(quiz) quiz.classList.remove('show'); const qf=$('quizFinish'); if(qf) qf.classList.remove('show'); const sink=$('labSink'); if(sink) sink.classList.remove('show','washing','focus'); const sh=$('sinkHint'); if(sh) sh.classList.remove('show'); const rack=$('dryRack'); if(rack) rack.classList.remove('show','loaded','manual-loaded'); $('nawiLabOverlay').classList.remove('sink-focus'); ['washGlass1','washGlass2'].forEach(id=>{const g=$(id);if(g){g.className='wash-glass '+(id==='washGlass1'?'green':'blue');g.style.left='';g.style.top='';g.style.transform='';g.dataset.clean='0';g.dataset.placed='0';}}); document.querySelectorAll('.clean-streak,.erase-spot,.wipe-mark').forEach(e=>e.remove()); cleanedElements=new Set(); messTargets=[]; lastCleanTime=0; washingDone=false; washingActive=false; if(typeof stopSinkFoam==='function') stopSinkFoam();
+          $('labFoam').innerHTML=''; $('labFoam').style.opacity=''; $('pourLayer').innerHTML=''; $('labPuddle').classList.remove('big'); const film=$('tableAcidFilm'); if(film){film.classList.remove('show'); film.style.opacity='';} const coat=$('labCoat'); if(coat) coat.classList.remove('stained'); const hook=$('cleanHook'); if(hook){hook.classList.remove('show','clean-ready','locked-clean');} const held=$('heldCloth'); if(held) held.style.display='none'; const hint=$('burnerHint'); if(hint){hint.classList.remove('show'); hint.textContent='Brenner bleibt bei diesem Versuch AUS';} const burn=$('labBurner'); if(burn) burn.classList.remove('burner-ready','needs-off'); const bcz=$('burnerClickZone'); if(bcz) bcz.classList.remove('show'); const wipe=$('wipeSheen'); if(wipe) wipe.classList.remove('run'); const toast=$('completionToast'); if(toast) toast.classList.remove('show'); const quiz=$('labQuiz'); if(quiz) quiz.classList.remove('show'); const qf=$('quizFinish'); if(qf) qf.classList.remove('show'); const sink=$('labSink'); if(sink) sink.classList.remove('show','washing','focus'); const sh=$('sinkHint'); if(sh) sh.classList.remove('show'); const rack=$('dryRack'); if(rack) rack.classList.remove('show','loaded','manual-loaded'); $('nawiLabOverlay').classList.remove('sink-focus'); ['washGlass1','washGlass2'].forEach(id=>{const g=$(id);if(g){g.className='wash-glass '+(id==='washGlass1'?'green':'blue');g.style.left='';g.style.top='';g.style.transform='';g.dataset.clean='0';g.dataset.placed='0';}}); document.querySelectorAll('.clean-streak,.erase-spot,.wipe-mark').forEach(e=>e.remove()); cleanedElements=new Set(); messTargets=[]; lastCleanTime=0; washingDone=false; washingActive=false; if(typeof stopSinkFoam==='function') stopSinkFoam();
           ['greenBottle','blueBottle'].forEach(id=>{const b=$(id); if(!b) return; b.classList.remove('dragging'); b.style.left='';b.style.top='';b.style.right='';b.style.transform=''; const l=b.querySelector('.bottle-liquid'); if(l) l.style.height='64%';});
-          setStatus('Setze zuerst die Schutzbrille auf. Danach beide Flüssigkeiten ins Reagenzglas gießen. Der Gasbrenner bleibt aus, bis beide Stoffe drin sind.');
+          resetReactionDashboard();
+          prepareSpillCanvas(true);
+          setStatus('Setze zuerst die Schutzbrille auf. Danach beide Lösungen ins Reagenzglas gießen. Die Reaktion startet beim Kontakt – ohne Brenner.');
         }
-        window.putOnGoggles=function(){ gogglesOn=true; $('nawiLabOverlay').classList.add('goggles-on'); $('labGoggles') && $('labGoggles').classList.add('worn'); setStatus('Schutzbrille sitzt. Jetzt beide Flaschen nacheinander über das Reagenzglas ziehen und eingießen. Danach erst den Gasbrenner einschalten.'); };
+        window.putOnGoggles=function(){ gogglesOn=true; $('nawiLabOverlay').classList.add('goggles-on'); $('labGoggles') && $('labGoggles').classList.add('worn'); setStatus('Schutzbrille sitzt. Gieße beide Lösungen nacheinander ein und beobachte, wie die Reaktion sofort beim Kontakt beginnt.'); };
         window.toggleBurner=function(){
-          if(reactionDone){
-            if(burnerOn){
-              burnerOn=false;
-              const flame=$('labFlame'); if(flame) flame.style.display='none';
-              const hint=$('burnerHint'); if(hint) hint.classList.remove('show');
-              const burn=$('labBurner'); if(burn) burn.classList.remove('needs-off','burner-ready');
-              const bcz=$('burnerClickZone'); if(bcz) bcz.classList.remove('show');
-              const hook=$('cleanHook'); if(hook){ hook.classList.remove('locked-clean'); hook.classList.add('show','clean-ready'); }
-              setStatus('Gasbrenner ist ausgeschaltet. Jetzt den Lappen nehmen und den Tisch sauber wischen.');
-            } else {
-              setStatus('Der Brenner ist aus. Jetzt mit dem Lappen den Arbeitsplatz sauber machen.');
-            }
-            return;
-          }
-          if(!(poured.green && poured.blue)){
-            $('labFlame').style.display='none'; burnerOn=false;
-            setStatus('Erst beide Flüssigkeiten ins Reagenzglas geben. Danach darfst du den Gasbrenner einschalten.');
-            return;
-          }
-          burnerOn=true;
-          const hint=$('burnerHint'); if(hint){hint.classList.remove('show'); hint.textContent='Jetzt Brenner-Knopf drücken';} const burn=$('labBurner'); if(burn) burn.classList.remove('burner-ready','needs-off');
-          $('labFlame').style.display='block';
-          setStatus('Gasbrenner ist an. Die Mischung wird erhitzt – gleich startet die Reaktion.');
-          trackedTimeout(startReaction, 450);
+          burnerOn=false;
+          const flame=$('labFlame'); if(flame) flame.style.display='none';
+          const hint=$('burnerHint'); if(hint){hint.textContent='Brenner bleibt bei diesem Versuch AUS';hint.classList.add('show');trackedTimeout(()=>hint.classList.remove('show'),2200);}
+          setStatus('Richtig gedacht: Diese Säure-Base-Reaktion braucht keine Flamme. Sie beginnt beim Vermischen und entzieht der Umgebung Wärme.');
         };
         window.showLabInfo=function(e,title,text){ if(e) e.stopPropagation(); const c=$('labInfoCard'); c.innerHTML='<b>'+title+'</b>'+text; c.style.display='block'; c.style.left=clamp((e?.clientX||200)+12,12,window.innerWidth-285)+'px'; c.style.top=clamp((e?.clientY||160)+12,12,window.innerHeight-130)+'px'; };
         document.addEventListener('click',e=>{ if(!e.target.classList.contains('info-dot')) { const c=$('labInfoCard'); if(c)c.style.display='none'; } });
@@ -118,7 +101,7 @@
           const color = chem==='green' ? '#22c55e' : '#38bdf8';
           const liquid=bottle.querySelector('.bottle-liquid'); if(liquid) liquid.style.height='22%';
           // Viele Tropfen statt Laser-Strich: wirkt flüssiger und kommt aus der Öffnung.
-          let i=0; const timer=pouringTimer=trackedInterval(()=>{ createDrop(mouthX+(Math.random()*8-4),mouthY+(Math.random()*8-4),targetX+(Math.random()*18-9),targetY+(Math.random()*18-9),color); if(++i>22){clearInterval(timer); lifecycleIntervals.delete(timer); pouringTimer=null; poured[chem]=true; updateTube(chem); if(poured.green&&poured.blue){ const hint=$('burnerHint'); if(hint) hint.classList.add('show'); const burn=$('labBurner'); if(burn) burn.classList.add('burner-ready'); setStatus('Beide Flüssigkeiten sind im Reagenzglas. Jetzt den roten Knopf am Gasbrenner anklicken.'); } } },35);
+          let i=0; const timer=pouringTimer=trackedInterval(()=>{ createDrop(mouthX+(Math.random()*8-4),mouthY+(Math.random()*8-4),targetX+(Math.random()*18-9),targetY+(Math.random()*18-9),color); if(++i>22){clearInterval(timer); lifecycleIntervals.delete(timer); pouringTimer=null; poured[chem]=true; updateTube(chem); if(poured.green&&poured.blue){ setStatus('Die Lösungen berühren sich – die CO₂-Bildung startet sofort. Beobachte Blasen, Schaum und Temperatur.'); trackedTimeout(startReaction,180); } } },35);
           setStatus((chem==='green'?'Natriumhydrogencarbonat':'Essigsäure')+' wird aus der Flaschenöffnung in das Reagenzglas gegossen.');
         }
         function createDrop(x1,y1,x2,y2,color){
@@ -132,76 +115,98 @@
         function startReaction(){
           if(reactionDone) return;
           if(!(poured.green && poured.blue)){setStatus('Es fehlen noch Stoffe im Reagenzglas. Erst beide Flüssigkeiten eingießen.'); return;}
-          if(!burnerOn){setStatus('Die Stoffe sind gemischt. Schalte jetzt den Gasbrenner ein.'); return;}
           reactionDone=true;
-          setStatus('Boom! Die CO₂-Schaumreaktion platzt aus dem Reagenzglas, läuft über den Tisch und hinterlässt grüne Spritzer.');
+          animateReactionDashboard();
+          setStatus('Reaktion läuft: Es entstehen Natriumacetat, Wasser und viele CO₂-Blasen. Die Mischung kühlt messbar ab.');
           const foam=$('labFoam'); foam.innerHTML='';
           const center=$('reactionTube').getBoundingClientRect();
           const table=document.querySelector('.lab-table').getBoundingClientRect();
           const cx=center.left+center.width/2, cy=center.top+45;
-          const flame=$('labFlame');
-          if(flame){ flame.style.display='block'; flame.style.opacity='1'; flame.style.transform='scale(1.38)'; trackedTimeout(()=>{flame.style.transform=''; flame.style.opacity='.78';},1100); }
+          const flame=$('labFlame'); if(flame) flame.style.display='none';
+          const tube=$('reactionTube');if(tube){tube.classList.add('chem-reacting');trackedTimeout(()=>tube.classList.remove('chem-reacting'),6200);}
+
+          // Mehrstufige Gasentwicklung: erst starke Keimbildung, danach sichtbar nachlassendes Sprudeln.
+          for(let i=0;i<3;i++){const ring=document.createElement('div');ring.className='reaction-ring';ring.style.left=cx+'px';ring.style.top=(cy+35)+'px';ring.style.animationDelay=(i*.22)+'s';foam.appendChild(ring);trackedTimeout(()=>ring.remove(),1800+i*220);}
 
           // 1) Kurzer sichtbarer "Platz" direkt aus dem Reagenzglas heraus.
           const burst=document.createElement('div');
           burst.className='reaction-burst';
           burst.style.left=cx+'px'; burst.style.top=cy+'px';
-          burst.style.width='195px'; burst.style.height='195px';
+          burst.style.width='92px'; burst.style.height='92px';
           foam.appendChild(burst); trackedTimeout(()=>burst.remove(),1000);
 
-          // 2) Schaum steigt zuerst aus der Öffnung des Reagenzglases.
-          for(let i=0;i<85;i++){
+          // 2) Kleine CO₂-Blasen steigen hauptsächlich im und direkt über dem Reagenzglas auf.
+          for(let i=0;i<58;i++){
             trackedTimeout(()=>{
               const b=document.createElement('div'); b.className='bubble';
-              const s=10+Math.random()*42;
+              const s=7+Math.random()*22;
               b.style.width=s+'px'; b.style.height=s+'px';
               b.style.left=(cx+(Math.random()*36-18))+'px';
               b.style.top=(cy+(Math.random()*18-9))+'px';
-              b.style.setProperty('--x',(Math.random()*260-130)+'px');
-              b.style.setProperty('--y',(-35-Math.random()*190)+'px');
+              b.style.setProperty('--x',(Math.random()*88-44)+'px');
+              b.style.setProperty('--y',(-28-Math.random()*135)+'px');
               foam.appendChild(b); trackedTimeout(()=>b.remove(),1700);
             },i*10);
           }
+          for(let i=0;i<42;i++)trackedTimeout(()=>{
+            const b=document.createElement('i');b.className='tube-gas-bubble';
+            const s=4+Math.random()*10;b.style.width=s+'px';b.style.height=s+'px';b.style.left=(cx-17+Math.random()*34)+'px';b.style.top=(cy+80+Math.random()*42)+'px';
+            b.style.setProperty('--gas-x',(Math.random()*22-11)+'px');foam.appendChild(b);trackedTimeout(()=>b.remove(),1500);
+          },i<24?i*55:1320+(i-24)*145);
 
-          // 3) Dicke Schaumklumpen platzen auf den Tisch und bleiben sichtbar.
-          for(let i=0;i<52;i++){
+          // 3) Etwas Schaum quillt aus der Öffnung, ohne den ganzen Tisch zu überdecken.
+          for(let i=0;i<14;i++){
             trackedTimeout(()=>{
               const blob=document.createElement('div'); blob.className='foam-blob';
-              const size=26+Math.random()*98;
-              blob.style.width=size+'px'; blob.style.height=(size*(.50+Math.random()*.30))+'px';
+              const size=18+Math.random()*38;
+              blob.style.width=size+'px'; blob.style.height=(size*(.48+Math.random()*.25))+'px';
               blob.style.left=cx+'px'; blob.style.top=(cy+22)+'px';
-              blob.style.setProperty('--x',(Math.random()*(table.width*.88)-table.width*.44)+'px');
-              blob.style.setProperty('--y',(table.top+table.height*(.40+Math.random()*.42)-cy)+'px');
+              blob.style.setProperty('--x',(Math.random()*120-60)+'px');
+              blob.style.setProperty('--y',(42+Math.random()*115)+'px');
               foam.appendChild(blob);
+              trackedTimeout(()=>blob.remove(),5200);
             },260+i*24);
           }
 
-          // 4) Säure-/Schaumfilm bedeckt fast den ganzen Tisch.
-          trackedTimeout(()=>{ const film=$('tableAcidFilm'); if(film) film.classList.add('show'); $('labPuddle').classList.add('big'); },850);
-
-          // 5) Grüne Spritzer an den Kanten und ein paar auf dem Kittel.
-          for(let i=0;i<48;i++){
-            trackedTimeout(()=>{
-              const sp=document.createElement('div'); sp.className='acid-splash';
-              const size=12+Math.random()*52;
-              sp.style.width=size+'px'; sp.style.height=(size*(.35+Math.random()*.55))+'px';
-              sp.style.left=cx+'px'; sp.style.top=cy+'px';
-              const towardBody = i>40;
-              const targetX = towardBody ? (Math.random()*220-110) : (Math.random()*table.width - table.width/2);
-              const targetY = towardBody ? (window.innerHeight*.83-cy + Math.random()*70) : (table.top+table.height*(.24+Math.random()*.68)-cy);
-              sp.style.setProperty('--x',targetX+'px'); sp.style.setProperty('--y',targetY+'px');
-              sp.style.setProperty('--r',(Math.random()*160-80)+'deg');
-              foam.appendChild(sp);
-            },420+i*28);
-          }
-          trackedTimeout(()=>{ const coat=$('labCoat'); if(coat) coat.classList.add('stained'); },1300);
-          trackedTimeout(()=>{ const hint=$('burnerHint'); if(hint){ hint.textContent='Brenner ausschalten'; hint.classList.add('show'); } const burn=$('labBurner'); if(burn) burn.classList.add('burner-ready','needs-off'); const bcz=$('burnerClickZone'); if(bcz) bcz.classList.add('show'); const hook=$('cleanHook'); if(hook){ hook.classList.remove('show','clean-ready'); hook.classList.add('locked-clean'); } setStatus('Reaktion beendet. Schalte den Gasbrenner über den roten Knopf aus, danach sauber machen.'); },1900);
+          // 4) Eine echte halbtransparente Flüssigkeitsschicht wird auf eine Canvas-Fläche gemalt.
+          trackedTimeout(paintSpillCanvas,950);
+          trackedTimeout(()=>{ const hook=$('cleanHook'); if(hook){ hook.classList.remove('locked-clean'); hook.classList.add('show','clean-ready'); } setStatus('Die Gasentwicklung lässt nach, weil die Ausgangsstoffe verbraucht werden. Wische anschließend jeden sichtbaren Tropfen gründlich weg.'); },3200);
         }
+
+        function resetReactionDashboard(){
+          const phase=$('reactionPhase'),temp=$('reactionTemp'),fill=$('tempFill'),stage=$('particleStage'),ex=$('reactionExplanation'),dash=$('reactionDashboard');
+          if(phase) phase.textContent='Bereit'; if(temp) temp.textContent='22,0 °C'; if(fill) fill.style.width='92%';
+          if(stage) stage.querySelectorAll('.molecule,.co2-particle').forEach(x=>x.remove());
+          if(ex) ex.textContent='Beim Kontakt entstehen CO₂-Blasen. Es ist kein Brenner nötig.'; if(dash) dash.classList.remove('reacting','complete');
+        }
+        function animateReactionDashboard(){
+          const dash=$('reactionDashboard'),phase=$('reactionPhase'),temp=$('reactionTemp'),fill=$('tempFill'),stage=$('particleStage'),ex=$('reactionExplanation');
+          if(!dash||!stage)return; dash.classList.add('reacting'); if(phase) phase.textContent='CO₂ entsteht';
+          for(let i=0;i<22;i++){const p=document.createElement('i');p.className='molecule '+(i%2?'acid':'base');p.style.left=(8+Math.random()*84)+'%';p.style.top=(28+Math.random()*58)+'%';p.style.setProperty('--dx',(Math.random()*90-45)+'px');p.style.animationDelay=(Math.random()*.8)+'s';stage.appendChild(p);}
+          for(let i=0;i<30;i++)trackedTimeout(()=>{const p=document.createElement('i');p.className='co2-particle';p.textContent='CO₂';p.style.left=(28+Math.random()*44)+'%';p.style.bottom='8px';p.style.setProperty('--drift',(Math.random()*100-50)+'px');stage.appendChild(p);trackedTimeout(()=>p.remove(),2600);},i*85);
+          const start=performance.now(),room=22,low=15.1;
+          const tick=now=>{const elapsed=now-start;let v;if(elapsed<4200){const k=elapsed/4200;v=room+(low-room)*(1-Math.pow(1-k,2));}else{const recover=1-Math.exp(-(elapsed-4200)/52000);v=low+(room-low)*recover;v+=Math.sin(elapsed/1350)*.07;}if(temp)temp.textContent=v.toFixed(1).replace('.',',')+' °C';if(fill)fill.style.width=Math.max(34,Math.min(92,34+(v-low)/(room-low)*58))+'%';if(elapsed>4200){dash.classList.remove('reacting');dash.classList.add('complete');if(phase)phase.textContent='Langsame Erwärmung';if(ex)ex.textContent='Die Probe nimmt nach der Abkühlung langsam wieder Wärme aus dem Raum auf.';}trackedRAF(tick);};trackedRAF(tick);
+        }
+        function prepareSpillCanvas(clear){
+          const canvas=$('spillCanvas');if(!canvas)return null;const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return null;
+          spillDpr=Math.min(1.5,window.devicePixelRatio||1);
+          if(canvas.width!==Math.round(rect.width*spillDpr)||canvas.height!==Math.round(rect.height*spillDpr)){canvas.width=Math.round(rect.width*spillDpr);canvas.height=Math.round(rect.height*spillDpr);}
+          spillCtx=canvas.getContext('2d',{willReadFrequently:true});spillCtx.setTransform(spillDpr,0,0,spillDpr,0,0);if(clear)spillCtx.clearRect(0,0,rect.width,rect.height);return {canvas,rect,ctx:spillCtx};
+        }
+        function paintSpillCanvas(){
+          const s=prepareSpillCanvas(true);if(!s)return;const {rect,ctx}=s,cx=rect.width*.5,cy=rect.height*.57;
+          ctx.save();ctx.globalCompositeOperation='source-over';
+          for(let i=0;i<11;i++){const x=cx+(Math.random()-.5)*rect.width*.38,y=cy+(Math.random()-.5)*rect.height*.30,rx=25+Math.random()*62,ry=8+Math.random()*24;ctx.save();ctx.translate(x,y);ctx.rotate((Math.random()-.5)*.7);ctx.scale(rx,ry);const g=ctx.createRadialGradient(-.18,-.24,.05,0,0,1);g.addColorStop(0,'rgba(255,255,255,.82)');g.addColorStop(.35,'rgba(205,241,245,.64)');g.addColorStop(.78,'rgba(100,185,196,.34)');g.addColorStop(1,'rgba(65,145,160,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,1,0,Math.PI*2);ctx.fill();ctx.restore();}
+          for(let i=0;i<25;i++){ctx.fillStyle='rgba(154,221,228,'+(.28+Math.random()*.35)+')';ctx.beginPath();ctx.arc(cx+(Math.random()-.5)*rect.width*.44,cy+(Math.random()-.5)*rect.height*.34,1.5+Math.random()*5,0,Math.PI*2);ctx.fill();}
+          ctx.restore();spillInitialInk=measureSpillInk();lastInkCheck=1;
+        }
+        function measureSpillInk(){const c=$('spillCanvas');if(!c||!spillCtx)return 0;const data=spillCtx.getImageData(0,0,c.width,c.height).data;let ink=0,total=0,step=Math.max(4,Math.round(7*spillDpr));for(let y=0;y<c.height;y+=step)for(let x=0;x<c.width;x+=step){total++;if(data[(y*c.width+x)*4+3]>18)ink++;}return total?ink/total:0;}
+        function eraseSpillSegment(a,b){const s=prepareSpillCanvas(false);if(!s)return 1;const {rect,ctx}=s,x1=a.x-rect.left,y1=a.y-rect.top,x2=b.x-rect.left,y2=b.y-rect.top;ctx.save();ctx.globalCompositeOperation='destination-out';ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=48;ctx.strokeStyle='rgba(0,0,0,.54)';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();const g=ctx.createRadialGradient(x2,y2,5,x2,y2,31);g.addColorStop(0,'rgba(0,0,0,.82)');g.addColorStop(.72,'rgba(0,0,0,.48)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x2,y2,31,0,Math.PI*2);ctx.fill();ctx.restore();return measureSpillInk();}
         window.pickCleaningCloth=function(e){
           if(e){ e.stopPropagation(); if(e.preventDefault) e.preventDefault(); }
           if(cleaning) return;
           if(burnerOn){ setStatus('Erst den roten Knopf am Gasbrenner drücken und den Brenner ausschalten. Danach darfst du sauber machen.'); const hint=$('burnerHint'); if(hint){hint.textContent='Brenner ausschalten'; hint.classList.add('show');} const burn=$('labBurner'); if(burn) burn.classList.add('needs-off','burner-ready'); const bcz=$('burnerClickZone'); if(bcz) bcz.classList.add('show'); return; }
-          cleaning=true; wipeProgress=0; cleanedElements=new Set(); messTargets=Array.from(document.querySelectorAll('#labFoam .foam-blob,#labFoam .acid-splash,#labFoam .bubble')); lastCleanTime=0;
+          cleaning=true; wipeProgress=0; wipeDistance=0; cleaningStarted=performance.now(); cleanedElements=new Set(); messTargets=[]; lastCleanTime=0;lastInkCheck=measureSpillInk();
           const startP = e ? point(e) : {x:window.innerWidth*.67, y:window.innerHeight*.62};
           lastWipe={x:startP.x,y:startP.y};
           const hook=$('cleanHook'); if(hook) hook.classList.remove('show','clean-ready','locked-clean');
@@ -226,10 +231,10 @@
 
           if(lastWipe.x===0 && lastWipe.y===0){ lastWipe={x:p.x,y:p.y}; return; }
           const dist = Math.hypot(p.x-lastWipe.x,p.y-lastWipe.y);
-          if(dist < 42) return;
+          if(dist < 18) return;
 
           const old={x:lastWipe.x,y:lastWipe.y};
-          lastWipe={x:p.x,y:p.y}; wipeProgress++; lastCleanTime = now;
+          lastWipe={x:p.x,y:p.y}; wipeProgress++; wipeDistance+=dist; lastCleanTime = now;
           const angle=Math.atan2(p.y-old.y,p.x-old.x)*180/Math.PI;
           const midX=(p.x+old.x)/2, midY=(p.y+old.y)/2;
 
@@ -243,35 +248,11 @@
             trackedTimeout(()=>streak.remove(),1500);
           }
 
-          eraseNearbyMess(midX, midY, 125);
-          if(wipeProgress===6) setStatus('Gut. Weiterwischen: Der Schaum verschwindet dort, wo du wirklich mit dem Lappen langgehst.');
-          if(wipeProgress===18) setStatus('Fast sauber. Noch ein paar Bahnen über den Tisch wischen.');
-          const film=$('tableAcidFilm');
-          if(film && wipeProgress>10) film.style.opacity=String(Math.max(0.16,1-(wipeProgress-10)*0.04));
-          const targetCount = messTargets.length || 1;
-          if(wipeProgress>=34 || cleanedElements.size>=Math.min(42, targetCount*.78)) finishCleaning();
-        }
-        function eraseNearbyMess(x,y,radius){
-          const targets = messTargets.length ? messTargets : Array.from(document.querySelectorAll('#labFoam .foam-blob,#labFoam .acid-splash,#labFoam .bubble'));
-          let removedNow = 0;
-          for(const el of targets){
-            if(!el || cleanedElements.has(el) || !el.isConnected) continue;
-            const rect=el.getBoundingClientRect();
-            const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
-            if(Math.hypot(cx-x,cy-y)<radius){
-              cleanedElements.add(el); removedNow++;
-              el.style.transition='opacity .35s ease, transform .35s ease, filter .35s ease';
-              el.style.opacity='0';
-              el.style.filter='blur(4px)';
-              el.style.transform=(el.style.transform||'')+' scale(.62)';
-              trackedTimeout(()=>{ if(el && el.remove) el.remove(); },390);
-              if(removedNow>=10) break; // nie zu viele Elemente auf einmal anfassen
-            }
-          }
-          const foam=$('labFoam');
-          const total=targets.length||1;
-          if(foam && cleanedElements.size>total*.55){ foam.style.opacity='0.78'; }
-          if(foam && cleanedElements.size>total*.76){ foam.style.opacity='0.50'; }
+          lastInkCheck=eraseSpillSegment(old,p);const remaining=spillInitialInk?Math.max(0,lastInkCheck/spillInitialInk):0;
+          if(wipeProgress===10) setStatus('Wie mit einem Radiergummi: Fahre mehrfach über jeden einzelnen Fleck.');
+          if(wipeProgress%12===0) setStatus('Noch etwa '+Math.round(remaining*100)+' % sichtbar. Wische direkt über die hellen Flüssigkeitsreste.');
+          if(remaining<.045 && (wipeDistance<1900 || now-cleaningStarted<8000)) setStatus('Fast vollständig sauber. Noch einige gründliche Bahnen über die Fläche.');
+          if(remaining<.045 && wipeDistance>=1900 && now-cleaningStarted>=8000) finishCleaning();
         }
         function pointRightArmTo(x,y){
           const r=$('rightArm'); if(!r) return;
@@ -282,6 +263,7 @@
         }
         function finishCleaning(){
           if(!cleaning) return; cleaning=false;
+          const spill=$('spillCanvas');if(spill){spill.style.transition='opacity .55s ease';spill.style.opacity='0';trackedTimeout(()=>{prepareSpillCanvas(true);spill.style.opacity='1';},600);}
           const wipe=$('wipeSheen'); if(wipe){ wipe.classList.remove('run'); void wipe.offsetWidth; wipe.classList.add('run'); }
           const cloth=$('heldCloth'); if(cloth) cloth.style.display='none'; resetArms();
           setStatus('Sehr schön. Du hast das Experiment offiziell sicher durchgeführt. Gleich kommt das Abschluss-Quiz.');
@@ -387,9 +369,9 @@
         const labQuizQuestions=[
           {q:'Warum muss man im Nawi-Raum vor dem Experiment eine Schutzbrille tragen?', a:['Damit es professioneller aussieht','Damit Augen vor Spritzern geschützt sind','Damit man Farben besser sieht'], correct:1},
           {q:'Was entsteht bei der Reaktion von Essigsäure und Natriumhydrogencarbonat sichtbar?', a:['Kohlenstoffdioxid, Bläschen und Schaum','Reiner Sauerstoff ohne Schaum','Nur farbiges Wasser'], correct:0},
-          {q:'Wann darf der Gasbrenner eingeschaltet werden?', a:['Erst nachdem beide Lösungen im Reagenzglas sind','Direkt am Anfang, bevor die Schutzbrille sitzt','Während man noch die Flasche hält'], correct:0},
-          {q:'Was ist nach einer schäumenden Reaktion besonders wichtig?', a:['Arbeitsplatz kontrollieren und sauber machen','Schaum liegen lassen','Den Brenner weiterlaufen lassen'], correct:0},
-          {q:'Was ist die richtige Reihenfolge nach der Reaktion?', a:['Erst Lappen nehmen, dann Brenner ausschalten','Brenner ausschalten, dann sauber machen','Einfach weggehen, wenn es fertig ist'], correct:1}
+          {q:'Braucht diese Reaktion einen Gasbrenner, um zu starten?', a:['Ja, ohne Flamme entsteht kein CO₂','Nein, sie beginnt beim Kontakt der beiden Stoffe','Nur wenn das Reagenzglas leer ist'], correct:1},
+          {q:'Was ist nach einer schäumenden Reaktion besonders wichtig?', a:['Arbeitsplatz kontrollieren und sauber machen','Schaum liegen lassen','Ohne Kontrolle sofort weggehen'], correct:0},
+          {q:'Warum sinkt die Temperatur während des Versuchs?', a:['Die Reaktion nimmt Wärme aus der Umgebung auf','Das CO₂ brennt besonders kalt','Das Reagenzglas erzeugt künstlich Eis'], correct:0}
         ];
         let quizIndex=0;
         function showLabQuiz(){ quizIndex=0; const q=$('labQuiz'); if(q) q.classList.add('show'); renderLabQuiz(); }
@@ -412,7 +394,7 @@
             if(quizIndex>=labQuizQuestions.length){
               const qp=$('quizProgress'), qq=$('quizQuestion'), qo=$('quizOptions'), qf=$('quizFinish');
               if(qp) qp.textContent='Quiz abgeschlossen';
-              if(qq) qq.textContent='Sehr gut. Du hast das Experiment sicher durchgeführt, den Brenner ausgeschaltet, den Arbeitsplatz gereinigt und die wichtigsten Sicherheitsregeln verstanden.';
+              if(qq) qq.textContent='Sehr gut. Du hast die Reaktion sicher durchgeführt, die CO₂-Bildung und den Temperaturabfall beobachtet und den Arbeitsplatz gereinigt.';
               if(qo) qo.innerHTML='';
               if(qf) qf.classList.add('show');
               labQuizDone=true;
