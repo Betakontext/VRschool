@@ -1,0 +1,5 @@
+PASS: source assertions and JavaScript syntax
+PASS: FX instrumentation normal: effect after actual penalty click; effect buffer empty after >0.6 game seconds
+PASS: FX instrumentation prefers-reduced-motion: static fading ring, no sparks; buffer empty after >0.6 game seconds
+PASS: final browser smoke complete (10/10 games, local photos, canvas, same iframe, pause/resume, close/reopen)
+console/page exceptions: none
