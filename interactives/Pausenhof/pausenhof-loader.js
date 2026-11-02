@@ -1,17 +1,21 @@
-(function(){
-'use strict';
-var dialog, frame, opener, priorOverflow, ready=false, openPending=false;
-var own=new URL(document.currentScript.src, document.baseURI); var page=new URL('pausenhof/pausenhof.html',own).href;
-function valid(e){return frame&&e.source===frame.contentWindow&&e.origin===location.origin}
-function loading(){var l=dialog.querySelector('.pausenhof-loading');if(!l){l=document.createElement('div');l.className='pausenhof-loading';l.setAttribute('role','status');l.textContent='Pausenhofspiel wird geladen…';dialog.appendChild(l)}return l}
-function cleanup(){if(!dialog)return;dialog.hidden=true;dialog.setAttribute('aria-hidden','true');if(frame){frame.remove();frame=null}ready=false;openPending=false;document.body.style.overflow=priorOverflow||'';if(opener&&opener.focus)opener.focus();opener=null}
-function close(){cleanup()}
-window.closePausenhofModule=close;
-function make(){dialog=document.createElement('div');dialog.id='pausenhofDialog';dialog.hidden=true;dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-label','Pausenhofspiel');dialog.innerHTML='<button type="button" class="pausenhof-exit" aria-label="Pausenhofspiel schließen">×</button>';Object.assign(dialog.style,{position:'fixed',inset:'0',zIndex:'2147483647'});var st=document.createElement('style');st.textContent='#pausenhofDialog{display:grid;place-items:center;padding:clamp(8px,2vw,24px);box-sizing:border-box;background:rgb(171 171 171 / 73%)}#pausenhofDialog[hidden]{display:none!important}#pausenhofDialog .pausenhof-exit{position:absolute;top:clamp(16px,3vw,38px);right:clamp(16px,3vw,38px);z-index:2;width:42px;height:42px;padding:0;display:grid;place-items:center;font:32px/1 Arial;color:#fff;background:#c83232;border:1px solid rgb(255 255 255 / 65%);border-radius:50%;cursor:pointer}#pausenhofDialog .pausenhof-exit:focus-visible{outline:3px solid #fff;outline-offset:3px}#pausenhofDialog iframe{z-index:0;width:min(1100px,100%);height:min(760px,100%);box-sizing:border-box;border:1px solid rgb(255 255 255 / 35%);border-radius:12px;background:#07131b;box-shadow:0 18px 55px rgb(0 0 0 / 42%)}#pausenhofDialog .pausenhof-loading{position:absolute;inset:0;z-index:1;display:grid;place-items:center;pointer-events:none;color:white;font:16px Arial}';document.head.appendChild(st);dialog.querySelector('button').onclick=close;document.body.appendChild(dialog)}
-function sendOpen(){if(ready&&frame){frame.contentWindow.postMessage({type:'pausenhof-open'},location.origin);openPending=false}}
-window.openPausenhofModule=async function(){if(window.scene&&typeof window.scene.is==='function'&&window.scene.is('vr-mode')&&typeof window.scene.exitVR==='function'){try{await window.scene.exitVR()}catch(e){console.warn('VR konnte nicht beendet werden',e)}}if(!dialog)make();if(!dialog.hidden){openPending=true;sendOpen();return}opener=document.activeElement;priorOverflow=document.body.style.overflow;document.body.style.overflow='hidden';dialog.hidden=false;dialog.setAttribute('aria-hidden','false');openPending=true;if(!frame){loading();frame=document.createElement('iframe');frame.title='Pausenhofspiel';frame.allow='fullscreen';frame.src=page;frame.onload=function(){setTimeout(function(){if(!ready&&frame){var l=dialog.querySelector('.pausenhof-loading');if(l)l.textContent='Laden fehlgeschlagen. Bitte schließen und erneut versuchen.'}},5000)};dialog.appendChild(frame)}else sendOpen()};
-window.addEventListener('message',function(e){if(!valid(e)||!e.data)return;if(e.data.type==='pausenhof-ready'){ready=true;var l=dialog.querySelector('.pausenhof-loading');if(l)l.remove();if(openPending)sendOpen()}if(e.data.type==='pausenhof-close')close()});
-document.addEventListener('keydown',function(e){if(e.key==='Escape'&&dialog&&!dialog.hidden){e.preventDefault();close()}});
-document.addEventListener('click',function(e){var b=e.target.closest('[data-open-pausenhof]');if(b){e.preventDefault();window.openPausenhofModule()}});
-window.openHofSports=function(e){e&&e.preventDefault&&e.preventDefault();return window.openPausenhofModule()};
+/* Pausenhof iframe launcher: same-origin, bounded and recoverable. */
+(()=>{'use strict';
+ let frame=null, wrap=null, timer=0, lastFocus=null, opener=null;
+ const own=document.currentScript;
+ const base=own&&own.src||location.href;
+ const childURL=new URL('pausenhof/pausenhof.html?v=20250617', base).href;
+ const cssURL=new URL('pausenhof-loader.css?v=20250617', base).href;
+ // Self-contained host integration: inject the sibling stylesheet once; no tour/index edit needed.
+ if(![...document.styleSheets].some(s=>s.href===cssURL)){const link=document.createElement('link');link.rel='stylesheet';link.href=cssURL;link.dataset.pausenhofLoader='';(document.head||document.documentElement).append(link);}
+ function focusExit(){wrap?.querySelector('.pausenhof-exit')?.focus()}
+ function close(){clearTimeout(timer);timer=0; if(!wrap)return; const old=wrap; frame=null;wrap=null;old.remove();document.body.classList.remove('pausenhof-open'); lastFocus?.focus?.();}
+ function failure(){if(!wrap||!frame)return;let s=wrap.querySelector('.pausenhof-status');s.innerHTML='<strong>Sport-Arena konnte nicht geladen werden.</strong><br>Prüfen Sie den Pfad <code>pausenhof/pausenhof.html</code>. <button type="button">Erneut versuchen</button>';s.hidden=false;s.querySelector('button').onclick=()=>{close();open()};focusExit()}
+ function open(){if(wrap){focusExit();return} lastFocus=document.activeElement;wrap=document.createElement('div');wrap.id='pausenhofDialog';wrap.setAttribute('role','dialog');wrap.setAttribute('aria-modal','true');wrap.setAttribute('aria-label','Pausenhof Sport-Arena');
+  const shell=document.createElement('div');shell.className='pausenhof-shell'; const status=document.createElement('div');status.className='pausenhof-status';status.textContent='Sport-Arena wird geladen …'; const x=document.createElement('button');x.className='pausenhof-exit';x.type='button';x.setAttribute('aria-label','Sport-Arena schließen');x.textContent='×';x.onclick=close;
+  frame=document.createElement('iframe');frame.title='Pausenhof Sport-Arena';frame.src=childURL;frame.setAttribute('allow','');frame.setAttribute('referrerpolicy','same-origin');shell.append(frame,x,status);wrap.append(shell);document.body.append(wrap);document.body.classList.add('pausenhof-open');timer=setTimeout(failure,7000);focusExit();}
+ window.openPausenhofModule=open;window.closePausenhofModule=close;window.openHofSports=open;
+ window.addEventListener('message',e=>{if(e.origin!==location.origin||!frame||e.source!==frame.contentWindow||!e.data)return;if(e.data.type==='pausenhof-ready'){clearTimeout(timer);const s=wrap?.querySelector('.pausenhof-status');if(s)s.hidden=true;frame.contentWindow.postMessage({type:'pausenhof-open'},location.origin)}else if(e.data.type==='pausenhof-close')close()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&wrap){e.preventDefault();close()}},true);
+ // Deliberately does not create/change #pausenhof-game-button; the canonical football scene owns it.
+ document.dispatchEvent(new Event('pausenhof-loader-ready'));
 })();
