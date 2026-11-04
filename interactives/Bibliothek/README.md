@@ -1,42 +1,15 @@
-# Bibliothek-Modul
+# Die verschlossene Bibliothek – Escape Room (Neufassung)
 
-Isoliertes Spiel **„QUINOA BIBLIOTHEK“ / Bibliothek Escape-Abenteuer**. Sämtliche Moduldateien liegen unter `interactives/Bibliothek/`; das Spiel wird same-origin in einem Iframe geöffnet. Die Spielbilder liegen lokal in `bibliothek/assets/`.
+## Starten
+`bibliothek/bibliothek.html` im Browser öffnen. Für die Integration in eine bestehende A-Frame-Schultour sind `bibliothek-loader.js`, `bibliothek-loader.css` und `bibliothek-scene.js` aus dem Original enthalten. Die neue HTML-Datei läuft auch eigenständig und benötigt keine 3D-Bibliothek.
 
-## Paketbaum
-```text
-interactives/Bibliothek/
-├── README.md
-├── PRUEFBERICHT.md
-├── QUELLE.md
-├── bibliothek-loader.js
-├── bibliothek-loader.css
-├── bibliothek-scene.js
-└── bibliothek/
-    ├── bibliothek.html
-    ├── bibliothek.css
-    ├── bibliothek.js
-    └── assets/
-        ├── embedded-1.jpg
-        └── embedded-2.jpg
-```
+## Spielprinzip
+- Alle Gegenstände sind von Anfang an unabhängig anklickbar.
+- Vier Zahlen werden über Archivregal (8), Uhr (4), Bild (2) und Teppich (7) gefunden.
+- Die Archivnotiz und das Türschild liefern die Reihenfolge Wissen → Zeit → Bild → Boden.
+- Im Globus befindet sich der Schlüssel. Das Türschloss benötigt Schlüssel und Code 8427.
+- Ein Fundstück-Menü sammelt alle Beweise; Hinweise sind in drei Stufen ohne Wartezeit verfügbar.
+- Kein Countdown, keine erzwungene Schrittfolge, kein kompliziertes Schlüssel-Ziehen.
 
-## Integration
-Die Pfade sind vom Dokument aus zu lesen, das die Schultour ausliefert. Beide Dateien befinden sich im Paket unter `interactives/Bibliothek/`.
-
-```html
-<!-- nach A-Frame im Head -->
-<script src="interactives/Bibliothek/bibliothek-scene.js"></script>
-
-<!-- am Ende des Body -->
-<script defer src="interactives/Bibliothek/bibliothek-loader.js"></script>
-```
-
-Füge im sichtbaren `#panel-Bibliothek` den A-Frame-Startbutton ein:
-```html
-<a-entity id="bibliothek-start" bibliothek-start position="0 1.6 -3" role="button" tabindex="0">
-  <a-plane geometry="primitive: plane; width: 2.8; height: 1.15" material="color:#315e72; shader:flat"></a-plane>
-  <a-text value="Bibliotheksabenteuer starten" align="center" color="#fff" position="0 0 .02"></a-text>
-</a-entity>
-```
-
-`bibliothek-start` wird nur bei sichtbarem `#panel-Bibliothek` klickbar und ruft `openBibliothekModule()` auf. Der Loader öffnet exakt die neben ihm liegende Datei `bibliothek/bibliothek.html` (aufgelöst relativ zu `bibliothek-loader.js`).
+## Darstellung
+Neu gestalteter perspektivischer 2,5D-Raum mit Beleuchtung, Wand- und Bodentexturen, Bücherregal, Uhr, Gemälde, Schreibtisch, Globus, Teppich und Tür. Es ist **kein frei begehbarer WebGL-3D-Raum**. Fonts können optional online geladen werden; lokale Fallbacks sind vorhanden.

@@ -36,9 +36,10 @@
           gogglesOn=false; burnerOn=false; reactionDone=false; labQuizDone=false; poured={green:false,blue:false}; active=null;
           $('nawiLabOverlay').classList.remove('goggles-on'); $('labGoggles') && $('labGoggles').classList.remove('worn'); resetArms(); $('labFlame').style.display='none';
           $('tubeLiquid').style.height='0'; $('tubeLiquid').style.background='linear-gradient(#63d471,#16a34a)';
-          $('labFoam').innerHTML=''; $('labFoam').style.opacity=''; $('pourLayer').innerHTML=''; $('labPuddle').classList.remove('big'); const film=$('tableAcidFilm'); if(film){film.classList.remove('show'); film.style.opacity='';} const coat=$('labCoat'); if(coat) coat.classList.remove('stained'); const hook=$('cleanHook'); if(hook){hook.classList.remove('show','clean-ready','locked-clean');} const held=$('heldCloth'); if(held) held.style.display='none'; const hint=$('burnerHint'); if(hint){hint.classList.remove('show'); hint.textContent='Brenner bleibt bei diesem Versuch AUS';} const burn=$('labBurner'); if(burn) burn.classList.remove('burner-ready','needs-off'); const bcz=$('burnerClickZone'); if(bcz) bcz.classList.remove('show'); const wipe=$('wipeSheen'); if(wipe) wipe.classList.remove('run'); const toast=$('completionToast'); if(toast) toast.classList.remove('show'); const quiz=$('labQuiz'); if(quiz) quiz.classList.remove('show'); const qf=$('quizFinish'); if(qf) qf.classList.remove('show'); const sink=$('labSink'); if(sink) sink.classList.remove('show','washing','focus'); const sh=$('sinkHint'); if(sh) sh.classList.remove('show'); const rack=$('dryRack'); if(rack) rack.classList.remove('show','loaded','manual-loaded'); $('nawiLabOverlay').classList.remove('sink-focus'); ['washGlass1','washGlass2'].forEach(id=>{const g=$(id);if(g){g.className='wash-glass '+(id==='washGlass1'?'green':'blue');g.style.left='';g.style.top='';g.style.transform='';g.dataset.clean='0';g.dataset.placed='0';}}); document.querySelectorAll('.clean-streak,.erase-spot,.wipe-mark').forEach(e=>e.remove()); cleanedElements=new Set(); messTargets=[]; lastCleanTime=0; washingDone=false; washingActive=false; if(typeof stopSinkFoam==='function') stopSinkFoam();
+          $('labFoam').innerHTML=''; $('labFoam').style.opacity=''; $('pourLayer').innerHTML=''; $('labPuddle').classList.remove('big'); const film=$('tableAcidFilm'); if(film){film.classList.remove('show'); film.style.opacity='';} const coat=$('labCoat'); if(coat) coat.classList.remove('stained'); const hook=$('cleanHook'); if(hook){hook.classList.remove('show','clean-ready','locked-clean');} const held=$('heldCloth'); if(held) held.style.display='none'; const hint=$('burnerHint'); if(hint){hint.classList.remove('show'); hint.textContent='Brenner bleibt bei diesem Versuch AUS';} const burn=$('labBurner'); if(burn) burn.classList.remove('burner-ready','needs-off'); const bcz=$('burnerClickZone'); if(bcz) bcz.classList.remove('show'); const wipe=$('wipeSheen'); if(wipe) wipe.classList.remove('run'); const toast=$('completionToast'); if(toast) toast.classList.remove('show'); const quiz=$('labQuiz'); if(quiz) quiz.classList.remove('show'); const qf=$('quizFinish'); if(qf) qf.classList.remove('show'); const sink=$('labSink'); if(sink) sink.classList.remove('show','washing','focus'); const sh=$('sinkHint'); if(sh) sh.classList.remove('show'); const rack=$('dryRack'); if(rack) rack.classList.remove('show','loaded','manual-loaded'); $('nawiLabOverlay').classList.remove('sink-focus'); ['washGlass1','washGlass2'].forEach(id=>{const g=$(id);if(g){g.className='wash-glass '+(id==='washGlass1'?'green':'blue');g.style.left='';g.style.top='';g.style.transform='';g.dataset.clean='0';g.dataset.placed='0';g.dataset.rinse='0';}}); document.querySelectorAll('.clean-streak,.erase-spot,.wipe-mark').forEach(e=>e.remove()); cleanedElements=new Set(); messTargets=[]; lastCleanTime=0; washingDone=false; washingActive=false; if(typeof stopSinkFoam==='function') stopSinkFoam();
           ['greenBottle','blueBottle'].forEach(id=>{const b=$(id); if(!b) return; b.classList.remove('dragging'); b.style.left='';b.style.top='';b.style.right='';b.style.transform=''; const l=b.querySelector('.bottle-liquid'); if(l) l.style.height='64%';});
           resetReactionDashboard();
+          const reactionCanvas=$('reactionCanvas');if(reactionCanvas){reactionCanvas.getContext('2d')?.clearRect(0,0,reactionCanvas.width,reactionCanvas.height);reactionCanvas.classList.remove('active');}
           prepareSpillCanvas(true);
           setStatus('Setze zuerst die Schutzbrille auf. Danach beide Lösungen ins Reagenzglas gießen. Die Reaktion startet beim Kontakt – ohne Brenner.');
         }
@@ -50,6 +51,12 @@
           setStatus('Richtig gedacht: Diese Säure-Base-Reaktion braucht keine Flamme. Sie beginnt beim Vermischen und entzieht der Umgebung Wärme.');
         };
         window.showLabInfo=function(e,title,text){ if(e) e.stopPropagation(); const c=$('labInfoCard'); c.innerHTML='<b>'+title+'</b>'+text; c.style.display='block'; c.style.left=clamp((e?.clientX||200)+12,12,window.innerWidth-285)+'px'; c.style.top=clamp((e?.clientY||160)+12,12,window.innerHeight-130)+'px'; };
+        window.showChemInfo=function(e,key){
+          const cards={
+            teilchen:{title:'🔬 Was passiert auf Teilchenebene?',text:'<strong>1.</strong> Essigsäure gibt H⁺-Teilchen ab.<br><strong>2.</strong> Hydrogencarbonat nimmt sie auf und bildet kurz Kohlensäure.<br><strong>3.</strong> Diese zerfällt in Wasser und CO₂. Die CO₂-Moleküle sammeln sich zu sichtbaren Gasblasen.<hr><small>Wichtig: Die farbigen Punkte sind ein Lernmodell – echte Moleküle sind viel kleiner und nicht in diesen Farben sichtbar.</small>'},
+            versuch:{title:'🧑‍🏫 So wird der Schulversuch sinnvoll durchgeführt',text:'<strong>Beobachtung:</strong> Blasen, Temperaturabfall und nachlassendes Sprudeln.<br><strong>Vorteil:</strong> sichere, gut sichtbare Säure-Carbonat-Reaktion ohne Brenner.<br><strong>Grenze:</strong> Schaumhöhe und Abkühlung hängen von Menge, Konzentration, Gefäß und Starttemperatur ab. Das Modell zeigt typische Werte, keine exakte Messung für jeden Aufbau.<br><strong>Sicherheit:</strong> Schutzbrille, kleine Mengen, offenes Gefäß, Spritzer mit Wasser aufnehmen; Chemikalien niemals probieren.'}
+          };const item=cards[key];if(item)window.showLabInfo(e,item.title,item.text);
+        };
         document.addEventListener('click',e=>{ if(!e.target.classList.contains('info-dot')) { const c=$('labInfoCard'); if(c)c.style.display='none'; } });
         function setStatus(t){ const el=$('labStatus'); if(el) el.textContent=t; }
         function resetArms(){
@@ -117,6 +124,7 @@
           if(!(poured.green && poured.blue)){setStatus('Es fehlen noch Stoffe im Reagenzglas. Erst beide Flüssigkeiten eingießen.'); return;}
           reactionDone=true;
           animateReactionDashboard();
+          startReactionCanvas();
           setStatus('Reaktion läuft: Es entstehen Natriumacetat, Wasser und viele CO₂-Blasen. Die Mischung kühlt messbar ab.');
           const foam=$('labFoam'); foam.innerHTML='';
           const center=$('reactionTube').getBoundingClientRect();
@@ -136,7 +144,7 @@
           foam.appendChild(burst); trackedTimeout(()=>burst.remove(),1000);
 
           // 2) Kleine CO₂-Blasen steigen hauptsächlich im und direkt über dem Reagenzglas auf.
-          for(let i=0;i<58;i++){
+          for(let i=0;i<18;i++){
             trackedTimeout(()=>{
               const b=document.createElement('div'); b.className='bubble';
               const s=7+Math.random()*22;
@@ -148,14 +156,14 @@
               foam.appendChild(b); trackedTimeout(()=>b.remove(),1700);
             },i*10);
           }
-          for(let i=0;i<42;i++)trackedTimeout(()=>{
+          for(let i=0;i<16;i++)trackedTimeout(()=>{
             const b=document.createElement('i');b.className='tube-gas-bubble';
             const s=4+Math.random()*10;b.style.width=s+'px';b.style.height=s+'px';b.style.left=(cx-17+Math.random()*34)+'px';b.style.top=(cy+80+Math.random()*42)+'px';
             b.style.setProperty('--gas-x',(Math.random()*22-11)+'px');foam.appendChild(b);trackedTimeout(()=>b.remove(),1500);
           },i<24?i*55:1320+(i-24)*145);
 
           // 3) Etwas Schaum quillt aus der Öffnung, ohne den ganzen Tisch zu überdecken.
-          for(let i=0;i<14;i++){
+          for(let i=0;i<6;i++){
             trackedTimeout(()=>{
               const blob=document.createElement('div'); blob.className='foam-blob';
               const size=18+Math.random()*38;
@@ -170,7 +178,7 @@
 
           // 4) Eine echte halbtransparente Flüssigkeitsschicht wird auf eine Canvas-Fläche gemalt.
           trackedTimeout(paintSpillCanvas,950);
-          trackedTimeout(()=>{ const hook=$('cleanHook'); if(hook){ hook.classList.remove('locked-clean'); hook.classList.add('show','clean-ready'); } setStatus('Die Gasentwicklung lässt nach, weil die Ausgangsstoffe verbraucht werden. Wische anschließend jeden sichtbaren Tropfen gründlich weg.'); },3200);
+          trackedTimeout(()=>{ const hook=$('cleanHook'); if(hook){ hook.classList.remove('locked-clean'); hook.classList.add('show','clean-ready'); } setStatus('Die Gasentwicklung ist fast beendet, weil die Ausgangsstoffe verbraucht sind. Wische anschließend jeden sichtbaren Tropfen gründlich weg.'); },9000);
         }
 
         function resetReactionDashboard(){
@@ -187,9 +195,18 @@
           const start=performance.now(),room=22,low=15.1;
           const tick=now=>{const elapsed=now-start;let v;if(elapsed<4200){const k=elapsed/4200;v=room+(low-room)*(1-Math.pow(1-k,2));}else{const recover=1-Math.exp(-(elapsed-4200)/52000);v=low+(room-low)*recover;v+=Math.sin(elapsed/1350)*.07;}if(temp)temp.textContent=v.toFixed(1).replace('.',',')+' °C';if(fill)fill.style.width=Math.max(34,Math.min(92,34+(v-low)/(room-low)*58))+'%';if(elapsed>4200){dash.classList.remove('reacting');dash.classList.add('complete');if(phase)phase.textContent='Langsame Erwärmung';if(ex)ex.textContent='Die Probe nimmt nach der Abkühlung langsam wieder Wärme aus dem Raum auf.';}trackedRAF(tick);};trackedRAF(tick);
         }
+        function startReactionCanvas(){
+          const canvas=$('reactionCanvas'),tube=$('reactionTube');if(!canvas||!tube)return;const dpr=Math.min(1,window.devicePixelRatio||1),w=innerWidth,h=innerHeight;canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);canvas.classList.add('active');const tr=tube.getBoundingClientRect(),cx=tr.left+tr.width/2,mouth=tr.top+14,start=performance.now();
+          const particles=Array.from({length:96},(_,i)=>({x:cx+(Math.random()-.5)*22,y:mouth+85+Math.random()*68,r:2+Math.random()*7,v:.55+Math.random()*1.65,drift:(Math.random()-.5)*.55,delay:i*55+Math.random()*420,life:1550+Math.random()*1900}));
+          const draw=now=>{const elapsed=now-start;ctx.clearRect(0,0,w,h);const intensity=Math.max(0,1-elapsed/10100),foamRise=Math.min(1,elapsed/1450)*intensity;
+            for(const p of particles){const age=elapsed-p.delay;if(age<0||age>p.life)continue;const k=age/p.life,x=p.x+p.drift*age*.055+Math.sin(age*.009+p.r)*5,y=p.y-age*p.v*.085;ctx.beginPath();ctx.arc(x,y,p.r*(.55+k*.7),0,Math.PI*2);const g=ctx.createRadialGradient(x-p.r*.3,y-p.r*.35,0,x,y,p.r*1.3);g.addColorStop(0,'rgba(255,255,255,.98)');g.addColorStop(.35,'rgba(220,248,255,.72)');g.addColorStop(.78,'rgba(116,210,230,.22)');g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='rgba(230,252,255,'+(0.75*(1-k))+')';ctx.lineWidth=1;ctx.stroke();}
+            if(foamRise>.03){for(let i=0;i<11;i++){const a=i/10*Math.PI*2,x=cx+Math.cos(a)*(13+foamRise*10),y=mouth+3-Math.sin(a)*5-foamRise*18,r=4+(i%3)*2;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle='rgba(245,255,252,'+(0.72*intensity)+')';ctx.fill();ctx.strokeStyle='rgba(151,226,215,.55)';ctx.stroke();}}
+            if(elapsed<10500)trackedRAF(draw);else{ctx.clearRect(0,0,w,h);canvas.classList.remove('active');}
+          };trackedRAF(draw);
+        }
         function prepareSpillCanvas(clear){
           const canvas=$('spillCanvas');if(!canvas)return null;const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return null;
-          spillDpr=Math.min(1.5,window.devicePixelRatio||1);
+          spillDpr=Math.min(.78,window.devicePixelRatio||1);
           if(canvas.width!==Math.round(rect.width*spillDpr)||canvas.height!==Math.round(rect.height*spillDpr)){canvas.width=Math.round(rect.width*spillDpr);canvas.height=Math.round(rect.height*spillDpr);}
           spillCtx=canvas.getContext('2d',{willReadFrequently:true});spillCtx.setTransform(spillDpr,0,0,spillDpr,0,0);if(clear)spillCtx.clearRect(0,0,rect.width,rect.height);return {canvas,rect,ctx:spillCtx};
         }
@@ -201,7 +218,7 @@
           ctx.restore();spillInitialInk=measureSpillInk();lastInkCheck=1;
         }
         function measureSpillInk(){const c=$('spillCanvas');if(!c||!spillCtx)return 0;const data=spillCtx.getImageData(0,0,c.width,c.height).data;let ink=0,total=0,step=Math.max(4,Math.round(7*spillDpr));for(let y=0;y<c.height;y+=step)for(let x=0;x<c.width;x+=step){total++;if(data[(y*c.width+x)*4+3]>18)ink++;}return total?ink/total:0;}
-        function eraseSpillSegment(a,b){const s=prepareSpillCanvas(false);if(!s)return 1;const {rect,ctx}=s,x1=a.x-rect.left,y1=a.y-rect.top,x2=b.x-rect.left,y2=b.y-rect.top;ctx.save();ctx.globalCompositeOperation='destination-out';ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=48;ctx.strokeStyle='rgba(0,0,0,.54)';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();const g=ctx.createRadialGradient(x2,y2,5,x2,y2,31);g.addColorStop(0,'rgba(0,0,0,.82)');g.addColorStop(.72,'rgba(0,0,0,.48)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x2,y2,31,0,Math.PI*2);ctx.fill();ctx.restore();return measureSpillInk();}
+        function eraseSpillSegment(a,b){const s=prepareSpillCanvas(false);if(!s)return;const {rect,ctx}=s,x1=a.x-rect.left,y1=a.y-rect.top,x2=b.x-rect.left,y2=b.y-rect.top;ctx.save();ctx.globalCompositeOperation='destination-out';ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=48;ctx.strokeStyle='rgba(0,0,0,.54)';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();const g=ctx.createRadialGradient(x2,y2,5,x2,y2,31);g.addColorStop(0,'rgba(0,0,0,.82)');g.addColorStop(.72,'rgba(0,0,0,.48)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x2,y2,31,0,Math.PI*2);ctx.fill();ctx.restore();}
         window.pickCleaningCloth=function(e){
           if(e){ e.stopPropagation(); if(e.preventDefault) e.preventDefault(); }
           if(cleaning) return;
@@ -248,7 +265,7 @@
             trackedTimeout(()=>streak.remove(),1500);
           }
 
-          lastInkCheck=eraseSpillSegment(old,p);const remaining=spillInitialInk?Math.max(0,lastInkCheck/spillInitialInk):0;
+          eraseSpillSegment(old,p);if(wipeProgress%8===0)lastInkCheck=measureSpillInk();const remaining=spillInitialInk?Math.max(0,lastInkCheck/spillInitialInk):0;
           if(wipeProgress===10) setStatus('Wie mit einem Radiergummi: Fahre mehrfach über jeden einzelnen Fleck.');
           if(wipeProgress%12===0) setStatus('Noch etwa '+Math.round(remaining*100)+' % sichtbar. Wische direkt über die hellen Flüssigkeitsreste.');
           if(remaining<.045 && (wipeDistance<1900 || now-cleaningStarted<8000)) setStatus('Fast vollständig sauber. Noch einige gründliche Bahnen über die Fläche.');
@@ -289,10 +306,11 @@
         let sinkFoamInterval=null;
         function showManualWashGlasses(){
           const g1=$('washGlass1'), g2=$('washGlass2'), wt=$('waterTarget'), rt=$('rackTarget');
-          if(g1){g1.className='wash-glass green show'; g1.style.left=(window.innerWidth*.43)+'px'; g1.style.top=(window.innerHeight*.66)+'px'; g1.dataset.clean='0'; g1.dataset.placed='0'; wireWashGlass(g1);}
-          if(g2){g2.className='wash-glass blue show'; g2.style.left=(window.innerWidth*.52)+'px'; g2.style.top=(window.innerHeight*.66)+'px'; g2.dataset.clean='0'; g2.dataset.placed='0'; wireWashGlass(g2);}
+          if(g1){g1.className='wash-glass green show'; g1.style.left=(window.innerWidth*.43)+'px'; g1.style.top=(window.innerHeight*.66)+'px'; g1.dataset.clean='0'; g1.dataset.placed='0';g1.dataset.rinse='0'; wireWashGlass(g1);}
+          if(g2){g2.className='wash-glass blue show'; g2.style.left=(window.innerWidth*.52)+'px'; g2.style.top=(window.innerHeight*.66)+'px'; g2.dataset.clean='0'; g2.dataset.placed='0';g2.dataset.rinse='0'; wireWashGlass(g2);}
+          updateRinseMeter(null);
           if(wt) wt.classList.add('show'); if(rt) rt.classList.add('show');
-          startSinkFoam();
+          stopSinkFoam();
         }
         function startSinkFoam(){
           stopSinkFoam();
@@ -316,24 +334,22 @@
         }
         function wireWashGlass(glass){
           if(glass._wired) return; glass._wired=true;
-          glass.addEventListener('pointerdown',(e)=>{ if(glass.dataset.placed==='1') return; e.preventDefault(); glass.setPointerCapture(e.pointerId); washState.active=glass; glass.classList.add('grabbed'); setStatus(glass.dataset.clean==='1'?'Sauberes Glas ins Regal stellen.':'Halte das Glas unter den Wasserstrahl, bis es sauber ist.'); });
+          glass.addEventListener('pointerdown',(e)=>{ if(glass.dataset.placed==='1') return; e.preventDefault(); glass.setPointerCapture(e.pointerId); washState.active=glass;glass._rinseLast=null; glass.classList.add('grabbed');updateRinseMeter(glass); setStatus(glass.dataset.clean==='1'?'Sauberes Glas mit der Öffnung nach unten ins Trockengestell stellen.':'Glas unter dem Wasserstrahl langsam bewegen und drehen.'); });
           glass.addEventListener('pointermove',(e)=>{ if(washState.active!==glass) return; moveWashGlass(glass,e.clientX,e.clientY); });
-          const release=(e,cancelled=false)=>{ if(washState.active!==glass) return; glass.classList.remove('grabbed'); washState.active=null; clearTimeout(washState.cleanTimer); washState.cleanTimer=null; try{glass.releasePointerCapture(e.pointerId)}catch(err){}; if(!cancelled) maybePlaceGlass(glass); }; glass.addEventListener('pointerup',e=>release(e)); glass.addEventListener('pointercancel',e=>release(e,true));
+          const release=(e,cancelled=false)=>{ if(washState.active!==glass) return; glass.classList.remove('grabbed','rinsing'); washState.active=null;glass._rinseLast=null; try{glass.releasePointerCapture(e.pointerId)}catch(err){}; if(!cancelled) maybePlaceGlass(glass); }; glass.addEventListener('pointerup',e=>release(e)); glass.addEventListener('pointercancel',e=>release(e,true));
         }
         function moveWashGlass(glass,x,y){
           glass.style.left=(x-19)+'px'; glass.style.top=(y-46)+'px';
           const stream=document.querySelector('.water-stream'); const rect=stream?stream.getBoundingClientRect():null;
           const underWater=rect && x>=rect.left-18 && x<=rect.right+18 && y>=rect.top-18 && y<=rect.bottom+18;
           if(underWater && glass.dataset.clean!=='1'){
-            if(!washState.cleanTimer){
-              setStatus('Sehr gut. Halte das Glas kurz unter dem Wasserstrahl.');
-              spawnWaterDrops(x,y); spawnSinkFoam(x,y);
-              washState.cleanTimer=trackedTimeout(()=>{ glass.dataset.clean='1'; glass.classList.add('clean'); spawnWaterDrops(x,y); spawnSinkFoam(x,y); setStatus('Glas ist sauber. Stelle es jetzt ins Reagenzglas-Regal.'); },950);
-            }
+            glass.classList.add('rinsing');const prev=glass._rinseLast,dist=prev?Math.hypot(x-prev.x,y-prev.y):0;glass._rinseLast={x,y};
+            if(dist>1.5){const gain=Math.min(4,dist*.12),value=Math.min(100,(Number(glass.dataset.rinse)||0)+gain);glass.dataset.rinse=value.toFixed(1);glass.style.setProperty('--rinse-tilt',Math.max(-11,Math.min(11,(prev?x-prev.x:0)*1.5))+'deg');updateRinseMeter(glass);if(Math.floor(value/20)!==Math.floor((value-gain)/20)){spawnWaterDrops(x,y);setStatus('Spülfortschritt '+Math.floor(value)+' %. Bewege das Glas weiter, damit Wasser alle Flächen erreicht.');}if(value>=100){glass.dataset.clean='1';glass.classList.remove('rinsing');glass.classList.add('clean');spawnWaterDrops(x,y);setStatus('Glas ist vollständig abgespült. Stelle es mit der Öffnung nach unten ins Trockengestell.');}}
           } else if(!underWater){
-            clearTimeout(washState.cleanTimer); washState.cleanTimer=null;
+            glass._rinseLast=null;glass.classList.remove('rinsing');
           }
         }
+        function updateRinseMeter(glass){const meter=$('rinseMeter'),fill=$('rinseMeterFill'),text=$('rinseMeterText'),value=glass?Math.round(Number(glass.dataset.rinse)||0):0;if(meter)meter.classList.toggle('show',washingActive);if(fill)fill.style.width=value+'%';if(text)text.textContent=value+' %';}
         function maybePlaceGlass(glass){
           if(glass.dataset.clean!=='1') return;
           const rack=$('dryRack'); if(!rack) return;
@@ -344,7 +360,7 @@
             const slot={x:r.left+r.width*(washState.placed===0?.22:.56),y:r.top+r.height*.26};
             glass.style.left=slot.x+'px'; glass.style.top=slot.y+'px'; glass.style.transform='scale(.75)';
             washState.placed++;
-            if(washState.placed>=2){ finishManualWash(); } else { setStatus('Sehr ordentlich. Jetzt noch das zweite Glas spülen und ins Regal stellen.'); }
+            if(washState.placed>=2){ finishManualWash(); } else { updateRinseMeter(null);setStatus('Sehr ordentlich. Jetzt das zweite Glas rundum spülen und mit der Öffnung nach unten abstellen.'); }
           } else {
             setStatus('Das Glas ist sauber. Ziehe es rechts ins Reagenzglas-Regal.');
           }
@@ -361,6 +377,7 @@
           if(sink) sink.classList.remove('washing');
           if(rack) rack.classList.add('manual-loaded');
           if(wt) wt.classList.remove('show'); if(rt) rt.classList.remove('show');
+          $('rinseMeter')?.classList.remove('show');
           setStatus('Sehr schön. Du hast die Gläser selbst gespült und ordentlich ins Regal gestellt. Gleich kommt das Abschluss-Quiz.');
           if(toast) toast.classList.add('show');
           trackedTimeout(()=>{ if(toast) toast.classList.remove('show'); if(sink) sink.classList.remove('show','focus'); if(overlay) overlay.classList.remove('sink-focus'); showLabQuiz(); },3000);
