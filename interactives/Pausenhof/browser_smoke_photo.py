@@ -1,4 +1,4 @@
-"""Local browser smoke; intentionally waits for child frame content, not only iframe attachment."""
+"""Local browser smoke. Opens via public window.openPausenhofModule(), not a host-specific button selector."""
 from pathlib import Path
 import contextlib, http.server, socketserver, threading
 from playwright.sync_api import sync_playwright
@@ -18,7 +18,7 @@ def main():
       page=browser.new_page(viewport={'width':1280,'height':850})
       page.on('pageerror',lambda e: errors.append('pageerror: '+str(e)))
       page.on('console',lambda m: errors.append('console '+m.type+': '+m.text) if m.type in ('error','assert') else None)
-      page.goto(url,wait_until='networkidle'); page.locator('#launch').click()
+      page.goto(url,wait_until='networkidle'); page.evaluate('window.openPausenhofModule()')
       # Race-safe: child content must be visible through frame_locator before any interaction.
       game=page.frame_locator('#pausenhofDialog iframe')
       game.locator('[data-g="1"]').wait_for(state='visible',timeout=10000)
@@ -46,7 +46,7 @@ def main():
       # Pause toggle and outer close/reopen.
       game.locator('[data-g="1"]').click();game.locator('#go').click();game.locator('#pause').click();game.locator('#pause').get_by_text('Fortsetzen').wait_for();game.locator('#pause').click()
       page.locator('.pausenhof-exit').click();page.locator('#pausenhofDialog').wait_for(state='detached')
-      page.locator('#launch').click(); game=page.frame_locator('#pausenhofDialog iframe');game.locator('[data-g="1"]').wait_for(state='visible')
+      page.evaluate('window.openPausenhofModule()'); game=page.frame_locator('#pausenhofDialog iframe');game.locator('[data-g="1"]').wait_for(state='visible')
       checks.append('pause/resume and outer close/reopen passed')
       # Exact implementation invariants (not a rendered-opacity inference): photo then overlay alpha 0.5.
       src=(ROOT/'pausenhof/pausenhof.js').read_text()

@@ -1,5 +1,8 @@
-PASS: source assertions and JavaScript syntax
-PASS: FX instrumentation normal: effect after actual penalty click; effect buffer empty after >0.6 game seconds
-PASS: FX instrumentation prefers-reduced-motion: static fading ring, no sparks; buffer empty after >0.6 game seconds
-PASS: final browser smoke complete (10/10 games, local photos, canvas, same iframe, pause/resume, close/reopen)
+PASS: browser smoke complete
+- 10 local WebP backgrounds decoded with naturalWidth/naturalHeight > 0
+- all 10 games started, received pointer input, rendered nonblank canvas, and returned within same iframe
+- pause/resume and outer close/reopen passed
+- source confirms opaque theme first, then local photo at exact canvas globalAlpha=.5, then restored gameplay
 console/page exceptions: none
+PASS: direct window.openPausenhofModule() opened the loader; Basketball 400-ms hold/release scored exactly 100.
+page exceptions: none

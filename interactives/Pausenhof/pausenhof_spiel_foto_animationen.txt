@@ -1,6 +1,6 @@
-# PAUSENHOF SPORT-ARENA – vollständiger Quell-Export (Foto-Animationen)
+# PAUSENHOF SPORT-ARENA – vollständiger aktueller Quell-Export (Basketball verbessert)
 
-Dieser Export enthält die unveränderten, aktuell im Paket ausgelieferten Quelltexte. Die Dateikopfzeilen trennen die Dateien eindeutig. Das Asset-Manifest dokumentiert die mitgelieferten lokalen Dateien; binäre WebP-Dateien werden nicht in diesen Text eingebettet und verbleiben unverändert im ZIP.
+Dieser Export enthält die aktuellen textbasierten Laufzeit-, Integrations- und Testdateien. Binäre WebP-Hintergründe verbleiben unverändert im Paket unter `pausenhof/assets/backgrounds/`; Quellen und Metadaten stehen im unten enthaltenen Manifest.
 
 ===== DATEI: pausenhof-loader.js =====
 ```javascript
@@ -9,8 +9,8 @@ Dieser Export enthält die unveränderten, aktuell im Paket ausgelieferten Quell
  let frame=null, wrap=null, timer=0, lastFocus=null, opener=null;
  const own=document.currentScript;
  const base=own&&own.src||location.href;
- const childURL=new URL('pausenhof/pausenhof.html?v=20250617', base).href;
- const cssURL=new URL('pausenhof-loader.css?v=20250617', base).href;
+ const childURL=new URL('pausenhof/pausenhof.html?v=20261104-basket', base).href;
+ const cssURL=new URL('pausenhof-loader.css?v=20261104-basket', base).href;
  // Self-contained host integration: inject the sibling stylesheet once; no tour/index edit needed.
  if(![...document.styleSheets].some(s=>s.href===cssURL)){const link=document.createElement('link');link.rel='stylesheet';link.href=cssURL;link.dataset.pausenhofLoader='';(document.head||document.documentElement).append(link);}
  function focusExit(){wrap?.querySelector('.pausenhof-exit')?.focus()}
@@ -36,16 +36,153 @@ Dieser Export enthält die unveränderten, aktuell im Paket ausgelieferten Quell
 ```javascript
 /* Exit immersive VR safely before the loader opens; canceled/stale opens do not reopen. */
 (()=>{function hook(){const prior=window.openPausenhofModule;if(!prior||prior.__phScene)return;let ticket=0;function open(){const mine=++ticket, scene=document.querySelector('a-scene');const go=()=>{if(mine===ticket)prior()};if(scene?.is?.('vr-mode')&&scene.exitVR){Promise.resolve(scene.exitVR()).then(go).catch(e=>console.error('VR konnte nicht beendet werden',e))}else go()}open.__phScene=true;window.openPausenhofModule=open;window.openHofSports=open}document.addEventListener('pausenhof-loader-ready',hook);hook()})();
+
+```
+
+===== DATEI: EINBAU.md =====
+```markdown
+# Einbau – Pausenhof iframe
+
+`interactives/Pausenhof/` unverändert neben die bestehende Tour kopieren. Der vorhandene Aufruf `openPausenhofModule()` bleibt bestehen; Loader-Shell, CSS, Scene-Integration und same-origin-Handshake wurden beibehalten.
+
+```html
+<script src="interactives/Pausenhof/pausenhof-loader.js"></script>
+<script src="interactives/Pausenhof/pausenhof-scene.js"></script>
+```
+
+Der Loader bindet seine CSS-Datei selbst ein. Child und Loader tragen `v=20250617` als Cache-Buster. Das äußere X schließt nur das iframe. Die dauerhafte Taste **Zur Spielauswahl** im Child wechselt ausschließlich die Child-Ansicht und sendet keinen Close-PostMessage.
+
+## Die zehn Ein-Aktions-Spiele
+
+1. Elfmeter: Eck-Fadenkreuz antippen. 2. Basketball: im grünen Zeitfenster loslassen. 3. Tischtennis: Schläger horizontal bewegen, automatischer Schlag. 4. Dodgeball: Bahn wechseln. 5. Weitsprung: einmal am Balken springen. 6. Zeitstopp: bei Zielzeit stoppen. 7. Zielwurf: Scheibe antippen. 8. Reaktionswand: grün, nicht rot. 9. Balance: links/rechts halten. 10. Fitness: links/rechts im Takt tippen.
+
+```
+
+===== DATEI: README.md =====
+```markdown
+# Pausenhof · Geschicklichkeit – mausoptimiert
+
+**Einbaupfad:** `interactives/Pausenhof/`. Die vorhandene Einbindung ruft weiterhin `window.openPausenhofModule()` auf; `pausenhof-scene.js`, `football-model.js` und die aufrufende Index-Datei sind nicht Bestandteil dieser Änderung.
+
+## Änderungen
+Nur `pausenhof/pausenhof.js` wurde für Mausspiel optimiert. Der iframe-Loader, die Außen-Schließen-Schaltfläche (X), der abgedunkelte Rand und das interne „Zur Spielauswahl“ bleiben unverändert. Die Canvas-Koordinaten werden aus `getBoundingClientRect()` auf 900×500 umgerechnet.
+
+- Linksklick für Timing, Sprung, Stoppuhr und Zielwurf; Basketball: linke Taste halten/loslassen.
+- Tischtennis-Paddel, Dodgeball-Bahn und Balance folgen dem Mauszeiger horizontal.
+- Reaktionswand und Fitnessflächen sind direkt anklickbar.
+- Pointer Capture, linke Taste, `pointercancel`/Capture-Verlust-Aufräumen sowie begrenztes Delta (`max. 40 ms`) verhindern hängende Eingaben und Zeitsprünge.
+- Fokusverlust/ausgeblendete Seite pausiert. Interne Rückkehr und Ergebnis beenden RAF und Listener über `AbortController`.
+
+Tastatur- und die vorhandenen Bildschirmtasten bleiben als Ergänzung erhalten.
+
+```
+
+===== DATEI: integrationstest.html =====
+```html
+<!doctype html><meta charset="utf-8"><title>Pausenhof – lokaler Integrationstest</title><link rel="icon" href="data:,"><style>body{margin:0;font:18px system-ui;background:linear-gradient(120deg,#276075,#8eb7bb);min-height:100vh;color:white}.tour{margin:8vh auto;padding:35px;max-width:800px;border:4px dashed white;background:#164151aa}button{font:inherit;padding:12px 18px}</style><main class="tour"><h1>TESTHINTERGRUND – kein Panorama</h1><p>Tour-Platzhalter mit sichtbaren Kanten. Öffnet den echten Pausenhof-Loader.</p><button id="launch">Pausenhof Sport-Arena öffnen</button></main><script src="pausenhof-loader.js"></script><script>launch.onclick=()=>openPausenhofModule()</script>
+
+```
+
+===== DATEI: browser_smoke_photo.py =====
+```python
+"""Local browser smoke. Opens via public window.openPausenhofModule(), not a host-specific button selector."""
+from pathlib import Path
+import contextlib, http.server, socketserver, threading
+from playwright.sync_api import sync_playwright
+ROOT=Path(__file__).parent
+class Quiet(http.server.SimpleHTTPRequestHandler):
+    def log_message(self,*a): pass
+@contextlib.contextmanager
+def server():
+    old=Path.cwd(); import os; os.chdir(ROOT)
+    s=socketserver.TCPServer(('127.0.0.1',0),Quiet); t=threading.Thread(target=s.serve_forever,daemon=True);t.start()
+    try: yield f'http://127.0.0.1:{s.server_address[1]}/integrationstest.html'
+    finally: s.shutdown();s.server_close();os.chdir(old)
+def main():
+    errors=[]; checks=[]
+    with server() as url, sync_playwright() as pw:
+      browser=pw.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+      page=browser.new_page(viewport={'width':1280,'height':850})
+      page.on('pageerror',lambda e: errors.append('pageerror: '+str(e)))
+      page.on('console',lambda m: errors.append('console '+m.type+': '+m.text) if m.type in ('error','assert') else None)
+      page.goto(url,wait_until='networkidle'); page.evaluate('window.openPausenhofModule()')
+      # Race-safe: child content must be visible through frame_locator before any interaction.
+      game=page.frame_locator('#pausenhofDialog iframe')
+      game.locator('[data-g="1"]').wait_for(state='visible',timeout=10000)
+      iframe_id=page.locator('#pausenhofDialog iframe').evaluate("f=>f.__smokeId||(f.__smokeId=crypto.randomUUID())")
+      # Confirm all packaged local photos decoded in the actual child document.
+      bg=game.locator('body').evaluate("""async () => { const names=['pen','basket','pong','dodge','jump','stop','target','wall','balance','fit']; const rs=await Promise.all(names.map(n=>new Promise(ok=>{const i=new Image();i.onload=()=>ok([n,i.naturalWidth,i.naturalHeight]);i.onerror=()=>ok([n,0,0]);i.src='assets/backgrounds/'+n+'.webp';}))); return rs; }""")
+      assert len(bg)==10 and all(w>0 and h>0 for _,w,h in bg),bg
+      checks.append('10 local WebP backgrounds decoded with naturalWidth/naturalHeight > 0')
+      for i in range(1,11):
+        game.locator(f'[data-g="{i}"]').click()
+        game.locator('#go').wait_for(state='visible'); game.locator('#go').click()
+        canvas=game.locator('canvas'); canvas.wait_for(state='visible')
+        # pointer events: press/release gives Basketball a genuine release; other games receive a click.
+        box=canvas.bounding_box(); assert box and box['width']>0 and box['height']>0
+        page.mouse.move(box['x']+box['width']*.52,box['y']+box['height']*.48)
+        if i==2:
+          page.mouse.down(); page.wait_for_timeout(120); page.mouse.up()
+        else: page.mouse.click(box['x']+box['width']*.52,box['y']+box['height']*.48)
+        # canvas has rendered pixels; visual effect/background rendering is not a blank canvas.
+        nonblank=canvas.evaluate("""c=>{let d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;for(let i=3;i<d.length;i+=4000)if(d[i])return true;return false}""")
+        assert nonblank, f'blank canvas {i}'
+        game.locator('.ysselect').click(); game.locator(f'[data-g="{i}"]').wait_for(state='visible')
+      assert page.locator('#pausenhofDialog iframe').evaluate('(f)=>f.__smokeId') == iframe_id
+      checks.append('all 10 games started, received pointer input, rendered nonblank canvas, and returned within same iframe')
+      # Pause toggle and outer close/reopen.
+      game.locator('[data-g="1"]').click();game.locator('#go').click();game.locator('#pause').click();game.locator('#pause').get_by_text('Fortsetzen').wait_for();game.locator('#pause').click()
+      page.locator('.pausenhof-exit').click();page.locator('#pausenhofDialog').wait_for(state='detached')
+      page.evaluate('window.openPausenhofModule()'); game=page.frame_locator('#pausenhofDialog iframe');game.locator('[data-g="1"]').wait_for(state='visible')
+      checks.append('pause/resume and outer close/reopen passed')
+      # Exact implementation invariants (not a rendered-opacity inference): photo then overlay alpha 0.5.
+      src=(ROOT/'pausenhof/pausenhof.js').read_text()
+      assert "theme(a.kind,c);c.save();c.globalAlpha=.5;photo(c,BG[a.kind]);c.restore()" in src
+      checks.append('source confirms opaque theme first, then local photo at exact canvas globalAlpha=.5, then restored gameplay')
+      browser.close()
+    print('PASS: browser smoke complete')
+    for x in checks: print('- '+x)
+    print('console/page exceptions:', errors if errors else 'none')
+    if errors: raise SystemExit(1)
+if __name__=='__main__': main()
+
+```
+
+===== DATEI: TESTBERICHT.md =====
+```markdown
+# Testbericht – Basketball-Verbesserung und Integration
+
+**Stand:** aktuelle Paketfassung · geprüft lokal mit Chromium/Playwright.
+
+## Ausgeführte Prüfungen
+
+1. `node --check pausenhof/pausenhof.js` und `node --check pausenhof-loader.js`: bestanden.
+2. Browser-Smoke über `integrationstest.html`: bestanden. Der Test öffnet die Arena jetzt bewusst über die dokumentierte öffentliche API `window.openPausenhofModule()` statt einen vermuteten Host-Button anzusprechen. Die tatsächliche Testseite besitzt zwar `button#launch` („Pausenhof Sport-Arena öffnen“), aber dieser Selektor ist keine Abhängigkeit mehr.
+3. Alle zehn WebP-Hintergründe wurden im iframe erfolgreich dekodiert. Alle zehn Spiele starteten, erhielten Pointer-Eingaben, zeichneten ein nichtleeres Canvas und kehrten innerhalb desselben iframe zur Auswahl zurück. Pause/Fortsetzen sowie Schließen und erneutes Öffnen bestanden. Keine Console- oder Page-Ausnahmen.
+4. Basketball-Regression: Öffnen über `window.openPausenhofModule()`, Spiel 2, 400 ms linke Maustaste halten und loslassen. Erwartete Meldung `KORB! +100 – sauber durch das Netz.` und Stand `Punkte: 100` wurden erreicht; keine Page-Ausnahme.
+
+## Behobene Laufzeit-/Integrationspunkte
+
+- Der Loader verweist nun mit einem einheitlichen aktuellen Cache-Token (`20261104-basket`) auf Kindseite und Loader-CSS; zuvor waren dort veraltete Tokens (`20250617`) verblieben.
+- Der Smoke-Test verwendet die reale öffentliche Öffnungsfunktion des Loaders und ist deshalb nicht an einen Namen/eine ID des umgebenden Tour-Buttons gekoppelt.
+- Basketball enthält Rückwand, Ring, Netz, Trefferzone, Treffer-/Fehlwurf-Flugbahnen und eine einmalige +100-Wertung beim erfolgreichen Wurf.
+
+## Grenzen
+
+Dies sind gezielte Smoke- und Basketball-Regressionstests, keine vollständige automatisierte Prüfung jeder möglichen Spielrunde, Eingabemethode, Browser- und Viewport-Kombination. Die lokalen Foto-Assets wurden geladen und gerendert, ihre gestalterische Wirkung wurde nicht per Pixelvergleich bewertet.
+
 ```
 
 ===== DATEI: pausenhof/pausenhof.html =====
 ```html
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pausenhof Sport-Arena</title><link rel="stylesheet" href="pausenhof.css?v=20250617"></head><body><noscript>Bitte JavaScript aktivieren.</noscript><script src="pausenhof.js?v=20250617" defer></script></body></html>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pausenhof Sport-Arena</title><link rel="stylesheet" href="pausenhof.css?v=20261104-basket"></head><body><noscript>Bitte JavaScript aktivieren.</noscript><script src="pausenhof.js?v=20261104-basket" defer></script></body></html>
+
 ```
 
 ===== DATEI: pausenhof/pausenhof.css =====
 ```css
 #yardSportsGame{position:absolute;inset:0;z-index:1;background:radial-gradient(circle at 50% 0,#203e5d,#07101c 72%);color:#f5f8f4;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;min-height:100dvh;padding:clamp(8px,2vw,20px)}#yardSportsGame *{box-sizing:border-box}#yardSportsGame .ysbox{width:min(100%,1080px);max-height:calc(100dvh - 20px);overflow:auto;background:linear-gradient(145deg,rgba(20,42,62,.98),rgba(7,20,33,.98));border:1px solid rgba(160,229,255,.45);border-radius:20px;padding:clamp(14px,2.4vw,25px);box-shadow:0 24px 80px #0009,0 0 0 5px #ffffff08;scrollbar-color:#7ce5d1 #10243a}#yardSportsGame h1{margin:0;color:#f8fbff;letter-spacing:.06em;font-size:clamp(1.3rem,3vw,2rem);text-shadow:0 2px 12px #000}#yardSportsGame h2{margin:.8em 0 .45em;color:#bcefff;font-size:1.15rem}#yardSportsGame p{color:#d5e6ed;line-height:1.45}.ysgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.yscard,button{border:1px solid rgba(166,223,241,.4);background:linear-gradient(145deg,#1c425e,#112b43);color:#fff;border-radius:12px;padding:12px 13px;text-align:left;font:inherit;cursor:pointer;box-shadow:inset 0 1px #fff2,0 5px 13px #0003;transition:transform .15s,filter .15s,border-color .15s}.yscard:hover,button:hover{border-color:#8ff3d4;filter:brightness(1.13);transform:translateY(-2px)}.yscard b{display:block;color:#a9f6d6;font-size:1.04em;margin-bottom:4px}.yscard small{color:#d9e8ef}.ysbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:8px 0}.ysbar button,.yscontrols button{background:linear-gradient(145deg,#235f7b,#133a58);font-weight:750;text-align:center}.ysbar button:first-of-type{background:linear-gradient(145deg,#11887d,#176051)}.ysbar button:focus-visible,.yscard:focus-visible,.yscontrols button:focus-visible,input:focus-visible{outline:3px solid #a9f6d6;outline-offset:3px}.yshud{position:sticky;top:-25px;z-index:3;background:linear-gradient(90deg,#0e263d,#153d58);margin:-25px -25px 12px;padding:14px 25px;border-bottom:1px solid #79d6ed55;box-shadow:0 8px 16px #0005}.yshud b{color:#b8f7df}.ysstage{position:relative;width:100%;aspect-ratio:9/5;background:#081a29;border:2px solid #6dc7dc;border-radius:14px;overflow:hidden;box-shadow:inset 0 0 30px #0009,0 10px 24px #0006}.ysstage canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}.yscontrols{display:flex;justify-content:center;gap:10px;margin-top:12px}.yscontrols button{min-width:108px;touch-action:none}.ysnote{min-height:1.5em;font-size:.95em;color:#d5e6ed;background:#ffffff0c;border-left:3px solid #85dfd0;padding:7px 10px;border-radius:0 7px 7px 0}.ysmodal{max-width:690px}.ysrank{max-height:190px;overflow:auto;background:#06172666;border:1px solid #a4dbef33;border-radius:10px;padding:8px 8px 8px 32px}.ysrank li{padding:4px;color:#dcebf0}input{padding:9px;border-radius:8px;border:1px solid #7bcfe1;background:#071c2d;color:#fff}form{display:flex;gap:10px;align-items:center;flex-wrap:wrap}@media(max-width:560px){#yardSportsGame{padding:0}#yardSportsGame .ysbox{max-height:100dvh;border-radius:0;padding:12px}.ysgrid{grid-template-columns:1fr}.yshud{top:-12px;margin:-12px -12px 10px;padding:12px}.yscontrols button{min-height:46px;min-width:0;flex:1}.ysstage{border-radius:9px}}
+
 ```
 
 ===== DATEI: pausenhof/pausenhof.js =====
@@ -56,7 +193,7 @@ const D=document,W=window,$=(s,e=D)=>e.querySelector(s),cl=(n,a,b)=>Math.max(a,M
 const BG=Object.fromEntries(['pen','basket','pong','dodge','jump','stop','target','wall','balance','fit'].map(k=>{let i=new Image();i.src=`assets/backgrounds/${k}.webp`;return[k,i]}));
 // Local thematic photographs are deliberately kept visible below a 50% canvas overlay.
 window.__pausenhofBackgrounds=BG;
-const G=[['Elfmeter-Timing','pen','8 Schüsse: Triff im richtigen Moment.','Maus: Linksklick schießt; warte auf das Eck-Fadenkreuz.'],['Basketball-Zeitfenster','basket','8 Würfe: Triff das Zeitfenster.','Maus: Linke Taste halten, im grünen Balken loslassen.'],['Tischtennis','pong','30 Sekunden: Halte den Ball im Spiel.','Maus: Schläger folgt horizontal dem Mauszeiger.'],['Dodgeball','dodge','30 Sekunden: Weiche den Bällen aus.','Maus: Zeiger in die sichere Bahn bewegen.'],['Weitsprung','jump','3 Versuche: Springe am Balken.','Maus: Linksklick genau am weißen Balken.'],['Zeitstopp','stop','5 Runden: Stoppe genau bei der Zielzeit.','Maus: Linksklick startet und stoppt die Uhr.'],['Zielwurf','target','10 Würfe: Triff die Scheibe.','Maus: Direkt auf die wandernde Scheibe klicken.'],['Reaktionswand','wall','30 Sekunden: Nur Grün zählt.','Maus: Nur das grüne Feld direkt anklicken – Rot meiden.'],['Balance','balance','30 Sekunden: Kugel auf der Wippe halten.','Maus: Zeiger links/rechts bewegt die Wippe.'],['Fitness-Rhythmus','fit','24 Takte: Abwechselnd im Takt.','Maus: Linke/rechte Fläche im grünen Takt anklicken.']].map((x,i)=>({id:i+1,name:x[0],kind:x[1],desc:x[2],keys:x[3]}));
+const G=[['Elfmeter – Ziel & Power','pen','8 Schüsse: Ziel wählen, Kraft aufladen, Tor treffen.','Maus/Finger: im Tor zielen, gedrückt halten und loslassen.'],['Basketball-Zeitfenster','basket','8 Würfe: Triff das Zeitfenster.','Maus: Linke Taste halten, im grünen Balken loslassen.'],['Tischtennis','pong','30 Sekunden: Halte den Ball im Spiel.','Maus: Schläger folgt horizontal dem Mauszeiger.'],['Dodgeball','dodge','30 Sekunden: Weiche den Bällen aus.','Maus: Zeiger in die sichere Bahn bewegen.'],['Weitsprung','jump','3 Versuche: Springe am Balken.','Maus: Linksklick genau am weißen Balken.'],['Zeitstopp','stop','5 Runden: Stoppe genau bei der Zielzeit.','Maus: Linksklick startet und stoppt die Uhr.'],['Zielwurf','target','10 Würfe: Triff die Scheibe.','Maus: Direkt auf die wandernde Scheibe klicken.'],['Reaktionswand','wall','30 Sekunden: Nur Grün zählt.','Maus: Nur das grüne Feld direkt anklicken – Rot meiden.'],['Balance','balance','30 Sekunden: Kugel auf der Wippe halten.','Maus: Zeiger links/rechts bewegt die Wippe.'],['Fitness-Rhythmus','fit','24 Takte: Abwechselnd im Takt.','Maus: Linke/rechte Fläche im grünen Takt anklicken.']].map((x,i)=>({id:i+1,name:x[0],kind:x[1],desc:x[2],keys:x[3]}));
 let root,can,cx,a=null,raf=0,last=0,abort=null,held={},paused=false,ended=false,restore;let fx=[];const reduced=W.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true;
 function emit(x,y,color){if(!a)return;if(fx.length>=24)fx.shift();fx.push({x,y,color,t:a.t})}
 function paintFX(c){let now=a?.t||0;fx=fx.filter(f=>now-f.t<.4);for(const f of fx){let q=(now-f.t)/.4,alpha=1-q;c.save();c.globalAlpha=alpha;c.strokeStyle=f.color;c.lineWidth=3;c.beginPath();c.arc(f.x,f.y,10+28*q,0,Math.PI*2);c.stroke();if(!reduced){c.lineWidth=2;for(let i=0;i<6;i++){let z=i*Math.PI/3;c.beginPath();c.moveTo(f.x+12*Math.cos(z),f.y+12*Math.sin(z));c.lineTo(f.x+(18+22*q)*Math.cos(z),f.y+(18+22*q)*Math.sin(z));c.stroke()}}c.restore()}}const STORE='pausenhof-geschicklichkeit-v3';let scores={};
@@ -70,30 +207,41 @@ function intro(id){mount();let g=G[id-1];root.innerHTML=`<main class="ysbox ysmo
 function start(g){stop();mount();a={...g,t:0,score:0,lives:3,shots:0,msg:g.desc,d:{},aim:{x:450,y:250}};ended=false;root.innerHTML=`<main class="ysbox"><div class="ysbar yshud"><b>${g.name}</b><span id="stat" aria-live="polite"></span><button id="pause">Pause</button><button class="ysselect">Zur Spielauswahl</button></div><div class="ysstage"><canvas width="900" height="500" aria-label="${g.name}: ${g.keys}" tabindex="0"></canvas></div><div class="yscontrols" aria-label="Bildschirmsteuerung"><button data-c="left" aria-label="Links">◀</button><button data-c="act">AKTION</button><button data-c="right" aria-label="Rechts">▶</button></div><p id="msg" class="ysnote"></p></main>`;can=$('canvas');cx=can.getContext('2d');can.focus();abort=new AbortController;let o={signal:abort.signal};
 can.addEventListener('pointerdown',canvasDown,o);can.addEventListener('pointermove',canvasMove,o);can.addEventListener('pointerup',canvasUp,o);can.addEventListener('pointercancel',canvasCancel,o);can.addEventListener('lostpointercapture',canvasCancel,o);D.addEventListener('keydown',key,o);D.addEventListener('keyup',keyup,o);W.addEventListener('blur',()=>pause(true),o);D.addEventListener('visibilitychange',()=>{if(D.hidden)pause(true)},o);$('#pause').onclick=()=>pause();$('.ysselect').onclick=selection;
 $('.yscontrols').querySelectorAll('button').forEach(b=>{let k=b.dataset.c;b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);held[k]=true;if(k==='act')act(true)},o);for(const type of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(type,()=>{held[k]=false;if(k==='act')act(false)},o)});init();last=performance.now();raf=requestAnimationFrame(loop)}
-function init(){fx=[];let d=a.d,k=a.kind;if(k==='pen')Object.assign(d,{x:240,dir:1,ball:null});if(k==='basket')Object.assign(d,{meter:0,md:1,ball:null});if(k==='pong')Object.assign(d,{p:450,b:{x:450,y:250,vx:230,vy:125},hits:0});if(k==='dodge')Object.assign(d,{lane:1,balls:[],next:1});if(k==='jump')Object.assign(d,{x:40,v:160,phase:'run',try:1,y:360});if(k==='stop')Object.assign(d,{round:1,phase:'ready',target:0,start:0});if(k==='target')Object.assign(d,{x:450,y:250,ball:null});if(k==='wall')Object.assign(d,{target:-1,next:1,red:false});if(k==='balance')Object.assign(d,{x:450,v:0,tilt:0,mouseTilt:0});if(k==='fit')Object.assign(d,{beat:0,next:.8,side:0,good:false})}
-function pause(force){if(!a||ended)return;paused=force===true?true:!paused;held={};$('#pause').textContent=paused?'Fortsetzen':'Pause';if(!paused){last=performance.now();raf=requestAnimationFrame(loop)}}
+function init(){fx=[];let d=a.d,k=a.kind;if(k==='pen')Object.assign(d,{ball:null,charge:0,charging:false,kx:450,ky:208,kpose:'bereit',net:0,flash:0});if(k==='basket')Object.assign(d,{meter:0,md:1,ball:null,rim:0,swish:0});if(k==='pong')Object.assign(d,{p:450,b:{x:450,y:250,vx:230,vy:125},hits:0});if(k==='dodge')Object.assign(d,{lane:1,balls:[],next:1});if(k==='jump')Object.assign(d,{x:40,v:160,phase:'run',try:1,y:360});if(k==='stop')Object.assign(d,{round:1,phase:'ready',target:0,start:0});if(k==='target')Object.assign(d,{x:450,y:250,ball:null});if(k==='wall')Object.assign(d,{target:-1,next:1,red:false});if(k==='balance')Object.assign(d,{x:450,v:0,tilt:0,mouseTilt:0});if(k==='fit')Object.assign(d,{beat:0,next:.8,side:0,good:false})}
+function pause(force){if(!a||ended)return; if(a.kind==='pen')a.d.charging=false;paused=force===true?true:!paused;held={};$('#pause').textContent=paused?'Fortsetzen':'Pause';if(!paused){last=performance.now();raf=requestAnimationFrame(loop)}}
 function key(e){if(!a||paused||ended||['INPUT','BUTTON'].includes(e.target.tagName))return;let k=e.key;if(a.kind==='wall'&&/^[1-9]$/.test(k)){e.preventDefault();wall(+k-1);return}if(a.kind==='fit'&&(k==='a'||k==='A'||k==='l'||k==='L')){e.preventDefault();fit(k.toLowerCase()==='a'?0:1);return}let m={ArrowLeft:'left',ArrowRight:'right',' ':'act',Spacebar:'act'}[k];if(m){e.preventDefault();held[m]=true;if(m==='act')act(true)}}function keyup(e){let m={ArrowLeft:'left',ArrowRight:'right',' ':'act',Spacebar:'act'}[e.key];if(m){held[m]=false;if(m==='act')act(false)}}
 function pos(e){let r=can.getBoundingClientRect();a.aim.x=cl((e.clientX-r.left)*900/r.width,0,900);a.aim.y=cl((e.clientY-r.top)*500/r.height,0,500)}
 function canvasMove(e){if(!a||paused||ended)return;pos(e);let d=a.d;if(a.kind==='pong')d.p=cl(a.aim.x,55,845);if(a.kind==='dodge')d.lane=cl(Math.floor(a.aim.x/300),0,2);if(a.kind==='balance')d.mouseTilt=cl((a.aim.x-450)/450,-1,1)}
 function canvasDown(e){if(e.button!==0||!a||paused||ended)return;e.preventDefault();pos(e);can.setPointerCapture?.(e.pointerId);canvasMove(e);let k=a.kind;if(k==='wall')wall(Math.floor(a.aim.x/300)+3*Math.floor(a.aim.y/166));else if(k==='fit')fit(a.aim.x<450?0:1);else act(true)}
-function canvasUp(e){if(e.button!==0)return;pos(e);if(a?.kind==='basket')act(false);try{can.releasePointerCapture?.(e.pointerId)}catch(_){ }release()}
-function canvasCancel(){release()}function release(){held={};if(a?.kind==='basket')a.d.charging=false}
-function act(down){if(!a||paused||ended)return;let k=a.kind;if(k==='pen'&&down)shot();if(k==='basket'){if(down)a.d.charging=true;else if(a.d.charging){a.d.charging=false;shot()}}if(k==='jump'&&down)jump();if(k==='stop'&&down)stopped();if(k==='target'&&down)throwTarget();if(k==='fit'&&down)fit(0)}
-function shot(){let d=a.d;if(d.ball)return;if(a.kind==='pen'){let good=Math.abs(d.x-450)>135&&Math.abs(d.x-450)<190;d.ball={p:0,good};emit(good?450:280,390,good?'#f4e756':'#e35b5b');a.shots++;a.msg=good?'TOR! Eck getroffen.':'Daneben – auf eine Ecke warten.'}else {let good=d.meter>.42&&d.meter<.60;d.ball={p:0,good};emit(good?630:280,390,good?'#f4e756':'#e35b5b');a.shots++;a.msg=good?'Sauberer Wurf!':'Zu früh/spät – grüne Zone treffen.'}}
+function canvasUp(e){if(e.button!==0)return;pos(e);if(a?.kind==='basket'||a?.kind==='pen')act(false);try{can.releasePointerCapture?.(e.pointerId)}catch(_){ }release()}
+function canvasCancel(){release()}function release(){held={};if(a?.kind==='basket'||a?.kind==='pen')a.d.charging=false}
+function act(down){if(!a||paused||ended)return;let k=a.kind;if(k==='pen'){let d=a.d;if(down&&!d.ball){d.charging=true;d.charge=0;a.msg='Kraft laden … in der grünen Zone loslassen.'}else if(!down&&d.charging){d.charging=false;penShot()}}if(k==='basket'){if(down)a.d.charging=true;else if(a.d.charging){a.d.charging=false;shot()}}if(k==='jump'&&down)jump();if(k==='stop'&&down)stopped();if(k==='target'&&down)throwTarget();if(k==='fit'&&down)fit(0)}
+function shot(){let d=a.d;if(d.ball)return;let good=d.meter>.42&&d.meter<.60,miss=d.meter<.42?'short':'long';d.ball={p:0,good,miss};a.shots++;a.msg=good?'Perfektes Timing – der Ball fliegt durch den Korb!':'Zu früh/spät – grüne Zone treffen.'}
+/* Football is deliberately deterministic: target and keeper geometry, never a random save. */
+function penShot(){let d=a.d;if(d.ball)return;let pow=cl(d.charge,.20,1),target={x:cl(a.aim.x,35,865),y:cl(a.aim.y,35,430)};d.ball={p:0,phase:'flight',sx:450,sy:414,tx:target.x,ty:target.y,pow,dur:.72-.42*pow,age:0,scored:false};a.shots++;a.msg='Schuss unterwegs – Ziel ist fixiert.'}
+function penBallPos(b){let q=cl(b.p,0,1),x=b.sx+(b.tx-b.sx)*q,y=b.sy+(b.ty-b.sy)*q-92*Math.sin(Math.PI*q);return{x,y,q}}
+function penResolve(){let d=a.d,b=d.ball,inside=b.tx>166&&b.tx<734&&b.ty>88&&b.ty<300;let reach=Math.hypot(b.tx-d.kx,(b.ty-d.ky)*.78)<58; if(inside&&reach){b.phase='save';b.p=1;b.age=0;b.dx=(b.tx<d.kx?-1:1)*125;b.dy=64;a.msg='GEHALTEN – der Torwart lenkt ab!';emit(b.tx,b.ty,'#7ed5ff')}else if(inside){b.phase='goal';b.p=1;b.age=0;b.scored=true;d.net=.6;d.flash=.35;a.score+=100;a.msg='TOR! +100 – das Netz wackelt.';for(let i=0;i<7;i++)emit(b.tx+R(-35,35),b.ty+R(-25,30),'#f4e756')}else{b.phase='miss';b.p=1;b.age=0;a.msg='Daneben – innerhalb des weißen Rahmens zielen.';emit(b.tx,b.ty,'#e35b5b')}}
 function jump(){let d=a.d;if(d.phase!=='run')return;d.phase='air';let near=Math.abs(d.x-430)<42;d.good=near;a.msg=near?'Gültiger Sprung!':'Übertreten / zu früh.'}
 function stopped(){let d=a.d;if(d.phase==='ready'){d.target=R(2,5);d.start=a.t;d.phase='run';a.msg='Läuft…'}else if(d.phase==='run'){emit(450,245,'#f4e756');let err=Math.abs(a.t-d.start-d.target),pts=Math.max(0,1000-Math.round(err*800));a.score+=pts;d.round++;d.phase='wait';d.next=a.t+1;a.msg=`${Math.round(err*1000)} ms Abweichung`;}}
 function throwTarget(){let d=a.d;if(d.ball)return;d.ball={p:0,tx:a.aim.x,ty:a.aim.y};a.shots++}
 function wall(i){let d=a?.d;if(!a||a.kind!=='wall'||d.target<0||i!==d.target)return;if(d.red){a.lives--;a.msg='Rot ist tabu!'}else{a.score+=100;emit(215+(i%3)*220,127+Math.floor(i/3)*120,'#51e38a');a.msg='Treffer!'}d.target=-1;d.next=a.t+.35}
 function fit(side){let d=a?.d;if(!a||a.kind!=='fit'||!d.good)return;if(side===d.side){a.score+=50;emit(side===0?240:660,255,'#51e38a');a.msg='Im Takt!';d.good=false;d.side=1-d.side}else{a.lives--;a.msg='Andere Seite!'}}
 function loop(now){if(!a||paused||ended){raf=0;return}let dt=Math.min(.04,(now-last)/1000);last=now;update(dt);draw();hud();raf=requestAnimationFrame(loop)}
-function update(dt){let d=a.d,k=a.kind;a.t+=dt;if(k==='pen'){d.x+=d.dir*260*dt;if(d.x<210||d.x>690)d.dir*=-1;if(d.ball&& (d.ball.p+=dt/.35)>=1){emit(d.x,200,d.ball.good?'#f4e756':'#e35b5b');if(d.ball.good)a.score+=100;d.ball=null;if(a.shots>=8)finish()}}if(k==='basket'){d.meter+=d.md*dt*1.25;if(d.meter<0||d.meter>1)d.md*=-1,d.meter=cl(d.meter,0,1);if(d.ball&&(d.ball.p+=dt/.55)>=1){emit(630,390,d.ball.good?'#f4e756':'#e35b5b');if(d.ball.good)a.score+=100;d.ball=null;if(a.shots>=8)finish()}}if(k==='pong'){d.p=cl(d.p+((held.left?-1:0)+(held.right?1:0))*500*dt,55,845);let b=d.b;b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.x<20||b.x>880){b.vx*=-1;b.x=cl(b.x,20,880);emit(b.x,b.y,'#85d9ff')}if(b.y<70){if(Math.abs(b.x-d.p)<85){b.vy=Math.abs(b.vy)*1.04;emit(b.x,b.y,'#f4e756');d.hits++;a.score+=20}else{a.lives--;b.x=450;b.y=250;b.vy=140}}if(b.y>470){b.vy=-Math.abs(b.vy);emit(b.x,b.y,'#85d9ff');}if(a.lives<=0||a.t>30)finish()}if(k==='dodge'){d.next-=dt;if(d.next<0){let safe=Math.floor(R(0,3));for(let i=0;i<3;i++)if(i!==safe)d.balls.push({lane:i,y:-30,warn:.55});d.next=1.1}d.balls.forEach(b=>{b.warn-=dt;if(b.warn<0)b.y+=330*dt});d.balls=d.balls.filter(b=>{if(b.y>420&&b.lane===d.lane){a.lives--;emit(b.lane*300+150,440,'#e35b5b');a.msg='Getroffen!';return false}return b.y<540});a.score+=dt*10;if(a.lives<=0||a.t>30)finish()}if(k==='jump'){if(d.phase==='run'){d.x+=d.v*dt;if(d.x>490){d.phase='land';d.good=false}}else if(d.phase==='air'){d.x+=250*dt;d.y-=260*dt;if(d.y<210)d.phase='down'}else if(d.phase==='down'){d.y+=280*dt;if(d.y>=360){d.phase='land';d.y=360;emit(d.x,360,d.good?'#f4e756':'#e35b5b')}}else if(d.phase==='land'){if(d.good)a.score+=Math.max(10,Math.round((d.x-430)/18)*10);if(d.try++>=3)finish();else Object.assign(d,{x:40,y:360,phase:'run'})}}if(k==='stop'&&d.phase==='wait'&&a.t>d.next){if(d.round>5)finish();else{d.phase='ready';a.msg='Bereit für Runde '+d.round}}if(k==='target'){d.x=450+220*Math.sin(a.t*1.7);d.y=235+115*Math.sin(a.t*2.2);if(d.ball&&(d.ball.p+=dt/.28)>=1){let z=Math.hypot(d.ball.tx-d.x,d.ball.ty-d.y);let p=z<24?100:z<55?40:0;a.score+=p;a.msg=p?'Treffer!':'Knapp vorbei.';emit(d.ball.tx,d.ball.ty,p?'#f4e756':'#e35b5b');d.ball=null;if(a.shots>=10)finish()}}if(k==='wall'){if(d.target<0&&a.t>d.next){d.target=Math.floor(R(0,9));d.red=Math.random()<.22;d.dead=a.t+.9}else if(d.target>=0&&a.t>d.dead){if(!d.red)a.lives--;d.target=-1;d.next=a.t+.35}if(a.lives<=0||a.t>30)finish()}if(k==='balance'){d.tilt+=(((held.left?-1:0)+(held.right?1:0)||d.mouseTilt)-d.tilt*.65)*dt;d.v+=(d.tilt*150+Math.sin(a.t*1.1)*18-d.v*.5)*dt;d.x+=d.v*dt;if(d.x<45||d.x>855){a.lives--;emit(cl(d.x,0,900),245,'#e35b5b');d.x=450;d.v=0;a.msg='Kugel gefallen!'}a.score+=dt*10;if(a.lives<=0||a.t>30)finish()}if(k==='fit'){if(a.t>d.next){d.good=true;d.next+=.75;d.beat++;if(d.beat>=24)finish()}if(a.t>d.next+.32&&d.good){a.lives--;d.good=false;a.msg='Takt verpasst!'}if(a.lives<=0)finish()}}
-function hud(){if(!a)return;let limit=['pong','dodge','wall','balance'].includes(a.kind)?30:a.kind==='fit'?18:0;$('#stat').textContent=`Punkte: ${Math.round(a.score)} · ${limit?`Zeit: ${Math.max(0,limit-a.t).toFixed(0)} · `:''}Leben: ${a.lives}`;$('#msg').textContent=a.msg}
+function update(dt){let d=a.d,k=a.kind;a.t+=dt;if(k==='pen'){d.net=Math.max(0,d.net-dt);d.flash=Math.max(0,d.flash-dt);if(d.charging)d.charge=cl(d.charge+dt/.95,0,1);let b=d.ball;if(b){b.age+=dt;if(b.phase==='flight'){b.p+=dt/b.dur; if(b.age>.25){d.kpose='dive';let wanted=cl(b.tx,335,565),max=115,step=285*dt;d.kx+=cl(cl(wanted,450-max,450+max)-d.kx,-step,step);d.ky=208+Math.min(26,(b.age-.25)*45)} if(b.p>=1)penResolve()}else {b.age+=0; if(b.phase==='save'){b.def=cl(b.age/.38,0,1);if(b.age>.72)b.done=true}else if(b.age>.72)b.done=true}if(b.done){d.ball=null;d.kx=450;d.ky=208;d.kpose='bereit';if(a.shots>=8)finish()}}}if(k==='basket'){d.meter+=d.md*dt*1.25;if(d.meter<0||d.meter>1)d.md*=-1,d.meter=cl(d.meter,0,1);d.rim=Math.max(0,d.rim-dt);d.swish=Math.max(0,d.swish-dt);if(d.ball&&(d.ball.p+=dt/.82)>=1){if(d.ball.good){a.score+=100;d.rim=.42;d.swish=.55;emit(640,215,'#f4e756');a.msg='KORB! +100 – sauber durch das Netz.'}else{emit(d.ball.miss==='short'?560:745,335,'#e35b5b');a.msg='Daneben – beim nächsten Mal die grüne Zone treffen.'}d.ball=null;if(a.shots>=8)finish()}}if(k==='pong'){d.p=cl(d.p+((held.left?-1:0)+(held.right?1:0))*500*dt,55,845);let b=d.b;b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.x<20||b.x>880){b.vx*=-1;b.x=cl(b.x,20,880);emit(b.x,b.y,'#85d9ff')}if(b.y<70){if(Math.abs(b.x-d.p)<85){b.vy=Math.abs(b.vy)*1.04;emit(b.x,b.y,'#f4e756');d.hits++;a.score+=20}else{a.lives--;b.x=450;b.y=250;b.vy=140}}if(b.y>470){b.vy=-Math.abs(b.vy);emit(b.x,b.y,'#85d9ff');}if(a.lives<=0||a.t>30)finish()}if(k==='dodge'){d.next-=dt;if(d.next<0){let safe=Math.floor(R(0,3));for(let i=0;i<3;i++)if(i!==safe)d.balls.push({lane:i,y:-30,warn:.55});d.next=1.1}d.balls.forEach(b=>{b.warn-=dt;if(b.warn<0)b.y+=330*dt});d.balls=d.balls.filter(b=>{if(b.y>420&&b.lane===d.lane){a.lives--;emit(b.lane*300+150,440,'#e35b5b');a.msg='Getroffen!';return false}return b.y<540});a.score+=dt*10;if(a.lives<=0||a.t>30)finish()}if(k==='jump'){if(d.phase==='run'){d.x+=d.v*dt;if(d.x>490){d.phase='land';d.good=false}}else if(d.phase==='air'){d.x+=250*dt;d.y-=260*dt;if(d.y<210)d.phase='down'}else if(d.phase==='down'){d.y+=280*dt;if(d.y>=360){d.phase='land';d.y=360;emit(d.x,360,d.good?'#f4e756':'#e35b5b')}}else if(d.phase==='land'){if(d.good)a.score+=Math.max(10,Math.round((d.x-430)/18)*10);if(d.try++>=3)finish();else Object.assign(d,{x:40,y:360,phase:'run'})}}if(k==='stop'&&d.phase==='wait'&&a.t>d.next){if(d.round>5)finish();else{d.phase='ready';a.msg='Bereit für Runde '+d.round}}if(k==='target'){d.x=450+220*Math.sin(a.t*1.7);d.y=235+115*Math.sin(a.t*2.2);if(d.ball&&(d.ball.p+=dt/.28)>=1){let z=Math.hypot(d.ball.tx-d.x,d.ball.ty-d.y);let p=z<24?100:z<55?40:0;a.score+=p;a.msg=p?'Treffer!':'Knapp vorbei.';emit(d.ball.tx,d.ball.ty,p?'#f4e756':'#e35b5b');d.ball=null;if(a.shots>=10)finish()}}if(k==='wall'){if(d.target<0&&a.t>d.next){d.target=Math.floor(R(0,9));d.red=Math.random()<.22;d.dead=a.t+.9}else if(d.target>=0&&a.t>d.dead){if(!d.red)a.lives--;d.target=-1;d.next=a.t+.35}if(a.lives<=0||a.t>30)finish()}if(k==='balance'){d.tilt+=(((held.left?-1:0)+(held.right?1:0)||d.mouseTilt)-d.tilt*.65)*dt;d.v+=(d.tilt*150+Math.sin(a.t*1.1)*18-d.v*.5)*dt;d.x+=d.v*dt;if(d.x<45||d.x>855){a.lives--;emit(cl(d.x,0,900),245,'#e35b5b');d.x=450;d.v=0;a.msg='Kugel gefallen!'}a.score+=dt*10;if(a.lives<=0||a.t>30)finish()}if(k==='fit'){if(a.t>d.next){d.good=true;d.next+=.75;d.beat++;if(d.beat>=24)finish()}if(a.t>d.next+.32&&d.good){a.lives--;d.good=false;a.msg='Takt verpasst!'}if(a.lives<=0)finish()}}
+function hud(){if(!a)return;let limit=['pong','dodge','wall','balance'].includes(a.kind)?30:a.kind==='fit'?18:0;$('#stat').textContent=`Punkte: ${Math.round(a.score)} · ${a.kind==='pen'?`Schüsse: ${a.shots}/8 · `:''}${limit?`Zeit: ${Math.max(0,limit-a.t).toFixed(0)} · `:''}Leben: ${a.lives}`;$('#msg').textContent=a.msg}
 function finish(){if(ended)return;ended=true;cancelAnimationFrame(raf);abort?.abort();held={};let g=a;root.innerHTML=`<main class="ysbox ysmodal"><h1>Ergebnis</h1><h2>${g.name}: ${Math.round(g.score)} Punkte</h2><form id="save"><label>Name für die lokale Bestenliste <input required minlength="2" maxlength="24" autocomplete="name"></label><button>Einmal speichern</button></form><p id="note"></p><div class="ysbar"><button id="again">Noch einmal</button><button class="ysselect">Zur Spielauswahl</button></div></main>`;let done=false;$('#save').onsubmit=e=>{e.preventDefault();if(done)return;let n=name($('#save input').value);if(n.length<2)return;let l=scores[g.id]||[];l.push({name:n,score:Math.round(g.score)});scores[g.id]=l.sort((x,y)=>y.score-x.score).slice(0,10);try{localStorage.setItem(STORE,JSON.stringify(scores));$('#note').textContent='Einmal lokal gespeichert.'}catch(e){$('#note').textContent='Speichern im Browser nicht möglich.'}done=true;$('#save button').disabled=true};$('#again').onclick=()=>start(g);$('.ysselect').onclick=selection;$('#save input').focus()}
 function theme(k,c){let sky=(top,bottom)=>{let g=c.createLinearGradient(0,0,0,500);g.addColorStop(0,top);g.addColorStop(1,bottom);c.fillStyle=g;c.fillRect(0,0,900,500)};let cloud=(x,y)=>{c.fillStyle='rgba(255,255,255,.18)';for(let i=0;i<4;i++){c.beginPath();c.arc(x+i*24,y+(i%2)*-9,25,0,7);c.fill()}};if(k==='pen'){sky('#55b7df','#bde7f3');cloud(105,68);cloud(680,95);c.fillStyle='#4d9b51';c.fillRect(0,250,900,250);for(let x=-40;x<940;x+=92){c.fillStyle='rgba(255,255,255,.055)';c.fillRect(x,250,44,250)}c.fillStyle='#245a35';c.fillRect(0,235,900,18)}else if(k==='basket'){sky('#e7ae67','#82462f');c.fillStyle='#bc7446';c.fillRect(0,120,900,380);c.strokeStyle='rgba(255,245,220,.35)';c.lineWidth=3;c.beginPath();c.arc(250,420,130,Math.PI,0);c.stroke();c.strokeRect(30,250,360,250)}else if(k==='pong'){sky('#142c34','#07191f');c.fillStyle='#103f47';c.fillRect(0,0,900,500);for(let x=0;x<900;x+=100){c.fillStyle='rgba(255,255,255,.025)';c.fillRect(x,0,48,500)}c.fillStyle='rgba(255,232,171,.22)';c.fillRect(0,25,900,8)}else if(k==='dodge'){sky('#9bcde2','#e9f4ec');c.fillStyle='#d3a46d';c.fillRect(0,125,900,375);for(let x=0;x<900;x+=300){c.fillStyle='rgba(126,71,35,.12)';c.fillRect(x,125,4,375)}c.strokeStyle='rgba(255,255,255,.48)';c.lineWidth=3;c.beginPath();c.moveTo(0,125);c.lineTo(900,125);c.stroke()}else if(k==='jump'){sky('#83c7ec','#d8f0f2');c.fillStyle='#5b9e57';c.fillRect(0,270,500,230);c.fillStyle='#dfc37e';c.fillRect(500,270,400,230);for(let x=0;x<900;x+=50){c.fillStyle='rgba(255,255,255,.10)';c.fillRect(x,270,24,230)}}else if(k==='stop'){sky('#2a3a56','#101928');for(let x=50;x<900;x+=120){c.fillStyle='rgba(255,255,255,.035)';c.fillRect(x,0,4,500)}c.fillStyle='rgba(105,216,255,.16)';c.fillRect(0,430,900,70)}else if(k==='target'){sky('#94c6de','#e6e0bd');c.fillStyle='#7a9d56';c.fillRect(0,215,900,285);for(let i=0;i<8;i++){c.fillStyle='rgba(45,91,45,.42)';c.beginPath();c.arc(i*140+30,210,65,0,7);c.fill()}c.fillStyle='#806044';c.fillRect(0,350,900,150)}else if(k==='wall'){sky('#202d43','#0d1424');for(let x=20;x<900;x+=105){c.fillStyle='rgba(139,175,210,.07)';c.fillRect(x,0,55,500)}c.fillStyle='rgba(85,214,255,.13)';c.fillRect(0,42,900,6)}else if(k==='balance'){sky('#c4e3ee','#f1d39b');c.fillStyle='#d49a5d';c.fillRect(0,220,900,280);for(let x=0;x<900;x+=55){c.fillStyle='rgba(121,73,40,.11)';c.fillRect(x,220,26,280)}}else{sky('#27213d','#0d1020');for(let x=0;x<900;x+=90){c.fillStyle='rgba(247,77,134,.06)';c.fillRect(x,0,42,500)}for(let x=0;x<900;x+=180){c.fillStyle='rgba(110,229,255,.23)';c.fillRect(x,92,3,320)}}}
 function photo(c,img){if(!img?.complete||!img.naturalWidth)return false;let r=Math.max(900/img.naturalWidth,500/img.naturalHeight),w=img.naturalWidth*r,h=img.naturalHeight*r;c.drawImage(img,(900-w)/2,(500-h)/2,w,h);return true}
 function draw(){let c=cx,d=a.d;c.clearRect(0,0,900,500);theme(a.kind,c);c.save();c.globalAlpha=.5;photo(c,BG[a.kind]);c.restore();c.font='18px system-ui';c.fillStyle='#fff';let circle=(x,y,r,col)=>{let g=c.createRadialGradient(x-r/3,y-r/3,2,x,y,r);g.addColorStop(0,'#fff');g.addColorStop(.25,col);g.addColorStop(1,'#222');c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,7);c.fill()};let txt=(s,x,y,z=18)=>{c.font=z+'px system-ui';c.fillStyle='#fff';c.fillText(s,x,y)};
-if(a.kind==='pen'){c.strokeStyle='#fff';c.lineWidth=5;c.strokeRect(190,55,520,275);for(let x=210;x<710;x+=25){c.beginPath();c.moveTo(x,55);c.lineTo(x,330);c.stroke()}c.fillStyle='#682b32';c.fillRect(d.x-25,175,50,95);c.strokeStyle='#f4e756';c.beginPath();c.arc(d.x,125,24,0,7);c.stroke();if(d.ball)circle(450,390,17,'#ddd');c.strokeStyle='#fff';c.setLineDash([4,4]);c.strokeRect(a.aim.x-10,a.aim.y-10,20,20);c.setLineDash([]);txt('Linksklick: im Eck-Fadenkreuz schießen',240,470)}
-else if(a.kind==='basket'){c.fillStyle='#eee';c.fillRect(675,65,10,165);c.strokeStyle='#fff';c.beginPath();c.arc(640,185,32,0,7);c.stroke();for(let y=210;y<270;y+=12){c.beginPath();c.moveTo(610,y);c.lineTo(670,y);c.stroke()}c.fillStyle='#263447';c.fillRect(180,450,400,16);c.fillStyle='#e8ef55';c.fillRect(180+400*.42,450,72,16);c.fillStyle='#f3a13c';c.fillRect(180,450,400*d.meter,16);if(d.ball)circle(280+d.ball.p*350,390-150*4*d.ball.p*(1-d.ball.p),18,'#d87928');txt('Halten, in Grün loslassen',320,480)}
+if(a.kind==='pen'){/* perspective goal: rear/side net is behind the consistent 166..734 x 88..300 hit box */
+c.fillStyle='rgba(0,0,0,.22)';c.beginPath();c.ellipse(450,326,330,23,0,0,7);c.fill();c.strokeStyle='rgba(225,242,255,.6)';c.lineWidth=1;for(let x=140;x<=760;x+=28){c.beginPath();c.moveTo(x,72);c.lineTo(x-18,315);c.stroke()}for(let y=82;y<=315;y+=22){c.beginPath();c.moveTo(140,y);c.lineTo(760,y);c.stroke()}c.strokeStyle='rgba(255,255,255,.62)';for(let x=166;x<735;x+=30){c.beginPath();c.moveTo(x,88);c.lineTo(x-22,316);c.stroke()}for(let y=100;y<316;y+=22){c.beginPath();c.moveTo(166,y);c.lineTo(734,y);c.stroke()}c.strokeStyle='#fff';c.lineWidth=9;c.lineJoin='round';c.beginPath();c.moveTo(156,315);c.lineTo(156,70);c.lineTo(744,70);c.lineTo(744,315);c.stroke();c.strokeStyle='rgba(255,255,255,.7)';c.lineWidth=4;c.beginPath();c.moveTo(156,70);c.lineTo(137,82);c.moveTo(744,70);c.lineTo(763,82);c.stroke();
+if(d.net){c.save();c.globalAlpha=d.net*.5;c.fillStyle='#f4e756';c.fillRect(165,87,570,215);c.restore()}let kx=d.kx,ky=d.ky,ang=d.kpose==='dive'?cl((kx-450)/260,-.5,.5):Math.sin(a.t*5)*.05;c.save();c.translate(kx,ky);c.rotate(ang);c.strokeStyle='#182a3b';c.lineWidth=15;c.lineCap='round';c.beginPath();c.moveTo(-12,65);c.lineTo(-26,110);c.moveTo(12,65);c.lineTo(29,110);c.stroke();c.strokeStyle='#e9ad86';c.lineWidth=12;c.beginPath();c.moveTo(-20,22);c.lineTo(-70,d.kpose==='dive'?55:42);c.moveTo(20,22);c.lineTo(70,d.kpose==='dive'?55:42);c.stroke();c.fillStyle='#f5f5f2';c.beginPath();c.arc(-74,d.kpose==='dive'?57:43,11,0,7);c.arc(74,d.kpose==='dive'?57:43,11,0,7);c.fill();c.fillStyle='#2764a7';c.fillRect(-27,-4,54,72);c.fillStyle='#e2a37d';c.beginPath();c.arc(0,-27,22,0,7);c.fill();c.fillStyle='#263342';c.fillRect(-21,-45,42,10);c.restore();
+let b=d.ball;if(b){let z;if(b.phase==='flight')z=penBallPos(b);else if(b.phase==='save'){z={x:b.tx+b.dx*b.def,y:b.ty+b.dy*b.def,q:1}}else z={x:b.tx,y:b.ty,q:1};let rad=20-9*z.q;c.save();c.translate(z.x,z.y);c.rotate(a.t*10);c.fillStyle='#f9f9f4';c.beginPath();c.arc(0,0,rad,0,7);c.fill();c.strokeStyle='#20242a';c.lineWidth=2;c.stroke();c.fillStyle='#20242a';for(let i=0;i<5;i++){let q=i*1.256;c.beginPath();c.arc(Math.cos(q)*rad*.48,Math.sin(q)*rad*.48,rad*.22,0,7);c.fill()}c.restore()}else {c.save();c.translate(450,414);c.fillStyle='#fff';c.beginPath();c.arc(0,0,22,0,7);c.fill();c.strokeStyle='#151b20';c.stroke();c.fillStyle='#151b20';c.beginPath();c.arc(0,0,8,0,7);c.fill();c.restore()}c.strokeStyle='#f4e756';c.lineWidth=2;c.setLineDash([5,4]);c.beginPath();c.moveTo(a.aim.x-12,a.aim.y);c.lineTo(a.aim.x+12,a.aim.y);c.moveTo(a.aim.x,a.aim.y-12);c.lineTo(a.aim.x,a.aim.y+12);c.stroke();c.setLineDash([]);c.fillStyle='rgba(7,20,30,.85)';c.fillRect(215,442,470,27);c.fillStyle='#334151';c.fillRect(300,448,300,13);c.fillStyle='#52bd70';c.fillRect(365,448,170,13);c.fillStyle='#fff';c.fillRect(300+300*d.charge-2,444,4,21);txt('KRAFT',225,462,14);txt('Zielen · halten · in Grün loslassen',312,492,16)}
+else if(a.kind==='basket'){let wobble=d.rim&&!reduced?Math.sin(a.t*48)*5*d.rim:0,net=d.swish&&!reduced?Math.sin(a.t*38)*9*d.swish:0;
+/* Backboard and support sit behind the rim: a successful ball is deliberately drawn last, so it visibly passes through rather than being hidden by a collision layer. */c.fillStyle='#435367';c.fillRect(713,55,13,250);c.fillStyle='rgba(236,246,255,.92)';c.fillRect(648,62,118,100);c.strokeStyle='#d7e3ee';c.lineWidth=4;c.strokeRect(648,62,118,100);c.strokeStyle='#d34b3f';c.lineWidth=3;c.strokeRect(682,91,49,43);
+/* recognisable orange ring and woven net */c.save();c.translate(0,wobble);c.strokeStyle='#f28a26';c.lineWidth=9;c.beginPath();c.ellipse(640,186,43,12,0,0,Math.PI*2);c.stroke();c.strokeStyle='rgba(248,250,244,.94)';c.lineWidth=2;for(let i=0;i<6;i++){let x=602+i*15;c.beginPath();c.moveTo(x,193);c.lineTo(610+i*12+net,264);c.stroke()}for(let y=210;y<264;y+=13){c.beginPath();c.moveTo(604+(y-210)*.12,y);c.lineTo(676-(y-210)*.12,y);c.stroke()}c.restore();
+/* visible timing meter: gold band is the success zone, pointer moves independently */c.fillStyle='rgba(8,22,34,.86)';c.fillRect(145,432,430,43);c.fillStyle='#263447';c.fillRect(160,447,400,16);c.fillStyle='#dfe85b';c.fillRect(160+400*.42,447,72,16);c.strokeStyle='#fff';c.lineWidth=2;c.strokeRect(160,447,400,16);c.fillStyle='#f3a13c';c.fillRect(157+400*d.meter,442,6,26);txt('TREFFERZONE',318,443,13);txt('Gedrückt halten – in der gelben Zone loslassen',220,492,17);
+if(d.ball){let q=d.ball.p,x,y;if(d.ball.good){x=220+420*q;y=400-310*Math.sin(Math.PI*q)-150*q}else{x=d.ball.miss==='short'?220+345*q:220+555*q;y=400-250*Math.sin(Math.PI*q)+35*q}circle(x,y,18,'#d87928');if(d.ball.good&&q>.72&&q<.95){c.save();c.globalAlpha=.32;c.fillStyle='#ffe86c';c.beginPath();c.arc(640,205,58,0,7);c.fill();c.restore()}}}
 else if(a.kind==='pong'){c.fillStyle='rgba(13,103,88,.86)';c.fillRect(60,40,780,420);c.strokeStyle='#fff';c.strokeRect(60,40,780,420);c.setLineDash([12,10]);c.beginPath();c.moveTo(60,250);c.lineTo(840,250);c.stroke();c.setLineDash([]);c.fillStyle='#ddd';c.fillRect(d.p-65,448,130,10);circle(d.b.x,d.b.y,10,'#f2f2e8');c.strokeStyle='#eaf15a';c.beginPath();c.moveTo(a.aim.x,40);c.lineTo(a.aim.x,55);c.stroke();txt('Maus horizontal bewegen: Schläger folgt',205,28)}
 else if(a.kind==='dodge'){for(let i=0;i<3;i++){c.strokeStyle='#d7d7d7';c.strokeRect(i*300,0,300,500)}d.balls.forEach(b=>{c.fillStyle=b.warn>0?'#e7c243':'#b62631';c.beginPath();c.arc(b.lane*300+150,b.y,25,0,7);c.fill()});c.fillStyle='#eaf15a';c.fillRect(d.lane*300+110,440,80,32);txt('Maus in freie Bahn bewegen; Gelb kündigt an',250,30)}
 else if(a.kind==='jump'){for(let x=530;x<900;x+=28){c.strokeStyle='#b58d4f';c.beginPath();c.moveTo(x,310);c.lineTo(x+20,500);c.stroke()}c.fillStyle='#fff';c.fillRect(430,0,12,500);circle(d.x,d.y,18,'#efcf62');txt('Einmal am weißen Balken springen',250,35)}
@@ -104,140 +252,334 @@ else if(a.kind==='balance'){c.fillStyle='#9b6b41';c.save();c.translate(450,280);
 else {c.fillStyle=d.side===0?'#51b667':'#344552';c.fillRect(70,130,340,250);c.fillStyle=d.side===1?'#51b667':'#344552';c.fillRect(490,130,340,250);txt('LINKS (A)',175,265,28);txt('RECHTS (L)',580,265,28);txt(d.good?'JETZT!':'Bereit …',380,70,26)}paintFX(c)}
 function open(){mount();hub()}W.openHofSports=open;W.yardSportsGame={destroy:()=>{stop();root?.remove();root=null}};W.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===W.parent&&e.data?.type==='pausenhof-open')open()});D.addEventListener('DOMContentLoaded',()=>{if(W.parent!==W)W.parent.postMessage({type:'pausenhof-ready'},location.origin)});
 })();
+
 ```
 
-===== ASSET-MANIFEST (SHA-256) =====
+===== DATEI: pausenhof/assets/backgrounds/SOURCES.json =====
 ```json
-[
-  {
-    "path": "AUTOMATED_TEST_LOG.txt",
-    "bytes": 417,
-    "sha256": "cae6f547cfed36598b5f949bbcafd90e5d63f4eec9cb5d138f5721e0d587d0aa"
-  },
-  {
-    "path": "EINBAU.md",
-    "bytes": 1109,
-    "sha256": "5e6151e84f604a1c121f980a0c8e600211427e17c40241605f502d856a41d5fa"
-  },
-  {
-    "path": "GRAFIK_AENDERUNGEN_TESTS.md",
-    "bytes": 570,
-    "sha256": "7c7fad748d47be92a67adeefe87482204c9926dc96989fb5bbd9dc6a71d20d8a"
-  },
-  {
-    "path": "README.md",
-    "bytes": 1202,
-    "sha256": "1acdd6a43f8adcb383e17a050adec992e47c4026f232bccbf76d42374b0dfea7"
-  },
-  {
-    "path": "TESTBERICHT.md",
-    "bytes": 488,
-    "sha256": "e6ddc151a0f45e2f780f95d649e5dd19d562277c98dc92eae82f951d8d011034"
-  },
-  {
-    "path": "TESTBERICHT_FOTO.md",
-    "bytes": 2509,
-    "sha256": "24c593c79142aff56699f09f0bc7bf99f7127880c33e0f150471c54e0be9aaa8"
-  },
-  {
-    "path": "browser_smoke_photo.py",
-    "bytes": 4651,
-    "sha256": "0c539390ebbcef5c88e774b7427378b8f783f55e5f40dce9ac6695aee2063a34"
-  },
-  {
-    "path": "integrationstest.html",
-    "bytes": 694,
-    "sha256": "4c3dec30eacf1aa528c51c1a85151261f154f286db95aefcce643d175cfddabe"
-  },
-  {
-    "path": "pausenhof/assets/backgrounds/SOURCES.json",
-    "bytes": 8716,
-    "sha256": "d3e60a3eccbbfed4913e11984ea1bfec5fa802285d159f107a934d09bbf6299e"
-  },
-  {
-    "path": "pausenhof/assets/backgrounds/SOURCES.md",
-    "bytes": 5281,
-    "sha256": "1263607215235929bc774e0578403ed069e7a457e8627af714f1e939f9240d2e"
-  },
-  {
-    "path": "pausenhof/assets/backgrounds/balance.webp",
-    "bytes": 111504,
-    "sha256": "edfcae57a067c53272d3fc7ad50a66c3d6bf32934cecd23196ff12c49dedf2b0"
-  },
-  {
-    "path": "pausenhof/assets/backgrounds/basket.webp",
-    "bytes": 71676,
-    "sha256": "5e43665d363a9731b4693b41bfcde7476c41d1dd88ce615f27c44b752434f192"
-  },
-  {
-    "path": "pausenhof/assets/backgrounds/dodge.webp",
-    "bytes": 134968,
-    "sha256": "a463bd7703dbd19a38d916de199c3ddc5e5fbfd50694a38fc3be8810153754f2"
-  },
-  {
-    "path": "pausenhof/assets/backgrounds/fit.webp",
-    "bytes": 47084,
-    "sha256": "fcac021261b0cc360b5a78c5ee6c0bfda5a7d5a79bef4cffaf115df685ca61de"
-  },
-  {
-    "path": "pausenhof/assets/backgrounds/jump.webp",
-    "bytes": 64072,
-    "sha256": "8305afefc0af167a510a19f15c2d5d7cc56115bd03ba6adda8d8e89dbfbf458c"
-  },
-  {
-    "path": "pausenhof/assets/backgrounds/pen.webp",
-    "bytes": 108292,
-    "sha256": "642a650b030641e8bfe3841e8dac0029a456825593ec0ceefba1f79e94ad62b7"
-  },
-  {
-    "path": "pausenhof/assets/backgrounds/pong.webp",
-    "bytes": 57698,
-    "sha256": "0376728e856a900da37c0491a1c6222f31bab192f0cf47ddbb3ee85992be9484"
-  },
-  {
-    "path": "pausenhof/assets/backgrounds/stop.webp",
-    "bytes": 141758,
-    "sha256": "06ae24606753879d1bf46d7f9d99552104cc555366eb0467fd2343a8f61627b0"
-  },
-  {
-    "path": "pausenhof/assets/backgrounds/target.webp",
-    "bytes": 82014,
-    "sha256": "aa9cfb63dbcfa04db8e80c9237c5211f5d24fa0c8544bc6906530e6c2761bf6f"
-  },
-  {
-    "path": "pausenhof/assets/backgrounds/wall.webp",
-    "bytes": 94092,
-    "sha256": "7a84f4e4ace4751706f7c887e35494195074180c635ef8192604bb5586200a29"
-  },
-  {
-    "path": "pausenhof/pausenhof.css",
-    "bytes": 3291,
-    "sha256": "3dd7ecbcbe770852630f5a30ad1f5674ae204d2862be09a6a0106fd9a75fd30f"
-  },
-  {
-    "path": "pausenhof/pausenhof.html",
-    "bytes": 347,
-    "sha256": "5575857ace825b22e0990c2bcd9dff742ab52bb1e4c1a195f5d3aaa06440977a"
-  },
-  {
-    "path": "pausenhof/pausenhof.js",
-    "bytes": 22247,
-    "sha256": "7e35b8000b9ba6d9c8423aa14b230662c1c46563c87644df635b1f15975e90df"
-  },
-  {
-    "path": "pausenhof-loader.css",
-    "bytes": 1451,
-    "sha256": "a14311558b592db49fccb8567110cca011fd85c98506c1c3e28e9ac5f3ca8643"
-  },
-  {
-    "path": "pausenhof-loader.js",
-    "bytes": 3058,
-    "sha256": "095abfb4ab7fb22907a4c9d22bbe26f7ed55ec724325700b97f38d1be452c9e3"
-  },
-  {
-    "path": "pausenhof-scene.js",
-    "bytes": 616,
-    "sha256": "efa72893c2486c430a4d15797a32fb9ba50e595c575c862890a4f842cb8dd707"
-  }
-]
+{
+  "purpose": "Local stock-photo backgrounds for Pausenhof. No runtime external image requests are required.",
+  "retrieval_method": "Source pages were requested with requests; og:image URLs were parsed from returned HTML when available. Any fallback is explicitly recorded per item. Images were decoded with Pillow before resizing/cropping.",
+  "images": [
+    {
+      "file": "pen.webp",
+      "source_page": "https://www.pexels.com/photo/a-soccer-goal-post-on-the-grass-field-12385884/",
+      "pexels_photo_id": "12385884",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/12385884/pexels-photo-12385884.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        2000
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 108292
+    },
+    {
+      "file": "basket.webp",
+      "source_page": "https://www.pexels.com/photo/an-empty-basketball-court-2891884/",
+      "pexels_photo_id": "2891884",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/2891884/pexels-photo-2891884.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        1067
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 71676
+    },
+    {
+      "file": "pong.webp",
+      "source_page": "https://www.pexels.com/photo/monochrome-photo-of-table-tennis-12908179/",
+      "pexels_photo_id": "12908179",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/12908179/pexels-photo-12908179.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        2218
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 57698
+    },
+    {
+      "file": "dodge.webp",
+      "source_page": "https://www.pexels.com/photo/basketball-hoop-in-empty-sports-hall-4261764/",
+      "pexels_photo_id": "4261764",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/4261764/pexels-photo-4261764.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        2403
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 134968
+    },
+    {
+      "file": "jump.webp",
+      "source_page": "https://www.pexels.com/photo/curved-red-running-track-in-outdoor-stadium-34985567/",
+      "pexels_photo_id": "34985567",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/34985567/pexels-photo-34985567.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        1067
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 64072
+    },
+    {
+      "file": "stop.webp",
+      "source_page": "https://www.pexels.com/photo/athletics-track-on-football-stadium-16345554/",
+      "pexels_photo_id": "16345554",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/16345554/pexels-photo-16345554.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        900
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 141758
+    },
+    {
+      "file": "target.webp",
+      "source_page": "https://www.pexels.com/photo/archery-target-range-6540677/",
+      "pexels_photo_id": "6540677",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/6540677/pexels-photo-6540677.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        1068
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 82014
+    },
+    {
+      "file": "wall.webp",
+      "source_page": "https://www.pexels.com/de-de/foto/sport-innere-interior-fitness-17227607/",
+      "pexels_photo_id": "17227607",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/17227607/pexels-photo-17227607.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        1067
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 94092
+    },
+    {
+      "file": "balance.webp",
+      "source_page": "https://www.pexels.com/photo/an-empty-gym-17211446/",
+      "pexels_photo_id": "17211446",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/17211446/pexels-photo-17211446.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        960
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 111504
+    },
+    {
+      "file": "fit.webp",
+      "source_page": "https://www.pexels.com/photo/ball-on-an-empty-basketball-court-15476801/",
+      "pexels_photo_id": "15476801",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/15476801/pexels-photo-15476801.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        1123
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 47084
+    }
+  ]
+}
+```
+
+===== DATEI: pausenhof/assets/backgrounds/SOURCES.md =====
+```markdown
+# Background image sources
+
+All files are local 1200 × 667 WebP (quality 82), prepared from Pexels source pages. No game runtime network request is needed.
+
+## `pen.webp` — success
+- Source page: https://www.pexels.com/photo/a-soccer-goal-post-on-the-grass-field-12385884/
+- Pexels photo ID: 12385884
+- Image URL used: https://images.pexels.com/photos/12385884/pexels-photo-12385884.jpeg?auto=compress&cs=tinysrgb&w=1600
+- Origin handling: Pexels CDN fallback based on source-page photo ID (page og:image unavailable)
+- Photographer metadata: Not available: source page retrieval blocked
+- Verification: decoded as JPEG [1600, 2000]; output WEBP [1200, 667]; 108292 bytes.
+
+## `basket.webp` — success
+- Source page: https://www.pexels.com/photo/an-empty-basketball-court-2891884/
+- Pexels photo ID: 2891884
+- Image URL used: https://images.pexels.com/photos/2891884/pexels-photo-2891884.jpeg?auto=compress&cs=tinysrgb&w=1600
+- Origin handling: Pexels CDN fallback based on source-page photo ID (page og:image unavailable)
+- Photographer metadata: Not available: source page retrieval blocked
+- Verification: decoded as JPEG [1600, 1067]; output WEBP [1200, 667]; 71676 bytes.
+
+## `pong.webp` — success
+- Source page: https://www.pexels.com/photo/monochrome-photo-of-table-tennis-12908179/
+- Pexels photo ID: 12908179
+- Image URL used: https://images.pexels.com/photos/12908179/pexels-photo-12908179.jpeg?auto=compress&cs=tinysrgb&w=1600
+- Origin handling: Pexels CDN fallback based on source-page photo ID (page og:image unavailable)
+- Photographer metadata: Not available: source page retrieval blocked
+- Verification: decoded as JPEG [1600, 2218]; output WEBP [1200, 667]; 57698 bytes.
+
+## `dodge.webp` — success
+- Source page: https://www.pexels.com/photo/basketball-hoop-in-empty-sports-hall-4261764/
+- Pexels photo ID: 4261764
+- Image URL used: https://images.pexels.com/photos/4261764/pexels-photo-4261764.jpeg?auto=compress&cs=tinysrgb&w=1600
+- Origin handling: Pexels CDN fallback based on source-page photo ID (page og:image unavailable)
+- Photographer metadata: Not available: source page retrieval blocked
+- Verification: decoded as JPEG [1600, 2403]; output WEBP [1200, 667]; 134968 bytes.
+
+## `jump.webp` — success
+- Source page: https://www.pexels.com/photo/curved-red-running-track-in-outdoor-stadium-34985567/
+- Pexels photo ID: 34985567
+- Image URL used: https://images.pexels.com/photos/34985567/pexels-photo-34985567.jpeg?auto=compress&cs=tinysrgb&w=1600
+- Origin handling: Pexels CDN fallback based on source-page photo ID (page og:image unavailable)
+- Photographer metadata: Not available: source page retrieval blocked
+- Verification: decoded as JPEG [1600, 1067]; output WEBP [1200, 667]; 64072 bytes.
+
+## `stop.webp` — success
+- Source page: https://www.pexels.com/photo/athletics-track-on-football-stadium-16345554/
+- Pexels photo ID: 16345554
+- Image URL used: https://images.pexels.com/photos/16345554/pexels-photo-16345554.jpeg?auto=compress&cs=tinysrgb&w=1600
+- Origin handling: Pexels CDN fallback based on source-page photo ID (page og:image unavailable)
+- Photographer metadata: Not available: source page retrieval blocked
+- Verification: decoded as JPEG [1600, 900]; output WEBP [1200, 667]; 141758 bytes.
+
+## `target.webp` — success
+- Source page: https://www.pexels.com/photo/archery-target-range-6540677/
+- Pexels photo ID: 6540677
+- Image URL used: https://images.pexels.com/photos/6540677/pexels-photo-6540677.jpeg?auto=compress&cs=tinysrgb&w=1600
+- Origin handling: Pexels CDN fallback based on source-page photo ID (page og:image unavailable)
+- Photographer metadata: Not available: source page retrieval blocked
+- Verification: decoded as JPEG [1600, 1068]; output WEBP [1200, 667]; 82014 bytes.
+
+## `wall.webp` — success
+- Source page: https://www.pexels.com/de-de/foto/sport-innere-interior-fitness-17227607/
+- Pexels photo ID: 17227607
+- Image URL used: https://images.pexels.com/photos/17227607/pexels-photo-17227607.jpeg?auto=compress&cs=tinysrgb&w=1600
+- Origin handling: Pexels CDN fallback based on source-page photo ID (page og:image unavailable)
+- Photographer metadata: Not available: source page retrieval blocked
+- Verification: decoded as JPEG [1600, 1067]; output WEBP [1200, 667]; 94092 bytes.
+
+## `balance.webp` — success
+- Source page: https://www.pexels.com/photo/an-empty-gym-17211446/
+- Pexels photo ID: 17211446
+- Image URL used: https://images.pexels.com/photos/17211446/pexels-photo-17211446.jpeg?auto=compress&cs=tinysrgb&w=1600
+- Origin handling: Pexels CDN fallback based on source-page photo ID (page og:image unavailable)
+- Photographer metadata: Not available: source page retrieval blocked
+- Verification: decoded as JPEG [1600, 960]; output WEBP [1200, 667]; 111504 bytes.
+
+## `fit.webp` — success
+- Source page: https://www.pexels.com/photo/ball-on-an-empty-basketball-court-15476801/
+- Pexels photo ID: 15476801
+- Image URL used: https://images.pexels.com/photos/15476801/pexels-photo-15476801.jpeg?auto=compress&cs=tinysrgb&w=1600
+- Origin handling: Pexels CDN fallback based on source-page photo ID (page og:image unavailable)
+- Photographer metadata: Not available: source page retrieval blocked
+- Verification: decoded as JPEG [1600, 1123]; output WEBP [1200, 667]; 47084 bytes.
+
+
 ```
