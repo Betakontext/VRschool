@@ -3,8 +3,8 @@
  let frame=null, wrap=null, timer=0, lastFocus=null, opener=null;
  const own=document.currentScript;
  const base=own&&own.src||location.href;
- const childURL=new URL('pausenhof/pausenhof.html?v=20261105-football', base).href;
- const cssURL=new URL('pausenhof-loader.css?v=20261105-football', base).href;
+ const childURL=new URL('pausenhof/pausenhof.html?v=20261106-vier-spiele', base).href;
+ const cssURL=new URL('pausenhof-loader.css?v=20261106-vier-spiele', base).href;
  // Self-contained host integration: inject the sibling stylesheet once; no tour/index edit needed.
  if(![...document.styleSheets].some(s=>s.href===cssURL)){const link=document.createElement('link');link.rel='stylesheet';link.href=cssURL;link.dataset.pausenhofLoader='';(document.head||document.documentElement).append(link);}
  function focusExit(){wrap?.querySelector('.pausenhof-exit')?.focus()}
