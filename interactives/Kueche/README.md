@@ -1,34 +1,27 @@
-# Küchen-Spielmodul
+# Quinoa · Küchenatelier
 
-Lokales **MENSA / KOCH-AG**-Spiel im Iframe. Der Loader ergänzt nur das Öffnen und Schließen; sein CSS wird beim Laden automatisch in den Host-`head` eingefügt.
+Überarbeitete Version des angehängten Küchenmoduls. Eigenständige, lokale Three.js-Szene mit perspektivischer Kamera, Schatten und plastischen Küchengegenständen; kein externes 3D-CDN zur Laufzeit nötig.
 
-## Einbindung 1 – `head`, nach A-Frame
+## Spielablauf
 
-Binde die Szenen-Komponente **nach** dem A-Frame-Skript ein:
+Fünf Gerichte, je sechs Stationen: Waschen, Schneiden, Wiegen, Kochen/Mischen, Anrichten und Aufräumen. Maus, Touch und alternative Bedientasten. Kamera umschalten und näher herangehen. Optionale synthetische Geräusche sind anfänglich ausgeschaltet.
 
-```html
-<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-<script src="interactives/Kueche/kueche-scene.js"></script>
-```
+- Wasser halten, 16 Schneidbewegungen ausführen.
+- Hauptzutat selbst wiegen (±3 g). Die übrigen Zutaten sind als Rezeptportion vorbereitet.
+- Herd vorheizen, Zutaten zugeben, Temperatur und Rühren beeinflussen Garung und Bräunung. Restwärme bleibt erhalten. Pfannkuchen müssen gewendet werden. Salat kommt ohne Hitze aus.
+- Drei Portionierbewegungen und Garnitur; anschließend Arbeitsplatte wischen.
+- Kochzeiten sind spielerisch verkürzt, keine reale Gar- oder Hygieneanleitung. Der kleine Beilagentopf ist eine visuelle Begleitung, kein separat bedienbarer Garvorgang.
 
-## Einbindung 2 – direkt innerhalb von `#panel-Kueche`
+## Einbindung
 
-```html
-<a-entity id='kueche-start' kueche-start geometry='primitive: plane; width: 1.8; height: 0.65' material='shader: flat; color: #159ed0; side: double' position='0 -0.9 0.04'>
-  <a-text value='Koch-AG starten' width='2.7' align='center' anchor='center' position='0 0 0.02'></a-text>
-</a-entity>
-```
+Die Dateien `kueche-loader.js`, `kueche-loader.css` und `kueche-scene.js` aus der Vorlage bleiben erhalten. Im gelieferten ZIP liegt der neue Spieleinstieg weiterhin unter `Kueche/kueche/kueche.html`. Den kompletten Ordner im bisherigen Projekt austauschen. Die bestehende A-Frame-Szene wird weiter über `kueche-scene.js` gestartet.
 
-Der Startbutton ist damit selbst eine geometrische `a-entity`; sein einziges Kind ist der Text. Keine statischen Klassen wie `.link` oder `.clickable` eintragen: `kueche-scene.js` setzt und entfernt diese Klassen ausschließlich auf dem Root `#kueche-start`, sobald `#panel-Kueche` sichtbar bzw. verborgen ist.
+Das Spiel verwendet JavaScript-Module und muss über HTTP(S) bereitgestellt werden. Ein direkter `file://`-Doppelklick wird von Browsern blockiert. Zum lokalen Test im entpackten Ordner `python3 -m http.server 8080` ausführen und `http://localhost:8080/Kueche/kueche/kueche.html` öffnen. WebGL muss verfügbar sein. Google Fonts ist optional; ohne Netzwerk greifen Systemschriften. Alle Bilder und die 3D-Engine liegen im Paket.
 
-## Einbindung 3 – am Ende von `body`
+## Bildmaterial
 
-```html
-<script defer src="interactives/Kueche/kueche-loader.js"></script>
-```
+Küchenhintergrund: KI-generiert, fotorealistische Atelierküche mit leerer Walnussinsel, hellem Stein, warmem Tageslicht und Messingarmatur. Mit dem integrierten Bildgenerator erstellt. Die Gerichtefotos von Unsplash dienen als Servierideen, nicht als Screenshot oder exakte Abbildung des simulierten Ergebnisses. Bildquellen stehen in `BILDQUELLEN.md`.
 
-Der Loader fügt `kueche-loader.css` automatisch ein und öffnet das Spiel aus `interactives/Kueche/kueche/kueche.html`. `openKuecheModule()` und `closeKuecheModule()` stehen optional global bereit.
+## Prüfung
 
-## Paketlayout
-
-Alle Spielressourcen liegen unter `interactives/Kueche/kueche/`. Die Spielseite lädt CSS, JavaScript und `assets/mg-cook-logo.jpg` relativ zu diesem Ordner. Siehe `PRUEFBERICHT.md` für frühere Extraktionshinweise.
+JavaScript-Syntax geprüft; lokale Asset-Verweise geprüft. Funktionsprüfungen bestanden: Gewichtstoleranz, Übergewichtskorrektur, untere Gewichtsgrenze, Schneidfortschritt, Zutatenvoraussetzung, Salatmischen, Garniturvoraussetzung und Reinigung. Lokale Vorschau-Infrastruktur nicht verfügbar; die privat veröffentlichte Seite verlangte im Testbrowser eine Anmeldung. Daher keine vollständige visuelle oder End-to-End-Browserprüfung bestätigt.
