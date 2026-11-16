@@ -1,0 +1,236 @@
+{
+  "purpose": "Local stock-photo backgrounds for Pausenhof. No runtime external image requests are required.",
+  "retrieval_method": "Source pages were requested with requests; og:image URLs were parsed from returned HTML when available. Any fallback is explicitly recorded per item. Images were decoded with Pillow before resizing/cropping.",
+  "images": [
+    {
+      "file": "pen.webp",
+      "source_page": "https://www.pexels.com/photo/a-soccer-goal-post-on-the-grass-field-12385884/",
+      "pexels_photo_id": "12385884",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/12385884/pexels-photo-12385884.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        2000
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 108292
+    },
+    {
+      "file": "basket.webp",
+      "source_page": "https://www.pexels.com/photo/an-empty-basketball-court-2891884/",
+      "pexels_photo_id": "2891884",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/2891884/pexels-photo-2891884.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        1067
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 71676
+    },
+    {
+      "file": "pong.webp",
+      "source_page": "https://www.pexels.com/photo/monochrome-photo-of-table-tennis-12908179/",
+      "pexels_photo_id": "12908179",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/12908179/pexels-photo-12908179.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        2218
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 57698
+    },
+    {
+      "file": "dodge.webp",
+      "source_page": "https://www.pexels.com/photo/basketball-hoop-in-empty-sports-hall-4261764/",
+      "pexels_photo_id": "4261764",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/4261764/pexels-photo-4261764.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        2403
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 134968
+    },
+    {
+      "file": "jump.webp",
+      "source_page": "https://www.pexels.com/photo/curved-red-running-track-in-outdoor-stadium-34985567/",
+      "pexels_photo_id": "34985567",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/34985567/pexels-photo-34985567.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        1067
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 64072
+    },
+    {
+      "file": "stop.webp",
+      "source_page": "https://www.pexels.com/photo/athletics-track-on-football-stadium-16345554/",
+      "pexels_photo_id": "16345554",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/16345554/pexels-photo-16345554.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        900
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 141758
+    },
+    {
+      "file": "target.webp",
+      "source_page": "https://www.pexels.com/photo/archery-target-range-6540677/",
+      "pexels_photo_id": "6540677",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/6540677/pexels-photo-6540677.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        1068
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 82014
+    },
+    {
+      "file": "wall.webp",
+      "source_page": "https://www.pexels.com/de-de/foto/sport-innere-interior-fitness-17227607/",
+      "pexels_photo_id": "17227607",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/17227607/pexels-photo-17227607.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        1067
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 94092
+    },
+    {
+      "file": "balance.webp",
+      "source_page": "https://www.pexels.com/photo/an-empty-gym-17211446/",
+      "pexels_photo_id": "17211446",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/17211446/pexels-photo-17211446.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        960
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 111504
+    },
+    {
+      "file": "fit.webp",
+      "source_page": "https://www.pexels.com/photo/ball-on-an-empty-basketball-court-15476801/",
+      "pexels_photo_id": "15476801",
+      "page_http_status": 403,
+      "image_retrieval": "Pexels CDN fallback based on source-page photo ID (page og:image unavailable)",
+      "og_image_or_cdn_url": "https://images.pexels.com/photos/15476801/pexels-photo-15476801.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "photographer": "Not available: source page retrieval blocked",
+      "image_http_status": 200,
+      "image_content_type": "image/jpeg",
+      "downloaded_dimensions": [
+        1600,
+        1123
+      ],
+      "decoded_format": "JPEG",
+      "result": "success",
+      "output_dimensions": [
+        1200,
+        667
+      ],
+      "output_format": "WEBP",
+      "file_bytes": 47084
+    }
+  ]
+}
