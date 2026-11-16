@@ -1,3 +1,1 @@
-Quelle: `index02.txt` (Bibliotheksabschnitte V134–V152). Architekturvergleich: `kueche-modul.zip`.
-
-Paketkorrektur: Die Extraktion ist vollständig unter `interactives/Bibliothek/` verpackt.
+Die Raumgrafik und die Detailbilder wurden eigens aus zeichnerischen und prozeduralen Texturen erstellt und sind lokal enthalten. Keine externen Bildlizenzen notwendig.
