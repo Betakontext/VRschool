@@ -1,42 +1,29 @@
-# Bibliothek-Modul
+# QUINOA – Das Schattenarchiv
 
-Isoliertes Spiel **„QUINOA BIBLIOTHEK“ / Bibliothek Escape-Abenteuer**. Sämtliche Moduldateien liegen unter `interactives/Bibliothek/`; das Spiel wird same-origin in einem Iframe geöffnet. Die Spielbilder liegen lokal in `bibliothek/assets/`.
+## Spiel starten
+1. ZIP entpacken (nicht im ZIP öffnen).
+2. `Bibliothek/bibliothek/bibliothek.html` in Chrome, Edge oder Firefox öffnen.
+3. Wenn du das Spiel in ein größeres Projekt einbaust, ersetze dort den **gesamten Bibliothek-Ordner**. Alte Dateien im Browser ggf. mit Strg+Shift+R neu laden.
 
-## Paketbaum
-```text
-interactives/Bibliothek/
-├── README.md
-├── PRUEFBERICHT.md
-├── QUELLE.md
-├── bibliothek-loader.js
-├── bibliothek-loader.css
-├── bibliothek-scene.js
-└── bibliothek/
-    ├── bibliothek.html
-    ├── bibliothek.css
-    ├── bibliothek.js
-    └── assets/
-        ├── embedded-1.jpg
-        └── embedded-2.jpg
-```
+## Rätsel
+Freie Erkundung, vier Zahlen, eine Reihenfolge und ein versteckter Messingschlüssel. Der Globus wurde entfernt und die mittlere Schreibtischschublade ersetzt das Fundstück. Die Tür selbst ist nicht anklickbar; das Tastenfeld rechts daneben ist der Zugang.
 
-## Integration
-Die Pfade sind vom Dokument aus zu lesen, das die Schultour ausliefert. Beide Dateien befinden sich im Paket unter `interactives/Bibliothek/`.
+## Atmosphäre
+Regen am Fenster und Echtzeituhr mit drei Zeigern; alte Papier-Hinweise mit stufenweiser Freischaltung. Logo: vom Nutzer bereitgestellt.
 
-```html
-<!-- nach A-Frame im Head -->
-<script src="interactives/Bibliothek/bibliothek-scene.js"></script>
 
-<!-- am Ende des Body -->
-<script defer src="interactives/Bibliothek/bibliothek-loader.js"></script>
-```
+## MASTER-EDITION
+Öffne `bibliothek/bibliothek.html` direkt im Browser. Der gerahmte Plan im Raum ist eine Atmosphäre- und Rätselkomponente; alle Fundstücke, Tastenkombinationen und Hinweisstufen funktionieren wie zuvor.
 
-Füge im sichtbaren `#panel-Bibliothek` den A-Frame-Startbutton ein:
-```html
-<a-entity id="bibliothek-start" bibliothek-start position="0 1.6 -3" role="button" tabindex="0">
-  <a-plane geometry="primitive: plane; width: 2.8; height: 1.15" material="color:#315e72; shader:flat"></a-plane>
-  <a-text value="Bibliotheksabenteuer starten" align="center" color="#fff" position="0 0 .02"></a-text>
-</a-entity>
-```
+Exit-Fix: Rotes X und „Verlassen“ beim Sieg beenden die Bibliothek. Im Hauptprojekt wird das Overlay geschlossen; bei direkt geöffneter HTML-Datei wird die Spielseite verlassen (about:blank), da Browser normale Tabs nicht zuverlässig per JavaScript schließen lassen.
 
-`bibliothek-start` wird nur bei sichtbarem `#panel-Bibliothek` klickbar und ruft `openBibliothekModule()` auf. Der Loader öffnet exakt die neben ihm liegende Datei `bibliothek/bibliothek.html` (aufgelöst relativ zu `bibliothek-loader.js`).
+
+Wichtig: Zur echten Bibliotheks-Fotoansicht zurueckkehren funktioniert, wenn das Spiel ueber bibliothek-loader.js im Hauptprojekt geoeffnet wird. Der Loader liegt dieser ZIP bei. Bei direkt per Doppelklick gestarteter Einzel-HTML gibt es keine uebergeordnete Fotoansicht: dann schliesst sich das Spiel bzw. wechselt zu einer leeren Seite.
+
+
+## Neue Zufallscodes
+Bei jedem neuen Laden des Spiels wird aus vier unterschiedlichen Ziffern ein neuer Code erzeugt. Fundorte und Hinweise zeigen die aktuellen Ziffern, das Schloss akzeptiert nur genau diese Kombination. Bei erneutem Spielstart wird neu gewuerfelt. Die letzte Kombination wird lokal im Browser gespeichert, um eine direkte Wiederholung zu verhindern.
+
+
+## Interaktive Rätsel (09.11.2026)
+Regal: schmalen Buchrücken mit Stern in der Detailansicht identifizieren und wählen. Uhr: Sanduhrprägung der Messingplakette auswählen. Fluchtplan: die verkratzte Unterkante des Rahmens untersuchen. Teppich: die sichtbar umgeschlagene Ecke anheben (Position wechselt je Spielrunde). Schreibtisch: Papiere zur Seite bewegen, hohl klingendes Brett prüfen, Kerbe lösen. Die vier Zahlen und die Anordnung des gesuchten Buchs wechseln weiterhin bei jedem Spielstart. Alle vier Gegenstände bleiben unabhängig untersuchbar.
