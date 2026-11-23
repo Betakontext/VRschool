@@ -1,0 +1,4 @@
+Kunstraum – Integration des aktuellen V3_interactives-Index
+Quelle: https://github.com/Betakontext/VRschool/blob/V3_interactives/index.html
+SHA256: f75d6640611f39a85a38e081e3ee6acdcec4355a4cbff0f3ad56f31780a76351
+Originale App-Logik unverändert; modulare iframe-Einbindung und Layoutkorrektur.

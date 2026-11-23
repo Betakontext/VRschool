@@ -21,6 +21,7 @@
     <script src="interactives/Pausenhof/football-model.js"></script>
     <script src="./interactives/Bibliothek/bibliothek-scene.js"></script>
     <script src="./interactives/Kueche/kueche-scene.js"></script>
+    <script src="./interactives/Kunstraum/kunstraum-scene.js"></script>
 
     <style>
       a-scene { touch-action: none; }
@@ -496,7 +497,7 @@
       </a-entity>
 
       <!-- Bibliothek -->
-      <a-entity id="panel-Bibliothek" visible="false" position="1.8 2.5 -3" rotation="0 -20 0">
+      <a-entity id="panel-Bibliothek" visible="false" position="3.5 2.5 -3" rotation="0 -20 0">
 
         <!-- Bibliothek Escape-Abenteuer starten -->
         <a-entity
@@ -521,12 +522,13 @@
         </a-entity>
 
         <a-entity id="info-icon-Bibliothek"
-                  position="-0.0 -0.3 0.02"
+                  position="-4 -0.8 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
                   material="src: img/Infobutton.png; transparent: true"
                   class="clickable"
                   info-trigger="box: #infobox-Bibliothek"></a-entity>
-        <a-entity id="infobox-Bibliothek" visible="false" position="3.5 0.6 -1" rotation="0 -30 0">
+
+        <a-entity id="infobox-Bibliothek" visible="false" position="-2.05 -1.1 -4.5" rotation="0 -9 1">
           <a-plane width="3.6" height="2.0" color="#fff" opacity="0.95"></a-plane>
           <a-text value="In der Bibliothek steht das Lesen im Mittelpunkt. Besonders dienstags wird sie aktiv genutzt, um in ruhiger Atmosphaere in Buecher einzutauchen." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
                   material="depthTest: false; depthWrite: false"></a-text>
@@ -599,20 +601,43 @@
 
       <!-- Kunstraum -->
       <a-entity id="panel-Kunstraum" visible="false" position="-3 1.9 2.0" rotation="-5 85 0">
-        <a-entity id="info-icon-Kunstraum"
-                  position="-0.0 -0.3 0.02"
-                  geometry="primitive: plane; width: 0.6; height: 0.6"
-                  material="src: img/Infobutton.png; transparent: true"
-                  class="clickable"
-                  info-trigger="box: #infobox-Kunstraum"></a-entity>
-        <a-entity id="infobox-Kunstraum" visible="false" position="-2 -0.5 3 " rotation="0 100 4">
-          <a-plane width="3.6" height="2.0" color="#fff" opacity="0.95"></a-plane>
-          <a-text value="Im Kunstraum wird kreativ gearbeitet, gemalt und gestaltet. Gelegentlich finden hier auch inspirierende Unterrichtseinheiten statt." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
-                  material="depthTest: false; depthWrite: false"></a-text>
-          <a-entity geometry="primitive: plane; width: 0.5; height: 0.5" material="color: #ff0000" position="1.50 0.70 0.01" class="close-button">
-            <a-text value="X" align="center" color="#fff" width="2.2" scale="2 2 2" position="-0.175 0 0.01"></a-text>
+          <a-entity id="kunstraum-start"
+                    geometry="primitive: plane; width: 1.8; height: 0.65"
+                    material="shader: flat; color: #159ed0; side: double"
+                    rounded-thumbnail="radius: 0.06; shadowOpacity: 0.18"
+                    position="0 -0.9 0.04"
+                    class="clickable link"
+                    event-set__enter="_event: mouseenter; scale: 1.08 1.08 1"
+                    event-set__leave="_event: mouseleave; scale: 1 1 1"
+                    onclick="
+              event.stopPropagation();
+              if (this.closest('[id^=panel-]').getAttribute('visible') === true) {
+                window.openKunstraumModule();
+              }
+            ">
+              <a-text value="Kreativatelier betreten"
+                      align="center"
+                      anchor="center"
+                      color="#ffffff"
+                      width="2.7"
+                      position="0 0 0.02">
+              </a-text>
           </a-entity>
-        </a-entity>
+
+          <a-entity id="info-icon-Kunstraum"
+                    position="-0.0 -0.3 0.02"
+                    geometry="primitive: plane; width: 0.6; height: 0.6"
+                    material="src: img/Infobutton.png; transparent: true"
+                    class="clickable"
+                    info-trigger="box: #infobox-Kunstraum"></a-entity>
+          <a-entity id="infobox-Kunstraum" visible="false" position="-2 -0.5 3 " rotation="0 100 4">
+              <a-plane width="3.6" height="2.0" color="#fff" opacity="0.95"></a-plane>
+              <a-text value="Im Kunstraum wird kreativ gearbeitet, gemalt und gestaltet. Gelegentlich finden hier auch inspirierende Unterrichtseinheiten statt." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
+                      material="depthTest: false; depthWrite: false"></a-text>
+              <a-entity geometry="primitive: plane; width: 0.5; height: 0.5" material="color: #ff0000" position="1.50 0.70 0.01" class="close-button">
+                  <a-text value="X" align="center" color="#fff" width="2.2" scale="2 2 2" position="-0.175 0 0.01"></a-text>
+              </a-entity>
+          </a-entity>
       </a-entity>
 
       <!-- Kamera mit getrenntem VR-Blickcursor und Mauscursor -->
@@ -1225,7 +1250,7 @@
       <script src="./interactives/Pausenhof/pausenhof-loader.js"></script>
       <script src="./interactives/Kueche/kueche-loader.js" defer></script>
       <script src="./interactives/Bibliothek/bibliothek-loader.js" defer></script>
-
+      <script src="./interactives/Kunstraum/kunstraum-loader.js" defer></script>
 
 
   </body>
