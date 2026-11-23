@@ -497,7 +497,7 @@
       </a-entity>
 
       <!-- Bibliothek -->
-      <a-entity id="panel-Bibliothek" visible="false" position="1.8 2.5 -3" rotation="0 -20 0">
+      <a-entity id="panel-Bibliothek" visible="false" position="3.5 2.5 -3" rotation="0 -20 0">
 
         <!-- Bibliothek Escape-Abenteuer starten -->
         <a-entity
@@ -522,12 +522,13 @@
         </a-entity>
 
         <a-entity id="info-icon-Bibliothek"
-                  position="-0.0 -0.3 0.02"
+                  position="-4 -0.8 0.02"
                   geometry="primitive: plane; width: 0.6; height: 0.6"
                   material="src: img/Infobutton.png; transparent: true"
                   class="clickable"
                   info-trigger="box: #infobox-Bibliothek"></a-entity>
-        <a-entity id="infobox-Bibliothek" visible="false" position="3.5 0.6 -1" rotation="0 -30 0">
+
+        <a-entity id="infobox-Bibliothek" visible="false" position="-2.05 -1.1 -4.5" rotation="0 -9 1">
           <a-plane width="3.6" height="2.0" color="#fff" opacity="0.95"></a-plane>
           <a-text value="In der Bibliothek steht das Lesen im Mittelpunkt. Besonders dienstags wird sie aktiv genutzt, um in ruhiger Atmosphaere in Buecher einzutauchen." color="#000" position="0 -0.05 0.02" width="3.2" align="center"
                   material="depthTest: false; depthWrite: false"></a-text>
