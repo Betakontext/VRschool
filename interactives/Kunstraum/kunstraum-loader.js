@@ -44,3 +44,4 @@
 
 window.openArtStudio = window.openKunstraumModule;
 window.closeArtStudio = window.closeKunstraumModule;
+
