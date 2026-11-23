@@ -10,6 +10,8 @@
   }
   let dialog = null;
   let opener = null;
+  let pausedScene = null;
+  let previousBodyOverflow = null;
   const endVR = () => { const scene = document.querySelector('a-scene'); if (scene?.is?.('vr-mode')) scene.exitVR?.(); };
   const close = () => {
     if (!dialog) return;
@@ -17,6 +19,8 @@
     document.removeEventListener('keydown', onKey, true);
     window.removeEventListener('message', onMessage);
     endVR(); node.remove();
+    if(previousBodyOverflow !== null){document.body.style.overflow=previousBodyOverflow;previousBodyOverflow=null;}
+    if (pausedScene) { pausedScene.play?.(); pausedScene = null; }
     opener?.focus?.(); opener = null;
   };
   const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } };
@@ -24,9 +28,11 @@
   window.openKuecheModule = () => {
     opener = document.activeElement;
     close();
+    pausedScene = document.querySelector('a-scene'); pausedScene?.pause?.();
+    previousBodyOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
     dialog = document.createElement('div'); dialog.className = 'kueche-dialog'; dialog.setAttribute('role','dialog');
     dialog.setAttribute('aria-modal','true'); dialog.setAttribute('aria-label','Quinoa-Küchenabenteuer');
-    dialog.innerHTML = '<button type="button" class="kueche-dialog__close" aria-label="Küchenspiel schließen" title="Küchenspiel schließen">×</button><iframe title="Quinoa-Küchenabenteuer" allow="fullscreen" src="'+new URL('kueche/kueche.html',base).href+'"></iframe>';
+    dialog.innerHTML = '<button type="button" class="kueche-dialog__close" aria-label="Küchenspiel schließen" title="Küchenspiel schließen">×</button><iframe title="Quinoa-Küchenabenteuer" allow="fullscreen" src="'+new URL('kueche/kueche.html?v=20261116-10',base).href+'"></iframe>';
     const closeButton = dialog.querySelector('.kueche-dialog__close');
     closeButton.addEventListener('click', close);
     const frame = dialog.querySelector('iframe'); frame.addEventListener('error', close, {once:true}); frame.addEventListener('abort', close, {once:true});
