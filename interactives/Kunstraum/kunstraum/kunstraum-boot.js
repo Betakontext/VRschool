@@ -6,3 +6,4 @@ window.addEventListener('load',()=>{
  document.getElementById('artClose').onclick=leave;
  const back=document.createElement('button');back.id='standaloneReturn';back.hidden=true;back.textContent='Kunstatelier wieder öffnen';back.onclick=()=>{back.hidden=true;window.openArtStudio();};document.body.appendChild(back);
 });
+

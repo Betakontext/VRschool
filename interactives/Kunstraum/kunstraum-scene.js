@@ -22,3 +22,16 @@
     const refresh=()=>document.querySelectorAll('a-cursor,#desktop-touch-cursor').forEach(c=>c?.components?.raycaster?.refreshObjects?.());
     hit.addEventListener('object3dset',refresh);requestAnimationFrame(refresh);setTimeout(refresh,350);setTimeout(refresh,1100);
   })();
+
+// Ausstellung erst in der vollständig geladenen Kunstraum-Tour initialisieren.
+(()=>{
+ const own=document.currentScript,src=new URL('kunstraum-aktuell.js',own?.src||document.baseURI).href;
+ let timer=setInterval(()=>{
+  const scene=document.querySelector('a-scene'),panel=document.getElementById('panel-Kunstraum');
+  if(!scene?.hasLoaded||!window.AFRAME||!panel)return;
+  const active=scene.dataset.currentId?scene.dataset.currentId==='Kunstraum':panel.getAttribute('visible')===true;
+  if(!active)return;clearInterval(timer);
+  const script=document.createElement('script');script.src=src;script.onerror=()=>console.warn('[Kunstraum] Aktuelles Bild konnte nicht geladen werden.');document.head.appendChild(script);
+ },1000);
+ window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
+})();
