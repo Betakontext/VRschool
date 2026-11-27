@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Bibliothek: Start nur im sichtbaren Panel. */
 (function () {
   if (!window.AFRAME) { console.warn('bibliothek-start benötigt A-Frame.'); return; }

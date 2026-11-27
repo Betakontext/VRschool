@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 (() => {
  const studio=document.getElementById('artStudio'),water=document.getElementById('artWater');if(!studio||!water)return;
  const detail=document.createElement('div');detail.className='atelier-brush-state';detail.innerHTML='<div class="atelier-brush-model"><i class="brush-handle"></i><i class="brush-ferrule"></i><i class="brush-hair"></i></div><div><strong>Pinsel mit Farbe</strong><small>Bereit für deine Leinwand</small></div>';water.before(detail);

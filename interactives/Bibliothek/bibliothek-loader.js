@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Iframe-Overlay für das isolierte Bibliotheks-Spiel. */
 (function () {
   var script = document.currentScript;

@@ -1,2 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Exit immersive VR safely before the loader opens; canceled/stale opens do not reopen. */
 (()=>{function hook(){const prior=window.openPausenhofModule;if(!prior||prior.__phScene)return;let ticket=0;function open(){const mine=++ticket, scene=document.querySelector('a-scene');const go=()=>{if(mine===ticket)prior()};if(scene?.is?.('vr-mode')&&scene.exitVR){Promise.resolve(scene.exitVR()).then(go).catch(e=>console.error('VR konnte nicht beendet werden',e))}else go()}open.__phScene=true;window.openPausenhofModule=open;window.openHofSports=open}document.addEventListener('pausenhof-loader-ready',hook);hook()})();

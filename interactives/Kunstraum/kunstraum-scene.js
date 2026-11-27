@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 (()=>{
     const scene=document.querySelector('a-scene'),panel=document.getElementById('panel-Kunstraum'),launch=document.getElementById('artStudioLaunch');
     if(!scene||!panel||!launch)return;

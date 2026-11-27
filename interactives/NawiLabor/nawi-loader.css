@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Rounded, centered Nawi game frame over the still-visible tour. */
 .nawi-frame-dialog{
   position:fixed; inset:0; z-index:1200000; display:grid; place-items:center;

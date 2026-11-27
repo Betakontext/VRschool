@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Verbindet den Werkstatt-Button in A-Frame mit dem Spiel-Loader. */
 AFRAME.registerComponent('werkstatt-start', {
   init() {

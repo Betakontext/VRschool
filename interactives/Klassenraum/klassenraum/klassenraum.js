@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 (()=>{'use strict';const app=document.querySelector('#app');let run=null;const KEY='klassenraum-scores-v3';
 const safe=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));function read(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(_){return[]}}function save(v){try{localStorage.setItem(KEY,JSON.stringify(v))}catch(_){}}
 function clear(){if(run){run.t.forEach(clearTimeout);run=null}}function send(type){if(parent!==window)parent.postMessage({type},location.origin)}function header(){return `<header class="head"><div><h1>🏫 Klassenraum</h1><small>Drei Lernspiele</small></div><button class="ghost" id="close">Schließen</button></header>`}function bindClose(){app.querySelector('#close').onclick=()=>{clear();send('klassenraum-close')}}
