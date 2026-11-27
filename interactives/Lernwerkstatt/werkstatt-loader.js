@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 (function () {
   'use strict';
 

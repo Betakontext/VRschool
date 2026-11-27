@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* ===== WERKSTATT MODUL V30 ===== */
       #workshopOverlay{
         display:none; position:fixed; inset:0; z-index:1000000; overflow:hidden;

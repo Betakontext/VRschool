@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* defer im <head>: currentScript wird synchron bei Ausführung als Modulbasis gesichert. */
 (() => {
   'use strict';

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Nach A-Frame laden: Klickklassen werden ausschließlich auf #kueche-start gesetzt. */
 (function registerKuecheStart() {
   function install() {

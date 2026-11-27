@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Targeted, dependency-free physics checks for the Pong-only helpers. */
 'use strict';
 const fs=require('fs'), vm=require('vm');

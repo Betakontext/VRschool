@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Conservative device overrides for the original Nawi scene.  Desktop remains untouched. */
 @media (max-width:700px){
   #nawiLabOverlay{min-height:100dvh;overflow:hidden}

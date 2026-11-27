@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Lokale Three.js-Atelierszene. Die Malfläche bleibt eine unabhängige 2D-Leinwand. */
 (() => {
   'use strict';

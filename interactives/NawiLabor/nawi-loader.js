@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Nawi iframe loader: same-origin, accessible and repeat-safe. */
 (function(){
   'use strict';

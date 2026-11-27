@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 // ===== QUINOA KUNSTATELIER V153 =====
       (()=>{
         const $=id=>document.getElementById(id),studio=$('artStudio'),canvas=$('artCanvas'),guide=$('artGuide');if(!studio||!canvas)return;const artLogoSource=studio.querySelector('.art-logo img')?.src||'';studio.querySelectorAll('.artLogoImage').forEach(img=>{if(!img.getAttribute('src'))img.src=artLogoSource});const boardLogo=studio.querySelector('.art-board-logo');if(boardLogo)boardLogo.src=artLogoSource;
