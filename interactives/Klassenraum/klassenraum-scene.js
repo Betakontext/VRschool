@@ -1,1 +1,4 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 (()=>{'use strict';if(window.__klassenraumScene)return;window.__klassenraumScene=true;const start=()=>{if(typeof window.openKlassenraumModule==='function')window.openKlassenraumModule()};function register(){if(!window.AFRAME||AFRAME.components['klassenraum-start'])return;AFRAME.registerComponent('klassenraum-start',{init(){this.start=start;this.el.addEventListener('click',this.start)},remove(){this.el.removeEventListener('click',this.start)}})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',register);else register();addEventListener('load',register)})();

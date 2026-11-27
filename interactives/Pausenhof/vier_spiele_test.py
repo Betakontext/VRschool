@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Christoph Medicus
+# SPDX-License-Identifier: MIT
+
 from pathlib import Path
 import contextlib,http.server,socketserver,threading,os
 from playwright.sync_api import sync_playwright, expect

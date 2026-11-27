@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Pausenhof iframe launcher: same-origin, bounded and recoverable. */
 (()=>{'use strict';
  let frame=null, wrap=null, timer=0, lastFocus=null, opener=null;

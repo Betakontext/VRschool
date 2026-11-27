@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Same-origin bridge; preserves original completion guard. */
 (function(){'use strict';
  const send=(type,extra)=>parent.postMessage(Object.assign({type:type,channel:'nawi-labor'},extra||{}),location.origin);

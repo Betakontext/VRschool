@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Pausenhof Geschicklichkeit v3 | dependency-free canvas games */
 (()=>{'use strict';if(window.__pausenhofDexV3)return;window.__pausenhofDexV3=1;
 const D=document,W=window,$=(s,e=D)=>e.querySelector(s),cl=(n,a,b)=>Math.max(a,Math.min(b,n)),R=(a,b)=>a+Math.random()*(b-a);

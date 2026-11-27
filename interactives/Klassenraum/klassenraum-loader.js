@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Klassenraum launcher: exactly one same-origin iframe. */
 (()=>{'use strict';if(window.__klassenraumLoader)return;window.__klassenraumLoader=true;
 const own=document.currentScript, child=new URL('klassenraum/klassenraum.html',(own&&own.src)||location.href);let overlay,frame,opener,timer,oldOverflow='';

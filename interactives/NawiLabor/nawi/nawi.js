@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Original NAWI REALISTIC LAB V27, isoliert. */
 (function(){
         let gogglesOn=false, burnerOn=false, reactionDone=false, labQuizDone=false, washingDone=false, washingActive=false;

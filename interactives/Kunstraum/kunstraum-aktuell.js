@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Christoph Medicus
+// SPDX-License-Identifier: MIT
+
 /* Ein aktuelles Kunstwerk im vorhandenen Panorama, ohne Raumersatz. */
 (()=>{
  'use strict';
